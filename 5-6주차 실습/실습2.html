@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <style>
+      .container {
+        display: flex;
+        gap: 10px;
+      }
+      .item {
+        width: 150px;
+        height: 60px;
+        text-align: center;
+        font-size: 1.5em;
+        border-radius: 10px;
+        box-shadow: 2px 2px 2px #000;
+        color: #171717;
+        font-weight: bold;
+        border: none;
+      }
+      .item1 {
+        background: rgb(53, 168, 0);
+        background: radial-gradient(
+          circle,
+          rgba(53, 168, 0, 1) 0%,
+          rgba(238, 238, 238, 1) 100%
+        );
+      }
+      .item2 {
+        background: rgb(255, 100, 0);
+        background: radial-gradient(
+          circle,
+          rgba(255, 100, 0, 1) 0%,
+          rgba(238, 238, 238, 1) 100%
+        );
+      }
+      .item3 {
+        background: rgb(147, 0, 255);
+        background: radial-gradient(
+          circle,
+          rgba(147, 0, 255, 1) 0%,
+          rgba(238, 238, 238, 1) 100%
+        );
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <button class="item item1">Green</button>
+      <button class="item item2">Orange</button>
+      <button class="item item3">Purple</button>
+    </div>
+
+    <script src="./실습2.js"></script>
+  </body>
+</html>

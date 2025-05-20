@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <style>
+      .container {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        justify-content: center;
+        align-items: center;
+      }
+      .sub-container {
+        display: flex;
+        gap: 10px;
+      }
+      .box {
+        width: 30%;
+        height: 150px;
+        border-radius: 20px;
+        border: 1px solid #bdbcbc;
+      }
+      .item {
+        width: 150px;
+        height: 40px;
+        text-align: center;
+        border-radius: 10px;
+        color: #fff;
+        font-weight: bold;
+        border: none;
+      }
+      .item1 {
+        background-color: green;
+      }
+      .item2 {
+        background-color: orange;
+      }
+      .item3 {
+        background-color: purple;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="sub-container">
+        <button class="item item1">Green</button>
+        <button class="item item2">Orange</button>
+        <button class="item item3">Purple</button>
+      </div>
+      <div class="box"></div>
+    </div>
+
+    <script src="./실습3.js"></script>
+  </body>
+</html>
