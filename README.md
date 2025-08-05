@@ -29,28 +29,46 @@
 
 ```
 css
-	style.css
-	auth
-		signup.css
-	article
-        article.css
+	style.css -> 공용 스타일
+	각 css 파일은 html 파일 이름으로
 js
 	main.js
-	auth
-		signup.js
-	article	
-        article.js
+	
 pages
-	auth
-		signup.html
-	article
-        article.html
-component
-	images
-		kakao_login.png
-	icon
-		logo.svg	
+	test.html
+  
+	login.html -> 로그인 대체 화면
+	
+	gps_set.html -> 위치 설정
+	gps_enroll.html -> 주소 등록
+	home_store.html -> 홈화면 - 가게별
+	home_menu.html -> 홈화면 - 메뉴별
+  	like_store.html -> 찜 - 가게별
+  	like_menu.html -> 찜 - 메뉴별
+  	purchase_log.html -> 구매내역
+        write_review.html -> 리뷰 작성
+        customer_mypage.html -> 고객 마이페이지
+  
+ 	store_enroll.html -> 가게 등록
+ 	menu_off.html -> 메뉴관리 - 주문 비활성화
+ 	menu_on.html -> 메뉴관리 - 주문활성화
+  	menu_delete.html -> 메뉴 삭제
+  	menu_add.html -> 메뉴 추가/수정
+  	menu_manage.html -> 주문 관리
+  	owner_mypage.html -> 사장님 마이페이지
+  	owner_review.html -> 사장님 리뷰 목록
+  
+ 	store_home.html -> 가게 페이지
+  	order.html -> 주문 창
+  	customer_review.html -> 고객 리뷰 상세보기
+  	cart.html -> 장바구니
+  	pickup.html -> 픽업 예약
+  	reservation.html -> 예약 완료
+images
+	example.png
+
 index.html
+
 .gitignore
 	.env
 ```
