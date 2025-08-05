@@ -1,6 +1,94 @@
+/* 공통 스타일 초기화 */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
 body {
-  font-family: Arial, sans-serif;
-  background-color: #f0f8ff;
-  color: #333;
-  padding: 20px;
+  font-family: "Pretendard", sans-serif;
+  background-color: #f0ece2;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+}
+/*기본 화면 크기 설정*/
+.app_frame {
+  width: 390px;
+  height: 844px;
+  background-color: #fff;
+  display: flex;
+  flex-direction: column;
+  border-radius: 20px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+  position: relative;
+}
+
+/* 상단 아이폰 이미지 */
+/* .app_frame::before {
+  content: "";
+  background: url("../images/iphone.png") no-repeat center top;
+  background-size: contain;
+  width: 100%;
+  height: 30px;
+  position: absolute;
+  top: 15px;
+  left: 0;
+  z-index: 11; 
+}*/
+
+/* 하단 아이폰 이미지 */
+/* .app_frame::after {
+  content: "";
+  background: url("../images/iphone_home.png") no-repeat center bottom;
+  background-size: contain;
+  width: 100%;
+  height: 30px;
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  z-index: 11;
+} */
+
+/*상단 빨간색 영역*/
+.top_bar {
+  height: 120px;
+  background-color: #a82d2f;
+  position: relative;
+  z-index: 1;
+}
+/*하단 하얀색 영역*/
+.bottom_nav {
+  height: 112px;
+  background-color: white;
+  border-top: 1px solid #ddd;
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  font-size: 12px;
+  position: relative;
+  z-index: 1;
+}
+/*홈 찜 구매내역 MY*/
+.bottom_nav_item img {
+  width: 94px;
+  height: 40px;
+  margin-bottom: 30px;
+}
+
+.content {
+  flex: 1;
+  padding: 16px;
+  /*상단에서 하단으로 그라데이션 효과*/
+  /*사용자 페이지용 배경색*/
+  background: linear-gradient(to bottom, #fff1c5, #fff1c5);
+  /* 사장님 페이지용 배경색  */
+  /* background: linear-gradient(to bottom, #eeeeee, #ffffff); */
+  /* 사용자 주문 페이지용 배경색  */
+  /* background: linear-gradient(to bottom, #fff1c5, #ffffff); */
+
+  position: relative;
+  z-index: 1;
 }
