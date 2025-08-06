@@ -1,0 +1,90 @@
+.top_bar_inner {
+  height: 100%;
+  display: flex;
+  align-items: center;
+  margin-top: 20px;
+  padding: 0 20px;
+  gap: 8px;
+  color: white;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.back_icon {
+  width: 24px;
+  height: 24px;
+  cursor: pointer;
+}
+.title {
+  font-weight: 500;
+  font-size: 16px;
+  padding-top: 10px;
+  padding-left: 20px;
+}
+.content {
+  align-items: center;
+}
+.location_list {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  margin-top: 30px;
+  cursor: pointer;
+}
+
+.location_card {
+  text-decoration: none;
+  color: inherit;
+  display: flex;
+  align-items: center;
+  padding: 24px;
+  background: white;
+  border-radius: 10px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
+  width: 345px;
+  height: 83px;
+  gap: 24px;
+}
+
+.location_card.active {
+  border: 1px solid #a82d2f;
+  background-color: #ffeced;
+}
+
+.location_info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.icon {
+  width: 24px;
+  height: 24px;
+}
+.location_name {
+  font-weight: 600;
+  font-size: 20px;
+}
+
+.location_address {
+  font-weight: 500;
+  font-size: 16px;
+  color: #777777;
+}
+
+.edit_icon {
+  width: 20px;
+  height: 20px;
+}
+
+.plus_icon {
+  width: 320px;
+  height: 70px;
+  position: absolute;
+  bottom: 200px;
+  align-items: center;
+  left: 35px;
+  top: 355px;
+}
