@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+    />
+    <title>gps_enroll</title>
+
+    <!-- Pretendard 폰트 -->
+    <link
+      href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css"
+      rel="stylesheet"
+    />
+
+    <!-- 공통 및 개별 CSS -->
+    <link rel="stylesheet" href="../css/style.css" />
+    <link rel="stylesheet" href="../css/gps_enroll.css" />
+  </head>
+
+  <body>
+    <div class="app_frame">
+      <!-- 상단 바 -->
+      <div class="top_bar">
+        <div class="top_bar_inner">
+          <a href="gps_set.html">
+            <img
+              src="../images/arrow_left.png"
+              alt="뒤로가기"
+              class="back_icon"
+            />
+          </a>
+          <span class="top_title">위치 등록</span>
+        </div>
+      </div>
+
+      <!-- 본문 내용 -->
+      <div class="content">
+        <div class="form_section">
+          <div class="form_group">
+            <img src="../images/star.png" class="form_icon1" alt="별 아이콘" />
+            <div class="form_text">
+              <div class="form_label">주소지의 별칭을 정해주세요</div>
+              <div class="form_hint">ex) 집/기숙사/학교</div>
+            </div>
+          </div>
+          <input type="text" class="input_field" placeholder="" />
+          <hr class="divider" />
+
+          <div class="form_group">
+            <img
+              src="../images/gps_black.png"
+              class="form_icon2"
+              alt="위치 아이콘"
+            />
+            <div class="form_text">
+              <div class="form_label">실제 주소를 입력해주세요</div>
+            </div>
+          </div>
+          <div class="search_container">
+            <input type="text" class="input_field" placeholder="" />
+            <img
+              src="../images/search.png"
+              class="search_icon"
+              alt="검색 아이콘"
+            />
+          </div>
+
+          <a href="gps_set.html" class="submit_button">위치 등록하기</a>
+        </div>
+      </div>
+
+      <!-- 하단 내비게이션 -->
+      <div class="bottom_nav">
+        <div class="bottom_nav_item">
+          <a href="home_store.html">
+            <img src="../images/home.png" alt="홈" />
+          </a>
+        </div>
+        <div class="bottom_nav_item">
+          <a href="like_store.html">
+            <img src="../images/heart.png" alt="찜" />
+          </a>
+        </div>
+        <div class="bottom_nav_item">
+          <a href="purchase_log.html">
+            <img src="../images/shoplist.png" alt="구매내역" />
+          </a>
+        </div>
+        <div class="bottom_nav_item">
+          <a href="customer_mypage.html">
+            <img src="../images/my.png" alt="MY" />
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <!-- JS -->
+    <!-- <script src="../js/gps_enroll.js"></script>구현 우선순위에서 밀려서 js는 구현 안했음 -->
+  </body>
+</html>

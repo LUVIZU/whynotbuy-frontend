@@ -70,6 +70,7 @@ body {
   font-size: 12px;
   position: relative;
   z-index: 1;
+  box-shadow: 0 0px 60px rgba(0, 0, 0, 0.2);
 }
 /*홈 찜 구매내역 MY*/
 .bottom_nav_item img {
