@@ -1,0 +1,45 @@
+.app_frame {
+    background: linear-gradient(to bottom, #FFF1C5, #FFFFFF);
+}
+
+.logo {
+    text-align: center;
+    position: relative;
+    top: 152px;
+}
+
+.button-list {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    align-items: center;
+  }
+  
+.card-button {
+    width: 280px;
+    height: 136px;
+    background-color: #ffffff;
+    border: 1px solid #cacaca;
+    border-radius: 15px;
+    box-shadow: inset 0 0 15px rgba(0, 0, 0, 0.15);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    font-weight: 600;
+    font-size: 17px;
+    cursor: pointer;
+    transition: transform 0.2s ease;
+
+    position: relative;
+    top: 185px;
+  }
+  
+.card-button:hover {
+    transform: scale(1.01);
+  }
+  
+.icon {
+    width: 40px;
+    height: 40px;
+  }
