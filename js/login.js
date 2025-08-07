@@ -20,7 +20,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const data = await res.json();
   
         if (data.isSuccess) {
-          window.location.href = "../pages/home.html"; // 홈화면 만들어지면 바꾸기(사장님이랑 고객이랑 화면 다르니까 if문 사용하기)
+          window.location.href = "../pages/test_home.html"; // 홈화면 만들어지면 바꾸기(사장님이랑 고객이랑 화면 다르니까 if문 사용하기)
         } else {
           alert("로그인 실패: " + data.message);
         }
