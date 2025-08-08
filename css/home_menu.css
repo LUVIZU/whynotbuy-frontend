@@ -1,0 +1,294 @@
+a {
+  color: inherit; /* 부모 색상 상속 */
+  text-decoration: none; /* 밑줄 제거 */
+}
+
+/* 링크 기본 파랑/밑줄 제거(공통) */
+.menu_card a {
+  text-decoration: none;
+}
+
+.top_bar {
+  /* 위쪽 빨간 영역 고정 */
+  flex: 0 0 auto;
+}
+
+.bottom_nav {
+  /* 하단 네비 고정 */
+  flex: 0 0 auto;
+}
+
+.content {
+  /* 가운데만 스크롤 */
+  padding: 0px;
+
+  flex: 1 1 auto;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch; /* iOS 부드러운 스크롤 */
+  overscroll-behavior: contain; /* 상/하단 끌림 방지 */
+}
+
+/* 리스트가 하단 네비에 가려지지 않도록 여유공간 확보 */
+.store_list {
+  padding-bottom: 15px; /* bottom_nav 높이(112px)보다 조금 더 */
+}
+
+/* 필요하면 스크롤바 얇게(선택) */
+.content::-webkit-scrollbar {
+  width: 6px;
+}
+.content::-webkit-scrollbar-thumb {
+  border-radius: 3px;
+  background: rgba(0, 0, 0, 0.15);
+}
+.content::-webkit-scrollbar-track {
+  background: transparent;
+}
+/* ===== 상단 빨간 영역 확장 ===== */
+.store_top {
+  height: 158px; /* 기존보다 크게 */
+  background-color: #a82d2f;
+  padding: 12px 16px 0;
+  color: #fff;
+}
+
+.status_space {
+  height: 35px;
+}
+
+.top_row {
+  margin-top: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.loc_wrap {
+  display: flex;
+  gap: 5px;
+  margin-left: 6px;
+}
+
+.loc_text {
+  font-size: 20px;
+  font-weight: 600;
+}
+
+.cart_btn {
+  margin-right: 6px;
+  width: 22px;
+  height: 22px;
+}
+
+/* 검색바 (둥근 캡슐) */
+.search_bar {
+  position: relative;
+  margin-top: 18px;
+}
+.search_bar input {
+  margin-left: 6px;
+  width: 344px;
+  height: 40px;
+  border: none;
+  outline: none;
+  border-radius: 24px;
+  padding: 0 48px 0 18px;
+  background: #ffffff;
+  font-size: 15px;
+}
+.search_btn {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 36px;
+  height: 36px;
+  border: 0;
+  background: transparent;
+  padding: 0;
+}
+.search_btn img {
+  margin-top: 4px;
+  width: 20px; /* 기존 background-size: 20px; 과 동일 */
+  height: 20px;
+  object-fit: contain;
+}
+
+/* ===== 탭 2분할 + 다음 줄 "가까운순" ===== */
+.tab_block {
+  margin-top: 0px;
+  padding: 0 0px;
+}
+
+/* 첫 줄: 50% / 50% */
+.tabs_full {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  align-items: end;
+}
+
+.tab_text {
+  display: block;
+  text-align: center;
+  padding: 16px 0;
+  font-weight: 800;
+  background: #fff1c5;
+  color: #a82d2f;
+  text-decoration: none;
+}
+
+.tab_pill {
+  display: block;
+  text-align: center;
+  padding: 16px 0;
+  background: #ffffff;
+  color: #c8c8c8;
+  font-weight: 800;
+  text-decoration: none;
+}
+
+/* 둘째 줄: 오른쪽 버튼 */
+.tab_actions {
+  padding-top: 10px;
+  padding-right: 5px;
+  padding-bottom: 10px;
+
+  background-color: #fff1c5;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.near_btn {
+  background: #fff;
+  color: #a82d2f;
+  border: 1.5px solid #a82d2f;
+  border-radius: 12px;
+  padding: 8px 12px;
+  font-size: 10px;
+  font-weight: 500;
+  margin-right: 25px;
+}
+
+/* ===== 카드 리스트 ===== */
+
+/* 리스트 */
+.menu_list {
+  text-decoration: none; /* 밑줄 제거 */
+
+  margin-right: 25px;
+  margin-left: 25px;
+
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  list-style: none;
+}
+
+/* 카드 베이스 */
+.menu_card {
+  position: relative;
+  background: #fff;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.12);
+  padding: 16px;
+}
+
+/* 상단 레이아웃 */
+.menu_top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.menu_left {
+  flex: 1;
+  min-width: 0;
+}
+.menu_name {
+  font-size: 20px;
+  font-weight: 800;
+  color: #111;
+  margin-bottom: 8px;
+}
+
+.price_block {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.old_price {
+  color: #9c9c9c;
+  text-decoration: line-through;
+  font-size: 14px;
+}
+.now_row {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+.sale_pct {
+  color: #c13320;
+  font-weight: 800;
+  font-size: 16px;
+}
+.now_price {
+  font-weight: 800;
+  font-size: 22px;
+}
+
+/* 우측 썸네일 + 하트 */
+.menu_right {
+  position: relative;
+}
+.menu_thumb {
+  width: 88px;
+  height: 88px;
+  object-fit: cover;
+  border-radius: 12px;
+  display: block;
+}
+/* 하트 버튼 – 꽉찬/라인 두 상태 */
+.like_btn {
+  border: none;
+  background: transparent;
+  padding: 0;
+  width: 22px;
+  height: 20px;
+  margin-left: 135px;
+  position: absolute;
+  right: 16px;
+  top: 16px;
+  z-index: 999;
+  /* 하트를 맨 위로 올려서 클릭 방지 */
+}
+.like_btn img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+/* 하단 정보 */
+.menu_bottom {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.store_line {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.store_name {
+  color: #000000;
+}
+.distance {
+  color: #007aff;
+  text-decoration: none;
+  font-weight: 400;
+}
+.menu_desc {
+  color: #8b8b8b;
+  font-size: 14px;
+}

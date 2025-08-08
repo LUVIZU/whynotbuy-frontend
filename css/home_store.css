@@ -1,0 +1,243 @@
+a {
+  color: inherit; /* 부모 색상 상속 */
+  text-decoration: none; /* 밑줄 제거 */
+}
+
+.top_bar {
+  /* 위쪽 빨간 영역 고정 */
+  flex: 0 0 auto;
+}
+
+.bottom_nav {
+  /* 하단 네비 고정 */
+  flex: 0 0 auto;
+}
+
+.content {
+  /* 가운데만 스크롤 */
+  padding: 0px;
+
+  flex: 1 1 auto;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch; /* iOS 부드러운 스크롤 */
+  overscroll-behavior: contain; /* 상/하단 끌림 방지 */
+}
+
+/* 리스트가 하단 네비에 가려지지 않도록 여유공간 확보 */
+.store_list {
+  padding-bottom: 15px; /* bottom_nav 높이(112px)보다 조금 더 */
+}
+
+/* 필요하면 스크롤바 얇게(선택) */
+.content::-webkit-scrollbar {
+  width: 6px;
+}
+.content::-webkit-scrollbar-thumb {
+  border-radius: 3px;
+  background: rgba(0, 0, 0, 0.15);
+}
+.content::-webkit-scrollbar-track {
+  background: transparent;
+}
+/* ===== 상단 빨간 영역 확장 ===== */
+.store_top {
+  height: 158px; /* 기존보다 크게 */
+  background-color: #a82d2f;
+  padding: 12px 16px 0;
+  color: #fff;
+}
+
+.status_space {
+  height: 35px;
+}
+
+.top_row {
+  margin-top: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.loc_wrap {
+  display: flex;
+  gap: 5px;
+  margin-left: 6px;
+}
+
+.loc_text {
+  font-size: 20px;
+  font-weight: 600;
+}
+
+.cart_btn {
+  margin-right: 6px;
+  width: 22px;
+  height: 22px;
+}
+
+/* 검색바 (둥근 캡슐) */
+.search_bar {
+  position: relative;
+  margin-top: 18px;
+}
+.search_bar input {
+  margin-left: 6px;
+  width: 344px;
+  height: 40px;
+  border: none;
+  outline: none;
+  border-radius: 24px;
+  padding: 0 48px 0 18px;
+  background: #ffffff;
+  font-size: 15px;
+}
+.search_btn {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 36px;
+  height: 36px;
+  border: 0;
+  background: transparent;
+  padding: 0;
+}
+.search_btn img {
+  margin-top: 4px;
+  width: 20px; /* 기존 background-size: 20px; 과 동일 */
+  height: 20px;
+  object-fit: contain;
+}
+
+/* ===== 탭 2분할 + 다음 줄 "가까운순" ===== */
+.tab_block {
+  margin-top: 0px;
+  padding: 0 0px;
+}
+
+/* 첫 줄: 50% / 50% */
+.tabs_full {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  align-items: end;
+}
+
+.tab_text {
+  display: block;
+  text-align: center;
+  padding: 16px 0;
+  font-weight: 800;
+  background: #fff1c5;
+  color: #a82d2f;
+  text-decoration: none;
+}
+
+.tab_pill {
+  display: block;
+  text-align: center;
+  padding: 16px 0;
+  background: #ffffff;
+  color: #c8c8c8;
+  font-weight: 800;
+  text-decoration: none;
+}
+
+/* 둘째 줄: 오른쪽 버튼 */
+.tab_actions {
+  padding-top: 10px;
+  padding-right: 5px;
+  padding-bottom: 10px;
+
+  background-color: #fff1c5;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.near_btn {
+  background: #fff;
+  color: #a82d2f;
+  border: 1.5px solid #a82d2f;
+  border-radius: 12px;
+  padding: 8px 12px;
+  font-size: 10px;
+  font-weight: 500;
+  margin-right: 25px;
+}
+
+/* ===== 카드 리스트 ===== */
+
+.store_list {
+  text-decoration: none; /* 밑줄 제거 */
+
+  margin-right: 25px;
+  margin-left: 25px;
+
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.store_card {
+  position: relative;
+  background: #fff;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.12);
+}
+
+.badge {
+  position: absolute;
+  left: 0px;
+  top: 18px;
+  background: #2c9159;
+  color: #fff;
+  font-weight: 400;
+  padding: 5px 14px;
+  font-size: 14px;
+  border-radius: 0 12px 12px 0; /* 순서: 좌상, 우상, 우하, 좌하 */
+}
+
+.thumb {
+  width: 100%;
+  height: 160px;
+  object-fit: cover;
+  display: block;
+}
+
+.meta {
+  padding: 14px 18px;
+  display: flex;
+}
+
+.title_row {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+}
+
+.name {
+  font-size: 20px;
+  font-weight: 700;
+  color: #111;
+}
+.distance {
+  font-size: 15px;
+  color: #2b7de9;
+  text-decoration: none;
+}
+
+/* 하트 버튼 – 꽉찬/라인 두 상태 */
+.like_btn {
+  border: none;
+  background: transparent;
+  padding: 0;
+  width: 22px;
+  height: 20px;
+  margin-left: 135px;
+}
+.like_btn img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
