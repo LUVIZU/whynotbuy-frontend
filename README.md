@@ -46,8 +46,8 @@ pages
   	like_store.html -> 찜 - 가게별
   	like_menu.html -> 찜 - 메뉴별
   	purchase_log.html -> 구매내역
-        write_review.html -> 리뷰 작성
-        customer_mypage.html -> 고객 마이페이지
+    write_review.html -> 리뷰 작성
+    customer_mypage.html -> 고객 마이페이지
   
  	store_enroll.html -> 가게 등록
  	menu_off.html -> 메뉴관리 - 주문 비활성화
