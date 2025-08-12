@@ -1,0 +1,286 @@
+
+/* -------header------ */
+
+.app_frame { position: relative; overflow: hidden; }
+
+:root { --nav-h: 112px; }
+
+.top_bar {
+    height: 118px;
+    background-color: #a82d2f;
+    position: relative;
+    z-index: 1;
+    flex: 0 0 auto;
+  }
+  
+  .top_bar_inner {
+    height: 100%;
+    display: flex;
+    align-items: center;
+    margin-top: 20px;
+    padding: 0 20px;
+    gap: 18px;
+    color: white;
+    font-size: 19px;
+    font-weight: 500;
+  }
+  
+  .top_title {
+    padding: 0 0 2px 0;
+  }
+  
+  .back_icon {
+    width: 19px;
+    cursor: pointer;
+  }
+  
+  /* -------main------ */
+  
+  .content::-webkit-scrollbar { width: 0px; }
+  
+  .content {
+    /* 가운데만 스크롤 */
+    padding: 0px;
+    scrollbar-gutter: stable; 
+    flex: 1 1 auto;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch; /* iOS 부드러운 스크롤 */
+    overscroll-behavior: contain; /* 상/하단 끌림 방지 */
+  }
+
+  .line1 {
+    height: 8px;
+    background: #FFFBEF;
+  }
+  
+  .store_info_inner {
+    display: flex;
+    padding: 13px 118px 12px 24px;
+    flex-direction: column;
+    justify-content: center;
+    align-items: flex-start;
+    gap: 0; /* 공통 gap 제거 */
+    align-self: stretch;
+  }
+  
+  .info_title {
+    display: inline-flex;          /* 텍스트와 아이콘을 한 줄에서 */
+    align-items: center;           /* 세로 가운데 */
+    gap: 3px;                      /* 텍스트-아이콘 간격 */
+    color: #000;
+    font-size: 16px;
+    font-weight: 600;              /* 제목이라면 굵게 추천 */
+    line-height: 1.2;
+  }
+  
+  .info_logo {
+    padding: 0 0 4px 0;
+    transform: translateY(1.5px); 
+  }
+  
+  .business_hours {
+    color: #525252;
+    font-family: Pretendard;
+    font-size: 12px;
+    font-style: normal;
+    font-weight: 400;
+    line-height: normal;
+    margin-top: 8px;
+  }
+  
+  .location_label {
+    display: inline-flex;
+    align-items: center;
+    gap: 0px;
+    color: #525252;
+    font-family: Pretendard;
+    font-size: 12px;
+    font-weight: 600;
+    line-height: 1.2;
+    margin-top: 4px;
+  }
+  
+  .address {
+    color: #525252;
+    font-family: Pretendard;
+    font-size: 12px;
+    font-style: normal;
+    font-weight: 400;
+    line-height: normal;
+    margin-top: 4px;
+  }
+  
+  .line2 {
+    width: 390px;
+    height: 4px;
+    background: #FFFBEF;
+  }
+
+  .review_summary{
+    height: 94px;                   
+    padding: 16px 24px 17px;        
+    background:#fff1c5;
+    border-top: 1px solid #f3e3b0;
+    position: relative;
+    box-sizing: border-box;
+    overflow: hidden;
+  }
+  .review_title{
+    margin-bottom: 9px;
+    font-weight: 600;
+    font-size: 16px;
+  }
+
+  .review_summary_logo{
+    width:16px; height:16px; object-fit:contain;
+    transform: translateY(1.5px); 
+  }
+
+  .review_text{
+    font-weight:400;
+    margin-top: 8px;
+    color:#525252;
+    font-size: 12px;
+  }
+  
+  .review_more{
+    position: absolute; right:24px; bottom:12px;
+    text-decoration:none;
+    font-family: Pretendard;
+    font-weight:600; font-size:12px; color:#525252;
+  }
+
+  .arrow_right_logo{
+    width:14px; height:14px; object-fit:contain;
+    transform: translateY(2.6px);  
+    margin-left:-2.5px;
+  }
+
+  /* 메뉴 패널 */
+  .menu_panel{
+    background:#fff; border-radius:24px 24px 0 0;
+    padding:12px 0 64px; margin-top:0px;
+    box-shadow: 0 0 8px 0 rgba(0, 0, 0, 0.10);
+  }
+  
+  .menu_heading{
+    text-align:center; font-size:20px; font-weight:600; margin:12px 0 33px;
+  }
+  .menu_list{ 
+    list-style:none; 
+    margin:0; 
+    padding:0 16px; 
+  } /* 네비 안가리도록 여유 */
+  
+  .menu_item{
+    height: 108px;
+    display:flex; justify-content:space-between; align-items:flex-start; gap:12px;
+    margin: 20px 0; border-bottom:1px solid #f0f0f0;
+  }
+
+  .menu_item:last-child { 
+    border-bottom:none;
+  }
+
+  .menu_meta{ flex:1; min-width:0; margin-top: -16px;}
+
+  .menu_name{ font-size:16px; font-weight:600; color:#111; margin-top: 20px; margin-bottom:20px; margin-left: 24px; }
+
+  .menu_price_row{ display:flex; align-items:baseline; gap:4px; margin-left: 24px;}
+
+  .price_strike{ color:#b8b8b8; text-decoration:line-through; font-size: 12px; margin-bottom: 8px; margin-left: 24px;}
+
+  .price_sale_rate{ color:#c83b37; font-weight:600; font-size: 12px; margin-bottom: 16px; }
+
+  .price_sale{ font-weight:600; font-size: 16px; margin-bottom: 16px;}
+
+  .menu_thumb_wrap{ position:relative; width:96px; height:96px; flex:0 0 96px; border-radius:12px; overflow:hidden; margin-right: 16px;}
+
+  .menu_thumb{ width:100%; height:100%; object-fit:cover; display:block; }
+
+  .menu_like{ position:absolute; right:6px; top:6px; width:24px; height:24px; border:0; background:transparent; padding:0; cursor:pointer; }
+  .menu_like[aria-pressed="true"] .like_icon { content:url("../images/like_red.svg"); }
+
+  .menu_empty{ padding:24px 0; text-align:center; color:#999; }
+  
+  
+/* 플로팅 카트 (네비 높이 변수 사용) */
+
+.floating_cart{
+  position: fixed;
+  display: inline-flex; 
+  height: 56px;
+  padding: 19px 24px 18px 24px;
+  justify-content: center;
+  align-items: flex-start;
+  gap: 8px;
+  flex-shrink: 0;
+  border-radius: 20px;
+  border: 1px solid var(--sub-color2, #EFBEB5);
+  background: #A82D2F;
+  box-shadow: 2px 2px 10px 0 rgba(0, 0, 0, 0.40);
+  position:absolute;
+  left:50%;
+  bottom: calc(var(--nav-h) + 32px);
+  transform: translateX(-50%);
+  align-items:center; 
+  gap:14px;
+  height:56px; 
+  width: 340px;
+  color:#fff;
+  cursor:pointer; z-index:5;
+}
+
+/* hidden 속성엔 무조건 숨기기 */
+[hidden] { display: none !important; }
+/* 또는 더 좁게 */
+.floating_cart[hidden] { display: none !important; }
+
+.cart_count {
+  display: flex;
+  padding: 3px 6px;
+  justify-content: center;
+  align-items: center;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 500;
+  color:#A82D2F;
+  background: #FFF;
+}
+
+.cart_label{ 
+  color: #FFF;
+
+  /* 프리텐다드 세미볼드 16pt */
+  font-family: Roboto;
+  font-size: 16px;
+  font-style: normal;
+  font-weight: 600;
+  line-height: normal;
+  }
+.cart_price_wrap{ display:flex; align-items:baseline; gap:6px; margin-left:10px; }
+
+.cart_price_old{ 
+  color: #FFF;
+  font-family: "GamtanRoad Dotum";
+  font-size: 12px;
+  font-style: normal;
+  font-weight: 600;
+  line-height: normal;
+  text-decoration-line: line-through;
+  text-decoration-thickness: 0.75px;
+  }
+
+.cart_price_now{ 
+  color: #00F3DA;
+
+  /* 감탄돋움 볼드 16pt */
+  font-family: "GamtanRoad Dotum";
+  font-size: 16px;
+  font-style: normal;
+  font-weight: 600;
+  line-height: normal;
+  }
+  
+  /* -------nav------ */
+  
