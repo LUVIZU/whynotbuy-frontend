@@ -9,15 +9,80 @@
             rel="stylesheet"
     />
     <link rel="stylesheet" href="../css/style.css" />
+    <link rel="stylesheet" href="../css/store_home.css">
 </head>
 <body>
     <div class="app_frame">
-        <header>
-
-        </header>
+        <div class="top_bar">
+            <div class="top_bar_inner">
+            <a href="home_store.html">
+                <img
+                src="../images/arrow_left.svg"
+                alt="뒤로가기"
+                class="back_icon"
+                id="back_arrow"
+                />
+            </a>
+            <span class="top_title">Lanespan Pizza & Pub</span>
+            </div>
+        </div>
         <main class="content">
+            <div class="line1"></div>
+            <div class="store_info">
+                <div class="store_info_inner">
+                    <p class="info_title">가게 정보 <img class="info_logo" src="../images/info.svg" alt="정보"></p>
+                    <p class="business_hours">영업시간 09:30~22:00</p>   
+                    <p class="location_label">위치 <img class="copy_logo" src="../images/group.svg" alt="위치복사"></p>
+                    <p class="address">서울 관악구 신림로 59길 14 (2층 209호, 올레순대)</p>
+                </div>
+            </div>
+            <div class="line2"></div>
+            <div class="review_summary">
+                <span class="review_title">리뷰 요약</span>
+                <img class="review_summary_logo" src="../images/ai_black.svg" alt="">
+                
+                <p class="review_text">
+                    버섯 피자가 유명하고, 피자를 다시 구워주셔서 따뜻하게 먹을 수 있다는…
+                </p>
+                
+                <a class="review_more" href="#">
+                    리뷰 자세히 보기
+                    <img class="arrow_right_logo" src="../images/arrow_right.svg" alt="">
+                </a>
+            </div>
+            <section class="menu_panel">
+                <h2 class="menu_heading">메뉴</h2>
+                <ul class="menu_list" id="menuList" aria-live="polite"></ul>
 
+                <template id="menuItemTpl">
+                    <li class="menu_item">
+                      <div class="menu_meta">
+                        <div class="menu_name"></div>
+                        <!-- ↓ 정가(취소선)는 한 줄 단독 -->
+                        <div class="price_strike"></div>
+                        <div class="menu_price_row">
+                          <span class="price_sale_rate"></span>
+                          <span class="price_sale"></span>
+                        </div>
+                      </div>
+                      <div class="menu_thumb_wrap">
+                        <img class="menu_thumb" alt="">
+                        <button class="menu_like" aria-label="찜" aria-pressed="false">
+                            <img class="like_icon" src="../images/like.svg" alt="">
+                        </button>
+                      </div>
+                    </li>
+                  </template>
+            </section>
         </main>
+        <button class="floating_cart" id="floatingCart" hidden>
+            <span class="cart_count">0</span>
+            <span class="cart_label">장바구니 보기</span>
+            <span class="cart_price_wrap">
+              <s class="cart_price_old" id="cartOld"></s>
+              <span class="cart_price_now" id="cartNow"></span>
+            </span>
+          </button>
         <nav>
             <div class="bottom_nav">
                 <!-- 페이지 경로 유의 / 상대 경로 및 절대 경로 인지하고 유의하기 / 아이콘 색상 유의 -->
@@ -44,6 +109,6 @@
             </div>
         </nav>
     </div>
-
+    <script src="../js/store_home.js"></script>
 </body>
 </html>
