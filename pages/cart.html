@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <title>Cart</title>
+  <!-- Pretendard -->
+  <link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css" rel="stylesheet" />
+  <!-- 공통/페이지 CSS -->
+  <link rel="stylesheet" href="../css/style.css" />
+  <link rel="stylesheet" href="../css/cart.css" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+</head>
+<body>
+  <div class="app_frame">
+    <!-- 상단 바 -->
+    <div class="top_bar">
+      <p class="bar_content">장바구니</p>
+    </div>
+
+    <main class="content">
+      <div class="line1"></div>
+
+      <div class="store_name_box">
+        <p class="store_name">Lanespan Pizza & Pub</p>
+      </div>
+
+      <!-- 템플릿: 화면에는 보이지 않음. JS가 복제해서 .add_menu 앞에 끼워 넣음 -->
+      <template class="cart_list_template">
+        <div class="menu_item">
+          <div class="menu_item1">
+            <div class="menu_item1_meta1">
+              <div class="menu_delete">
+                <img src="../images/delete.svg" alt="메뉴 삭제" />
+              </div>
+              <div class="menu_title">버섯 피자</div>
+            </div>
+            <div class="menu_img">
+              <img
+                src="https://i.namu.wiki/i/umI-heVYVS9miQNqXM13FRUOHHL4l1nzsZgN9XRLFG7nI_7Dyf-Myr6HmiWf9Qd7SAZQz3WYSQHPXXtGAwLTag.webp"
+                alt="메뉴 사진"
+              />
+            </div>
+            <div class="regular_price">15,000 원</div>
+          </div>
+
+          <div class="menu_item2">
+            <div class="menu_item2_meta1">
+              <div class="sale_percent">14%</div>
+              <div class="sale_price">13,000 원</div>
+            </div>
+
+            <div class="quantity_bar">
+              <div class="quantity_bar_left" aria-live="polite">
+                <span class="quantity_value">1 개</span>
+              </div>
+              <div class="quantity_bar_right" role="group" aria-label="수량 조절">
+                <button class="quantity_button1" type="button" aria-label="수량 감소">-</button>
+                <span class="quantity_divider" aria-hidden="true"></span>
+                <button class="quantity_button2" type="button" aria-label="수량 증가">+</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </template>
+
+      <!-- 아이템들은 JS가 여기 .add_menu 바로 '앞'에 계속 끼워 넣음 -->
+      <div class="add_menu">
+        <p class="add_menu_text">+ 다른 메뉴 더 담기</p>
+      </div>
+
+      <!-- 합계 영역 -->
+      <div class="price">
+        <p class="price_regular">30,000 원</p>
+        <p class="price_sale">26,000 원</p>
+      </div>
+
+      <div class="order_button">
+        <p class="order_button_text">총 4000원 할인받고 방문 예약하기</p>
+      </div>
+    </main>
+
+    <!-- 하단 네비 -->
+    <nav>
+      <div class="bottom_nav">
+        <div class="bottom_nav_item">
+          <a href="../pages/home_store.html">
+            <img src="../images/home.svg" alt="홈" />
+          </a>
+        </div>
+        <div class="bottom_nav_item">
+          <a href="../pages/like_store.html">
+            <img src="../images/heart.svg" alt="찜" />
+          </a>
+        </div>
+        <div class="bottom_nav_item">
+          <a href="../pages/purchase_log.html">
+            <img src="../images/shoplist.svg" alt="구매내역" />
+          </a>
+        </div>
+        <div class="bottom_nav_item">
+          <a href="../pages/customer_mypage.html">
+            <img src="../images/my.svg" alt="MY" />
+          </a>
+        </div>
+      </div>
+    </nav>
+  </div>
+
+  <!-- 페이지 스크립트 -->
+  <script src="../js/cart.js"></script>
+</body>
+</html>
