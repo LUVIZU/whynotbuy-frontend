@@ -58,6 +58,15 @@
   
     /* 고정된 하단 네비 + 버튼이 가리지 않도록 패딩 확보 */
     padding-bottom: calc(var(--bottom-nav-h) + var(--order-gap) + var(--btn-h) + env(safe-area-inset-bottom));
+    /* 스크롤바 숨김 (브라우저별) */
+    -ms-overflow-style: none;  /* IE 10+ / 오래된 Edge */
+    scrollbar-width: none;     /* Firefox */
+}
+
+.content::-webkit-scrollbar { /* Chrome/Safari */
+  width: 0;
+  height: 0;
+  display: none;
 }
 
 .line1 {

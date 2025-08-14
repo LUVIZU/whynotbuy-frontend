@@ -46,10 +46,20 @@
   flex: 1 1 auto;
   overflow-y: auto;
 
+  /* 스크롤바 숨김 (브라우저별) */
+  -ms-overflow-style: none;  /* IE 10+ / 오래된 Edge */
+  scrollbar-width: none;     /* Firefox */
+
   /* 아래에 네비바 + 주문버튼(56px) + 여유 */
   padding-bottom: calc(
     var(--bottom-nav-h) + 56px + var(--order-gap) + 24px + env(safe-area-inset-bottom)
   );
+}
+
+.content::-webkit-scrollbar { /* Chrome/Safari */
+  width: 0;
+  height: 0;
+  display: none;
 }
 
 /* ===== 분리 라인 / 가게명 ===== */
