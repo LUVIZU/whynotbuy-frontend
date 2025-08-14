@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <title>Reservation</title>
+  <!-- Pretendard -->
+  <link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css" rel="stylesheet" />
+  <!-- 공통/페이지 CSS -->
+  <link rel="stylesheet" href="../css/style.css" />
+  <link rel="stylesheet" href="../css/reservation.css" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+</head>
+<body>
+  <div class="app_frame">
+    <!-- 상단 바 -->
+    <div class="top_bar">
+      <p class="bar_content">픽업 예약</p>
+    </div>
+    <main class="content">
+        <div class="reservation_ok">
+            <p>픽업 예약이 완료되었습니다.</p>
+        </div>
+    
+        <div class="reservation_container">
+            <div class="reservation_store">
+                <p class="store_name">Lanespan Pizza & Pub</p>
+            </div>
+            <div class="reservation_meta">
+                <p class="reservation_num_container">
+                    주문번호 <span class="reservation_num">htm3k</span>
+                </p>
+            </div>
+            <p class="reservation_time">8:00 PM 까지 방문해주세요!</p>
+            <div class="reservation_img"><img src="../images/reservation.svg" alt="예약 완료"></div>
+        </div>
+    
+        <div class="pickup_button">
+            <p class="pickup_button_text">구매내역으로 이동</p>
+          </div>
+      
+    </main>
+
+    <!-- 하단 네비 -->
+    <nav>
+      <div class="bottom_nav">
+        <div class="bottom_nav_item">
+          <a href="../pages/home_store.html">
+            <img src="../images/home.svg" alt="홈" />
+          </a>
+        </div>
+        <div class="bottom_nav_item">
+          <a href="../pages/like_store.html">
+            <img src="../images/heart.svg" alt="찜" />
+          </a>
+        </div>
+        <div class="bottom_nav_item">
+          <a href="../pages/purchase_log.html">
+            <img src="../images/shoplist.svg" alt="구매내역" />
+          </a>
+        </div>
+        <div class="bottom_nav_item">
+          <a href="../pages/customer_mypage.html">
+            <img src="../images/my.svg" alt="MY" />
+          </a>
+        </div>
+      </div>
+    </nav>
+  </div>
+
+  <!-- 페이지 스크립트 -->
+  <script src="../js/reservation.js"></script>
+</body>
+</html>
