@@ -101,8 +101,8 @@
 }
 
 .pickup_button {
-    margin-left: 36px;
-    margin-top: 171px;
+    margin-left: 35px;
+    margin-top: 169px;
   
     /* 모양은 기존 그대로, 위치를 마진으로 잡던 코드는 제거 */
     width: 320px;
@@ -117,8 +117,8 @@
     background: #962022;
   
     cursor: pointer;
-    margin-left: 36px;
-    margin-top: 171px;
+    margin-left: 35px;
+    margin-top: 169px;
     /* 모양은 기존 그대로, 위치를 마진으로 잡던 코드는 제거 */
     width: 320px;
     height: 56px;

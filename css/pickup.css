@@ -235,7 +235,7 @@
 .pickup_button {
     position: fixed; /* <- 핵심 */
     left: 50%;
-    transform: translateX(-50%);
+    transform: translateX(-50%) translateY(-57px);
     bottom: calc(var(--bottom-nav-h) + var(--order-gap) + env(safe-area-inset-bottom));
     z-index: 50;
   
@@ -253,7 +253,7 @@
     background: #962022;
     position: fixed; /* <- 핵심 */
     left: 50%;
-    transform: translateX(-50%);
+    transform: translateX(-50%) translateY(-57px);
     bottom: calc(var(--bottom-nav-h) + var(--order-gap) + env(safe-area-inset-bottom));
     z-index: 50;
   
@@ -293,4 +293,3 @@
   
   .bottom_nav { box-shadow: none !important; }
 
-  
