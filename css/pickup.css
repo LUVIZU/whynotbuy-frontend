@@ -1,0 +1,291 @@
+/* ===== 전역 변수: 네비바/버튼 간격 ===== */
+:root{
+    --bottom-nav-h: 112px;  /* 네비 높이 (네 디자인 기준 값) */
+    --btn-h: 56px;          /* 픽업 버튼 높이 */
+    --order-gap: 32px;      /* 네비와 버튼 사이 간격 */
+  }
+  
+/* 앱 전체는 세로 플렉스, 스크롤은 .content가 담당 */
+.app_frame{
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    overflow: hidden; /* 고정 요소들이 밖으로 삐지지 않게 */
+  }
+  
+    .top_bar {
+      flex: 0 0 auto;             /* 절대 줄어들지 않게 */
+      height: 118px;               /* 디자인 값으로 고정 (48~64 중 택1) */
+      align-items: center;
+      justify-content: center;
+      background: #A82D2F;        /* 너가 쓰는 색으로 */
+      color: #fff;
+      border-bottom: 1px solid rgba(0,0,0,.06);
+      position: sticky;           /* 스크롤해도 상단 고정 원하면 유지, 필요없으면 삭제 */
+      top: 0;
+      z-index: 40;
+      padding-top: env(safe-area-inset-top);
+    }
+
+.back_icon {
+    transform: translateX(20px) translateY(74px);
+}
+
+.bar_content {
+    color: white;
+    text-align: center;
+
+
+    /* 프리텐다드 세미볼드 16pt */
+    font-family: Roboto;
+    font-size: 16px;
+    font-style: normal;
+    font-weight: 600;
+    line-height: normal;
+    padding-top: 54px;
+}
+
+
+.content {
+    padding: 0;
+    margin: 0;
+    flex: 1 1 auto;
+    min-height: 0;                 /* flex 자식이 스크롤 되려면 필수 */
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
+  
+    /* 고정된 하단 네비 + 버튼이 가리지 않도록 패딩 확보 */
+    padding-bottom: calc(var(--bottom-nav-h) + var(--order-gap) + var(--btn-h) + env(safe-area-inset-bottom));
+}
+
+.line1 {
+    height: 8px;
+    background: #FFFBEF;
+  }    
+
+.order_content {
+    height: 40px;
+}
+
+.order_content_text {
+    color: #000;
+    font-size: 12px;
+    font-style: normal;
+    font-weight: 600;
+    line-height: normal;    
+    margin: 0 auto auto 24px;
+    padding-top: 13px;
+}
+
+.order_container {
+    background: white;
+    display: flex;
+}
+
+.order_meta {
+    display:flex;
+    flex-direction: column;
+}
+
+.store_name {
+    color: #000;
+    font-size: 16px;
+    font-style: normal;
+    font-weight: 500;
+    line-height: normal;    
+    margin: 24px auto 0px 24px;
+}
+
+.order_list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin: 8px auto 53px 24px;
+}
+
+.order_item {
+    display: flex;
+    align-items: center;
+    font-size: 14px;
+    font-weight: 4500;
+    line-height: 17px;
+}
+
+.order_item_count {
+    color: #777;
+    font-size: 14px;
+    margin-left: 12px;
+}
+
+.price_box {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin: auto 24px 16px auto;
+    text-align: right;
+}
+
+.regular_price {
+    color: #777;
+    text-align: right;
+    font-family: "GamtanRoad Dotum";
+    font-size: 14px;
+    font-style: normal;
+    font-weight: 400;
+    line-height: normal;
+    text-decoration-line: line-through;
+}
+
+.sale_price {
+    color: #007AFF;
+    text-align: right;
+    font-family: "GamtanRoad Dotum";
+    font-size: 16px;
+    font-style: normal;
+    font-weight: 400;
+    line-height: normal;
+}
+
+.pickup_time_text {
+    color: #000;
+    font-size: 16px;
+    font-style: normal;
+    font-weight: 500;
+    line-height: normal;    
+    margin: 28px auto 28px 24px;
+}
+
+/* 컨테이너 (카드 느낌) */
+.timepicker {
+    position: relative;
+    width: 233px;
+    height: 175px;                      /* 아이템 5줄 보이게 */
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;     /* 시 / 분 / AMPM */
+    gap: 8px;
+    padding: 24px 18px;
+    border-radius: 28px;
+    background: #fff;
+    box-shadow: 0 18px 40px rgba(0,0,0,0.12);
+    overflow: hidden;
+    margin-left: 79px;
+    margin-bottom: 88px;
+  }
+  
+  /* 각 휠 */
+  .wheel {
+    position: relative;
+    overflow-y: auto;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    scroll-snap-type: y mandatory;
+    scroll-snap-stop: always;
+    overscroll-behavior: contain;
+  
+    -webkit-overflow-scrolling: touch;
+    touch-action: pan-y;
+  
+    /* 중앙선 정렬용 '진짜' 패딩 (JS가 --pad를 넣어줌) */
+    padding-top: var(--pad, 80px);
+    padding-bottom: var(--pad, 80px);
+    scroll-padding-top: var(--pad, 80px);
+    scroll-padding-bottom: var(--pad, 80px);
+  }
+  .wheel::-webkit-scrollbar { display: none; }
+  
+  .item {
+    height: 40px;
+    line-height: 40px;
+    text-align: center;
+    font-size: 22px;
+    color: #9aa0a6;
+    scroll-snap-align: center;
+    user-select: none;
+    cursor: pointer;                        /* 탭 가능 느낌 */
+  }
+  
+  /* 중앙 선택 행 하이라이트 */
+  .picker-highlight {
+    pointer-events: none;
+    position: absolute;
+    left: 18px; right: 18px;
+    top: 50%;
+    height: 40px;
+    margin-top: -5px;
+    border-radius: 12px;
+    background: rgba(0,0,0,0.06);
+  }
+  
+  /* 위/아래 페이드 */
+  .timepicker::before,
+  .timepicker::after {
+    content: "";
+    position: absolute; left: 0; right: 0;
+    height: 32px; pointer-events: none;
+  }
+  .timepicker::before { top: 0;    background: linear-gradient(#fff, rgba(255,255,255,0)); }
+  .timepicker::after  { bottom: 0; background: linear-gradient(rgba(255,255,255,0), #fff); }
+  
+  /* 선택된 행(중앙) 강조 */
+  .item.active { color: #111; font-weight: 700; }
+
+.pickup_button {
+    position: fixed; /* <- 핵심 */
+    left: 50%;
+    transform: translateX(-50%);
+    bottom: calc(var(--bottom-nav-h) + var(--order-gap) + env(safe-area-inset-bottom));
+    z-index: 50;
+  
+    /* 모양은 기존 그대로, 위치를 마진으로 잡던 코드는 제거 */
+    width: 320px;
+    height: 56px;
+    border-radius: 20px;
+    border: 1px solid var(--sub-color2, #EFBEB5);
+    background: #A82D2F;
+    box-shadow: 2px 2px 10px 0 rgba(0, 0, 0, 0.40);
+    margin: 0; /* ← 중요: 기존 margin-top/left/bottom 제거 */
+  }
+
+  .pickup_button:hover {
+    background: #962022;
+    position: fixed; /* <- 핵심 */
+    left: 50%;
+    transform: translateX(-50%);
+    bottom: calc(var(--bottom-nav-h) + var(--order-gap) + env(safe-area-inset-bottom));
+    z-index: 50;
+  
+    /* 모양은 기존 그대로, 위치를 마진으로 잡던 코드는 제거 */
+    cursor: pointer;
+    width: 320px;
+    height: 56px;
+    border-radius: 20px;
+    border: 1px solid var(--sub-color2, #EFBEB5);
+    box-shadow: 2px 2px 10px 0 rgba(0, 0, 0, 0.40);
+    margin: 0; /* ← 중요: 기존 margin-top/left/bottom 제거 */
+}
+
+.pickup_button_text {
+    color: #FFF;
+    font-family: Roboto;
+    font-size: 16px;
+    font-style: normal;
+    font-weight: 600;
+    line-height: normal;
+    padding: 19px 104px;
+  }
+
+  /* 하단 네비를 ‘진짜’ 고정 */
+.bottom_nav{
+    position: fixed;
+    left: 50%;
+    transform: translateX(-50%);
+    bottom: 0;
+    height: var(--bottom-nav-h);
+    width: 100%;
+    max-width: 390px;     /* 프레임 폭 쓰면 맞춰줘 (없으면 지워도 OK) */
+    z-index: 45;          /* 버튼보다 아래, 컨텐츠보다 위 */
+    /* 배경/보더 등 네 기존 스타일 유지 */
+  }
+  
