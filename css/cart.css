@@ -5,13 +5,7 @@
 }
 
 /* 앱 프레임을 절대배치 기준으로 */
-.app_frame {
-    position: relative;
-    display: flex;
-    flex-direction: column;
-    height: 100vh;              /* 또는 844px(디자인 고정) 사용 중이면 그 값 */
-    overflow: hidden;           /* 내부 스크롤은 .content가 담당 */
-  }
+
 
   .top_bar {
     flex: 0 0 auto;             /* 절대 줄어들지 않게 */

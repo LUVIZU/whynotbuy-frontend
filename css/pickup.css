@@ -5,14 +5,6 @@
     --order-gap: 32px;      /* 네비와 버튼 사이 간격 */
   }
   
-/* 앱 전체는 세로 플렉스, 스크롤은 .content가 담당 */
-.app_frame{
-    position: relative;
-    display: flex;
-    flex-direction: column;
-    height: 100vh;
-    overflow: hidden; /* 고정 요소들이 밖으로 삐지지 않게 */
-  }
   
     .top_bar {
       flex: 0 0 auto;             /* 절대 줄어들지 않게 */
@@ -289,12 +281,16 @@
 .bottom_nav{
     position: fixed;
     left: 50%;
-    transform: translateX(-50%);
+    transform: translateX(-50%) translateY(-51%);
     bottom: 0;
-    height: var(--bottom-nav-h);
+    height: 112px;
     width: 100%;
     max-width: 390px;     /* 프레임 폭 쓰면 맞춰줘 (없으면 지워도 OK) */
     z-index: 45;          /* 버튼보다 아래, 컨텐츠보다 위 */
     /* 배경/보더 등 네 기존 스타일 유지 */
+    border-radius: 0 0 20px 20px;
   }
+  
+  .bottom_nav { box-shadow: none !important; }
+
   
