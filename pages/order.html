@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>Order</title>
+    <!-- 헤드에 폰트(프리텐다드) 링크 필수 -->
+    <link
+            href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css"
+            rel="stylesheet"
+    />
+    <link rel="stylesheet" href="../css/style.css" />
+    <link rel="stylesheet" href="../css/order.css">
+</head>
+<body>
+    <div class="app_frame">
+        <div class="top_bar">
+            <div class="top_bar_inner">
+            <a href="home_store.html">
+                <img
+                src="../images/arrow_left.svg"
+                alt="뒤로가기"
+                class="back_icon"
+                id="back_arrow"
+                />
+            </a>
+            <span class="top_title">Lanespan Pizza & Pub</span>
+            </div>
+        </div>
+        <main class="content">
+            <div class="line1"></div>
+            <div class="menu_info">
+                <div class="menu_row">
+                  <div class="menu_meta">
+                    <div class="menu_title">버섯 피자</div>
+                    <div class="price_strike">15,000 원</div>
+                    <div class="menu_sale_row">
+                      <span class="sale_rate">14%</span>
+                      <span class="sale_price">13,000 원</span>
+                    </div>
+                  </div>
+              
+                  <figure class="menu_img">
+                    <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ2Wj_esmUUNetFkmoR5hesmKTpU5BPvhhW9Q&s" alt="버섯 피자">
+                  </figure>
+                </div>
+              
+                <p class="menu_desc">
+                  Garlic, olive oil base, mozarella, cremini mushrooms, ricotta, thyme,
+                  white truffle oil. Add arugula for an extra charge
+                </p>
+              </div>
+            <div class="line2"></div>
+            <div class="quantity_bar">
+                <div class="quantity_bar_left" aria-live="polite">
+                    <span class="quantity_value">1 개</span>
+                </div>
+                <div class="quantity_bar_right">
+                    <button class="quantity_button1">-</button>
+                    <span class="quantity_divider"></span>
+                    <button class="quantity_button2">+</button>
+                </div>
+            </div>
+            <button class="cart_button">
+                <div class="cart_button_element">
+                    <p class="cart_button_price">13,000원</p>
+                    <p class="cart_button_content">장바구니에 담기</p>
+                </div>
+            </button>
+        </main>
+        <nav>
+            <div class="bottom_nav">
+                <!-- 페이지 경로 유의 / 상대 경로 및 절대 경로 인지하고 유의하기 / 아이콘 색상 유의 -->
+                <div class="bottom_nav_item">
+                    <a href="../pages/home_store.html">
+                        <img src="../images/home.svg" alt="홈" />
+                    </a>
+                </div>
+                <div class="bottom_nav_item">
+                    <a href="../pages/like_store.html">
+                        <img src="../images/heart.svg" alt="찜" />
+                    </a>
+                </div>
+                <div class="bottom_nav_item">
+                    <a href="../pages/purchase_log.html">
+                        <img src="../images/shoplist.svg" alt="구매내역" />
+                    </a>
+                </div>
+                <div class="bottom_nav_item">
+                    <a href="../pages/customer_mypage.html">
+                        <img src="../images/my.svg" alt="MY" />
+                    </a>
+                </div>
+            </div>
+        </nav>
+    </div>
+    <script src="../js/order.js"></script>
+</body>
+</html>

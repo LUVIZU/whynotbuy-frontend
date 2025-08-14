@@ -1,0 +1,142 @@
+
+.bar_content {
+    color: white;
+    text-align: center;
+
+
+    /* 프리텐다드 세미볼드 16pt */
+    font-family: Roboto;
+    font-size: 16px;
+    font-style: normal;
+    font-weight: 600;
+    line-height: normal;
+    padding-top: 75px;
+}
+
+.content {
+    margin: 0;
+    padding: 0;
+}
+
+.reservation_ok {
+    height: 64px;
+    background: white;
+    border-bottom: 1px solid #d9d9d9;
+}
+
+.reservation_ok p{
+    color: #000;
+    font-size: 16px;
+    font-style: normal;
+    font-weight: 500;
+    line-height: normal;
+    padding-top: 24px;
+    margin-left: 103px;
+}
+
+.reservation_container {
+    border-radius: 0 0 30px 30px;
+    background: white;
+    box-shadow: 0 0 8px 0 rgba(0, 0, 0, 0.10);
+    width: 390px;
+    height: 291px;
+    flex-shrink: 0;
+}
+
+.reservation_store {
+    height: 80px;
+}
+
+.store_name {
+    padding-top: 40px;
+    padding-left: 24px;
+    color: #000;
+    font-size: 16px;
+    font-style: normal;
+    font-weight: 500;
+    line-height: normal;
+}
+
+.reservation_meta {
+    display: flex;
+    gap: 8px;
+    padding-bottom: 16px;
+    padding-left: 24px;
+}
+
+.reservation_num_container {
+    color: #007AFF;
+    font-size: 20px;
+    font-style: normal;
+    font-weight: 500;
+    line-height: normal;    
+}
+
+.reservation_num{
+    color: #007AFF;
+    font-size: 20px;
+    font-style: normal;
+    font-weight: 500;
+    line-height: 24px; /* 120% */
+    text-decoration-line: underline;
+    text-decoration-style: solid;
+    text-decoration-skip-ink: none;
+    text-decoration-thickness: auto;
+    text-underline-offset: auto;
+    text-underline-position: from-font;
+}
+
+.reservation_time {
+    color: #000;
+    font-size: 20px;
+    font-style: normal;
+    font-weight: 500;
+    line-height: normal;
+    margin-left: 24px;
+}
+
+.reservation_img {
+    margin-top: 58px;
+    margin-left: 220px;
+}
+
+.pickup_button {
+    margin-left: 35px;
+    margin-top: 169px;
+  
+    /* 모양은 기존 그대로, 위치를 마진으로 잡던 코드는 제거 */
+    width: 320px;
+    height: 56px;
+    border-radius: 20px;
+    border: 1px solid var(--sub-color2, #EFBEB5);
+    background: #A82D2F;
+    box-shadow: 2px 2px 10px 0 rgba(0, 0, 0, 0.40);
+  }
+
+  .pickup_button:hover {
+    background: #962022;
+  
+    cursor: pointer;
+    margin-left: 35px;
+    margin-top: 169px;
+    /* 모양은 기존 그대로, 위치를 마진으로 잡던 코드는 제거 */
+    width: 320px;
+    height: 56px;
+    border-radius: 20px;
+    border: 1px solid var(--sub-color2, #EFBEB5);
+    box-shadow: 2px 2px 10px 0 rgba(0, 0, 0, 0.40);
+}
+
+.pickup_button_text {
+    color: #FFF;
+
+    /* 프리텐다드 세미볼드 16pt */
+    font-family: Roboto;
+    font-size: 16px;
+    font-style: normal;
+    font-weight: 600;
+    line-height: normal;
+    padding: 19px 98.5px;
+  }
+
+  
