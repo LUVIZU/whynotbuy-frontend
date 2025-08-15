@@ -83,8 +83,7 @@
   width: 320px;
   height: 70px;
   position: absolute;
-  bottom: 200px;
   align-items: center;
   left: 35px;
-  top: 355px;
+  margin-top: 10px;
 }

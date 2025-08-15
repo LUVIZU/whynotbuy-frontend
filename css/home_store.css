@@ -154,6 +154,7 @@ a {
 }
 
 .near_btn {
+  width: 65px;
   background: #fff;
   color: #a82d2f;
   border: 1.5px solid #a82d2f;
@@ -184,6 +185,11 @@ a {
   border-radius: 16px;
   overflow: hidden;
   box-shadow: 0 6px 18px rgba(0, 0, 0, 0.12);
+}
+.store_card.empty_card .empty_msg {
+  font-size: 16px; /* 원하는 크기 */
+  font-weight: 600;
+  color: #666;
 }
 
 .badge {
