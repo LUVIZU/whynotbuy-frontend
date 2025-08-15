@@ -159,6 +159,8 @@ a {
 }
 
 .near_btn {
+  width: 65px;
+
   background: #fff;
   color: #a82d2f;
   border: 1.5px solid #a82d2f;
@@ -192,6 +194,11 @@ a {
   overflow: hidden;
   box-shadow: 0 6px 18px rgba(0, 0, 0, 0.12);
   padding: 16px;
+}
+.menu_card.empty_card .empty_msg {
+  font-size: 16px;
+  font-weight: 600;
+  color: #666;
 }
 
 /* 상단 레이아웃 */
