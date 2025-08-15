@@ -1,0 +1,96 @@
+body > main {
+  background: #eeeeee;
+  position: relative;
+}
+.owner-home .owner-actions {
+  width: 321px; /* 앱 본문 폭 */
+  margin: 0 auto;
+  padding: 130px 0 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+}
+
+/* 링크/이미지 기본 정리 */
+.owner-home a {
+  text-decoration: none;
+}
+.owner-home img {
+  display: block;
+}
+
+/* 카드형 버튼 (가게 정보 수정 / 우리 가게 리뷰) */
+.owner-home .card-btn {
+  display: flex;
+  align-items: center;
+  justify-content: space-between; /* 아이콘 – 텍스트 양끝 배치 */
+  width: 220px; /* Figma: Fill(280) */
+  height: 80px; /* Fixed(80) */
+  margin: 0 auto;
+  padding: 0px 20px; /* 좌우 여백 */
+  background: #fff;
+  border: 1px solid #cacaca;
+  border-radius: 15px;
+  color: #000;
+  box-shadow: 0px 0px 15px 0px #00000026 inset;
+}
+
+/* 아이콘 (좌측) */
+.owner-home .card-btn__icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  margin-right: 16px;
+}
+.owner-home .card-btn__icon img {
+  width: 28px;
+  height: 28px;
+  object-fit: contain;
+}
+
+/* 텍스트(우측) */
+.owner-home .card-btn__text {
+  margin-left: 12px; /* 아이콘과 간격 */
+  font-size: 16px; /* Pretendard/Roboto 16 SemiBold 느낌 */
+  font-weight: 600;
+  line-height: 1;
+  color: #000;
+}
+
+/* 하단 칩 버튼 영역 (로그아웃 / 계정 삭제) */
+.owner-home .owner-etc-actions {
+  display: flex;
+  justify-content: center;
+  gap: 12px; /* 두 버튼 간격 */
+  margin-top: 40px;
+}
+
+/* 칩 버튼 공통 */
+.owner-home .chip-btn {
+  height: 40px;
+  padding: 10px 16px; /* Top10 Right16 Bottom10 Left16 */
+  border-radius: 50px;
+  background: #fff;
+  border: 0;
+  font-size: 14px; /* Medium(500) */
+  font-weight: 500;
+  color: #000;
+  cursor: pointer;
+  box-shadow: 0px 0px 10px 0px #00000033;
+}
+
+/* 위험(계정 삭제) 칩 */
+.owner-home .chip-btn--danger {
+  color: #a82d2f;
+}
+
+/* 접근성: 키보드 포커스 */
+.owner-home .card-btn:focus-visible,
+.owner-home .chip-btn:focus-visible {
+  outline: 2px solid #a82d2f;
+  outline-offset: 2px;
+}

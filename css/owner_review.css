@@ -1,0 +1,95 @@
+body > main {
+  background: #eeeeee;
+  position: relative;
+}
+.topbar__back {
+  position: absolute;
+  left: 24px;
+  top: 65%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+}
+
+.review-summary {
+  background: linear-gradient(#f5faff, #dcedff, #f5faff);
+  border: 0.5px solid #007aff;
+  border-radius: 40px;
+  padding: 10px 24px;
+  width: 100%;
+  box-sizing: border-box;
+  margin-bottom: 20px;
+}
+
+.summary-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: #007aff;
+  margin-bottom: 4px;
+}
+
+.summary-text {
+  font-size: 12px;
+  line-height: 1.3;
+  color: #000;
+}
+
+/* ===== 리뷰 목록 ===== */
+.review-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+/* ===== 리뷰 카드 ===== */
+.review-card {
+  background: #fff;
+  border-radius: 20px;
+  padding: 16px 24px;
+  box-sizing: border-box;
+  width: 100%;
+  box-shadow: 0 0 4px rgba(0, 0, 0, 0.1);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.review-date {
+  font-size: 12px;
+  font-weight: 500;
+  color: #777;
+}
+
+.review-text {
+  font-size: 16px;
+  font-weight: 500;
+  color: #000;
+  line-height: 1.3;
+}
+
+.review-items {
+  background: #f7f7f7;
+  border: 1px solid #f7f7f7;
+  border-radius: 0 0 20px 20px; /* 하단 모서리만 둥글게 */
+  padding: 8px 24px;
+  font-size: 12px;
+  line-height: 1.4;
+  color: #000;
+
+  margin: 0 -24px -16px; /* 부모 패딩을 무시하고 가로 꽉 차게 */
+  width: calc(100% + 48px); /* 좌우 패딩 합 만큼 늘림 */
+  box-sizing: border-box;
+}
+
+/* 리뷰 컨테이너: 세로 스크롤 가능하지만 스크롤바 UI 숨김 */
+.review-container {
+  overflow-y: auto;
+  -ms-overflow-style: none; /* IE/Edge */
+  scrollbar-width: none; /* Firefox */
+}
+
+.review-container::-webkit-scrollbar {
+  display: none; /* Chrome, Safari, Opera */
+}

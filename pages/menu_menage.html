@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>주문 관리</title>
+    <link rel="stylesheet" href="../css/styles.css" />
+    <link rel="stylesheet" href="../css/menu_menage.css" />
+  </head>
+  <body>
+    <main id="app" aria-live="polite">
+      <!-- 상단 탑바 -->
+      <header class="topbar">
+        <h1 class="topbar__title">주문 관리</h1>
+        <a
+          href="owner_mypage.html"
+          class="topbar__action"
+          aria-label="마이페이지로 이동"
+        >
+          <img
+            src="../images/mypage.png"
+            alt="마이페이지"
+            class="icon-settings"
+          />
+        </a>
+      </header>
+
+      <!-- 주문 목록 섹션 -->
+      <section class="order-section">
+        <ul id="order-list" class="order-list" aria-label="주문 목록">
+          <!-- 카드 1 -->
+          <li class="order-card" data-id="order-demo">
+            <div class="order-card__head">
+              <div class="order-card__order-info">
+                <span class="order-card__label">주문번호</span>
+                <a href="#" class="order-card__number" data-order-number
+                  >htm3k</a
+                >
+              </div>
+              <span class="order-card__remain" data-remain-time>20분 후</span>
+            </div>
+
+            <ul class="order-card__items" data-items>
+              <li class="order-item">
+                <span class="order-item__name">버섯 피자</span>
+                <span class="order-item__qty">1개</span>
+              </li>
+              <li class="order-item">
+                <span class="order-item__name">다른 피자</span>
+                <span class="order-item__qty">1개</span>
+              </li>
+            </ul>
+
+            <div class="order-card__pickup">
+              <span class="pickup-label">픽업 예약 시간</span>
+              <time class="pickup-time" data-pickup-time>8:00 PM</time>
+            </div>
+
+            <div class="order-card__price">
+              <s class="origin-price" data-origin-price>15,000원</s>
+              <span class="discount-rate" data-discount-rate>14%</span>
+              <strong class="final-price" data-final-price>13,000원</strong>
+            </div>
+          </li>
+          <!-- 카드 1 -->
+          <li class="order-card" data-id="order-demo">
+            <div class="order-card__head">
+              <div class="order-card__order-info">
+                <span class="order-card__label">주문번호</span>
+                <a href="#" class="order-card__number" data-order-number
+                  >htm3k</a
+                >
+              </div>
+              <span class="order-card__remain" data-remain-time>20분 후</span>
+            </div>
+
+            <ul class="order-card__items" data-items>
+              <li class="order-item">
+                <span class="order-item__name">버섯 피자</span>
+                <span class="order-item__qty">1개</span>
+              </li>
+              <li class="order-item">
+                <span class="order-item__name">다른 피자</span>
+                <span class="order-item__qty">1개</span>
+              </li>
+            </ul>
+
+            <div class="order-card__pickup">
+              <span class="pickup-label">픽업 예약 시간</span>
+              <time class="pickup-time" data-pickup-time>8:00 PM</time>
+            </div>
+
+            <div class="order-card__price">
+              <s class="origin-price" data-origin-price>15,000원</s>
+              <span class="discount-rate" data-discount-rate>14%</span>
+              <strong class="final-price" data-final-price>13,000원</strong>
+            </div>
+          </li>
+          <!-- 카드 1 -->
+          <li class="order-card" data-id="order-demo">
+            <div class="order-card__head">
+              <div class="order-card__order-info">
+                <span class="order-card__label">주문번호</span>
+                <a href="#" class="order-card__number" data-order-number
+                  >htm3k</a
+                >
+              </div>
+              <span class="order-card__remain" data-remain-time>20분 후</span>
+            </div>
+
+            <ul class="order-card__items" data-items>
+              <li class="order-item">
+                <span class="order-item__name">버섯 피자</span>
+                <span class="order-item__qty">1개</span>
+              </li>
+              <li class="order-item">
+                <span class="order-item__name">다른 피자</span>
+                <span class="order-item__qty">1개</span>
+              </li>
+            </ul>
+
+            <div class="order-card__pickup">
+              <span class="pickup-label">픽업 예약 시간</span>
+              <time class="pickup-time" data-pickup-time>8:00 PM</time>
+            </div>
+
+            <div class="order-card__price">
+              <s class="origin-price" data-origin-price>15,000원</s>
+              <span class="discount-rate" data-discount-rate>14%</span>
+              <strong class="final-price" data-final-price>13,000원</strong>
+            </div>
+          </li>
+          <!-- 카드 1 -->
+          <li class="order-card" data-id="order-demo">
+            <div class="order-card__head">
+              <div class="order-card__order-info">
+                <span class="order-card__label">주문번호</span>
+                <a href="#" class="order-card__number" data-order-number
+                  >htm3k</a
+                >
+              </div>
+              <span class="order-card__remain" data-remain-time>20분 후</span>
+            </div>
+
+            <ul class="order-card__items" data-items>
+              <li class="order-item">
+                <span class="order-item__name">버섯 피자</span>
+                <span class="order-item__qty">1개</span>
+              </li>
+              <li class="order-item">
+                <span class="order-item__name">다른 피자</span>
+                <span class="order-item__qty">1개</span>
+              </li>
+            </ul>
+
+            <div class="order-card__pickup">
+              <span class="pickup-label">픽업 예약 시간</span>
+              <time class="pickup-time" data-pickup-time>8:00 PM</time>
+            </div>
+
+            <div class="order-card__price">
+              <s class="origin-price" data-origin-price>15,000원</s>
+              <span class="discount-rate" data-discount-rate>14%</span>
+              <strong class="final-price" data-final-price>13,000원</strong>
+            </div>
+          </li>
+        </ul>
+      </section>
+
+      <!-- 주문 카드 템플릿 -->
+      <template id="order-card-template">
+        <li class="order-card" data-id="">
+          <div class="order-card__head">
+            <div class="order-card__order-info">
+              <span class="order-card__label">주문번호</span>
+              <a href="#" class="order-card__number" data-order-number>00000</a>
+            </div>
+            <span class="order-card__remain" data-remain-time>00분 후</span>
+          </div>
+
+          <ul class="order-card__items" data-items>
+            <!-- JS에서 주문 품목(li.order-item)을 반복 추가 -->
+          </ul>
+
+          <div class="order-card__pickup">
+            <span class="pickup-label">픽업 예약 시간</span>
+            <time class="pickup-time" data-pickup-time>0:00 PM</time>
+          </div>
+
+          <div class="order-card__price">
+            <s class="origin-price" data-origin-price>0원</s>
+            <span class="discount-rate" data-discount-rate>0%</span>
+            <strong class="final-price" data-final-price>0원</strong>
+          </div>
+        </li>
+      </template>
+
+      <!-- 하단 상태 -->
+      <div
+        class="bottom-status"
+        id="countdown"
+        role="status"
+        aria-live="polite"
+      >
+        주문 마감하기
+      </div>
+
+      <!-- 하단 탭바 -->
+      <nav class="tabbar" aria-label="하단 메뉴">
+        <a href="#" class="tabbar__item is-active">
+          <img
+            src="../images/menu_deact.png"
+            alt="메뉴관리"
+            class="tabbar-icon"
+          />
+        </a>
+        <a href="#" class="tabbar__item">
+          <img
+            src="../images/order_react.png"
+            alt="주문관리"
+            class="tabbar-icon"
+          />
+        </a>
+      </nav>
+    </main>
+  </body>
+</html>

@@ -1,0 +1,593 @@
+<!DOCTYPE html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>메뉴관리(활성)</title>
+    <link rel="stylesheet" href="../css/styles.css" />
+    <link rel="stylesheet" href="../css/menu_on.css" />
+  </head>
+  <body>
+    <main id="app" aria-live="polite">
+      <!-- Topbar -->
+      <header class="topbar">
+        <h1 class="topbar__title">메뉴 관리</h1>
+        <a
+          href="owner_mypage.html"
+          class="topbar__action"
+          aria-label="마이페이지로 이동"
+        >
+          <img
+            src="../images/mypage.png"
+            alt="마이페이지"
+            class="icon-settings"
+          />
+        </a>
+      </header>
+
+      <!-- 상태 배너(필요 시 노출) -->
+      <section
+        class="order-state"
+        id="order-state"
+        data-order-enabled="false"
+        hidden
+      >
+        <p class="order-state__text" id="order-state-text"></p>
+      </section>
+
+      <!-- 리스트 -->
+      <section class="menu-section">
+        <ul id="menu-list" class="menu-list" aria-label="메뉴 목록">
+          <!-- 샘플 카드 -->
+          <li class="menu-card" data-id="demo-1">
+            <button class="menu-card__delete" aria-label="삭제">x</button>
+
+            <div class="menu-card__head">
+              <h2 class="menu-card__name"><span data-name>버섯 피자</span></h2>
+              <a href="menu_add.html" class="menu-card__edit">수정하기</a>
+            </div>
+
+            <div class="menu-card__body">
+              <div class="menu-card__text">
+                <!-- 원가 -->
+                <p class="menu-card__sub">
+                  <span data-origin-price>15,000원</span>
+                </p>
+
+                <!-- 가격 + 재고 한 줄 -->
+                <div class="menu-card__meta">
+                  <p class="menu-card__price">
+                    <span class="menu-card__discount" data-discount>14%</span>
+                    <span class="menu-card__sale-price" data-sale-price
+                      >13,000원</span
+                    >
+                  </p>
+
+                  <div class="menu-card__stock" role="group" aria-label="재고">
+                    <span class="menu-card__stock-label">재고</span>
+                    <span class="menu-card__stock-count" data-stock>0</span>
+                    <div
+                      class="menu-card__stock-ctrl"
+                      role="group"
+                      aria-label="재고 조정"
+                    >
+                      <button
+                        class="stock-btn"
+                        type="button"
+                        data-action="decrement"
+                        aria-label="재고 감소"
+                      >
+                        −
+                      </button>
+                      <button
+                        class="stock-btn"
+                        type="button"
+                        data-action="increment"
+                        aria-label="재고 증가"
+                      >
+                        ＋
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- ▼ (이동) 할인 비율 스텝퍼: 할인 가격 '아래' -->
+                <div
+                  class="menu-card__discount-ctrl"
+                  role="group"
+                  aria-label="할인 비율 조정"
+                >
+                  <button
+                    type="button"
+                    data-action="discount-dec"
+                    aria-label="할인 감소"
+                  >
+                    −
+                  </button>
+                  <output data-discount>14%</output>
+                  <button
+                    type="button"
+                    data-action="discount-inc"
+                    aria-label="할인 증가"
+                  >
+                    ＋
+                  </button>
+                </div>
+              </div>
+
+              <figure class="menu-card__thumb">
+                <img
+                  data-thumb
+                  src="https://via.placeholder.com/108x97.png?text=%ED%94%BC%EC%9E%90"
+                  alt="버섯 피자"
+                  loading="lazy"
+                />
+              </figure>
+            </div>
+          </li>
+          <li class="menu-card" data-id="demo-1">
+            <button class="menu-card__delete" aria-label="삭제">x</button>
+
+            <div class="menu-card__head">
+              <h2 class="menu-card__name"><span data-name>버섯 피자</span></h2>
+              <a href="menu_add.html" class="menu-card__edit">수정하기</a>
+            </div>
+
+            <div class="menu-card__body">
+              <div class="menu-card__text">
+                <!-- 원가 -->
+                <p class="menu-card__sub">
+                  <span data-origin-price>15,000원</span>
+                </p>
+
+                <!-- 가격 + 재고 한 줄 -->
+                <div class="menu-card__meta">
+                  <p class="menu-card__price">
+                    <span class="menu-card__discount" data-discount>14%</span>
+                    <span class="menu-card__sale-price" data-sale-price
+                      >13,000원</span
+                    >
+                  </p>
+
+                  <div class="menu-card__stock" role="group" aria-label="재고">
+                    <span class="menu-card__stock-label">재고</span>
+                    <span class="menu-card__stock-count" data-stock>0</span>
+                    <div
+                      class="menu-card__stock-ctrl"
+                      role="group"
+                      aria-label="재고 조정"
+                    >
+                      <button
+                        class="stock-btn"
+                        type="button"
+                        data-action="decrement"
+                        aria-label="재고 감소"
+                      >
+                        −
+                      </button>
+                      <button
+                        class="stock-btn"
+                        type="button"
+                        data-action="increment"
+                        aria-label="재고 증가"
+                      >
+                        ＋
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- ▼ (이동) 할인 비율 스텝퍼: 할인 가격 '아래' -->
+                <div
+                  class="menu-card__discount-ctrl"
+                  role="group"
+                  aria-label="할인 비율 조정"
+                >
+                  <button
+                    type="button"
+                    data-action="discount-dec"
+                    aria-label="할인 감소"
+                  >
+                    −
+                  </button>
+                  <output data-discount>14%</output>
+                  <button
+                    type="button"
+                    data-action="discount-inc"
+                    aria-label="할인 증가"
+                  >
+                    ＋
+                  </button>
+                </div>
+              </div>
+
+              <figure class="menu-card__thumb">
+                <img
+                  data-thumb
+                  src="https://via.placeholder.com/108x97.png?text=%ED%94%BC%EC%9E%90"
+                  alt="버섯 피자"
+                  loading="lazy"
+                />
+              </figure>
+            </div>
+          </li>
+          <li class="menu-card" data-id="demo-1">
+            <button class="menu-card__delete" aria-label="삭제">x</button>
+
+            <div class="menu-card__head">
+              <h2 class="menu-card__name"><span data-name>버섯 피자</span></h2>
+              <a href="menu_add.html" class="menu-card__edit">수정하기</a>
+            </div>
+
+            <div class="menu-card__body">
+              <div class="menu-card__text">
+                <!-- 원가 -->
+                <p class="menu-card__sub">
+                  <span data-origin-price>15,000원</span>
+                </p>
+
+                <!-- 가격 + 재고 한 줄 -->
+                <div class="menu-card__meta">
+                  <p class="menu-card__price">
+                    <span class="menu-card__discount" data-discount>14%</span>
+                    <span class="menu-card__sale-price" data-sale-price
+                      >13,000원</span
+                    >
+                  </p>
+
+                  <div class="menu-card__stock" role="group" aria-label="재고">
+                    <span class="menu-card__stock-label">재고</span>
+                    <span class="menu-card__stock-count" data-stock>0</span>
+                    <div
+                      class="menu-card__stock-ctrl"
+                      role="group"
+                      aria-label="재고 조정"
+                    >
+                      <button
+                        class="stock-btn"
+                        type="button"
+                        data-action="decrement"
+                        aria-label="재고 감소"
+                      >
+                        −
+                      </button>
+                      <button
+                        class="stock-btn"
+                        type="button"
+                        data-action="increment"
+                        aria-label="재고 증가"
+                      >
+                        ＋
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- ▼ (이동) 할인 비율 스텝퍼: 할인 가격 '아래' -->
+                <div
+                  class="menu-card__discount-ctrl"
+                  role="group"
+                  aria-label="할인 비율 조정"
+                >
+                  <button
+                    type="button"
+                    data-action="discount-dec"
+                    aria-label="할인 감소"
+                  >
+                    −
+                  </button>
+                  <output data-discount>14%</output>
+                  <button
+                    type="button"
+                    data-action="discount-inc"
+                    aria-label="할인 증가"
+                  >
+                    ＋
+                  </button>
+                </div>
+              </div>
+
+              <figure class="menu-card__thumb">
+                <img
+                  data-thumb
+                  src="https://via.placeholder.com/108x97.png?text=%ED%94%BC%EC%9E%90"
+                  alt="버섯 피자"
+                  loading="lazy"
+                />
+              </figure>
+            </div>
+          </li>
+          <li class="menu-card" data-id="demo-1">
+            <button class="menu-card__delete" aria-label="삭제">x</button>
+
+            <div class="menu-card__head">
+              <h2 class="menu-card__name"><span data-name>버섯 피자</span></h2>
+              <a href="menu_add.html" class="menu-card__edit">수정하기</a>
+            </div>
+
+            <div class="menu-card__body">
+              <div class="menu-card__text">
+                <!-- 원가 -->
+                <p class="menu-card__sub">
+                  <span data-origin-price>15,000원</span>
+                </p>
+
+                <!-- 가격 + 재고 한 줄 -->
+                <div class="menu-card__meta">
+                  <p class="menu-card__price">
+                    <span class="menu-card__discount" data-discount>14%</span>
+                    <span class="menu-card__sale-price" data-sale-price
+                      >13,000원</span
+                    >
+                  </p>
+
+                  <div class="menu-card__stock" role="group" aria-label="재고">
+                    <span class="menu-card__stock-label">재고</span>
+                    <span class="menu-card__stock-count" data-stock>0</span>
+                    <div
+                      class="menu-card__stock-ctrl"
+                      role="group"
+                      aria-label="재고 조정"
+                    >
+                      <button
+                        class="stock-btn"
+                        type="button"
+                        data-action="decrement"
+                        aria-label="재고 감소"
+                      >
+                        −
+                      </button>
+                      <button
+                        class="stock-btn"
+                        type="button"
+                        data-action="increment"
+                        aria-label="재고 증가"
+                      >
+                        ＋
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- ▼ (이동) 할인 비율 스텝퍼: 할인 가격 '아래' -->
+                <div
+                  class="menu-card__discount-ctrl"
+                  role="group"
+                  aria-label="할인 비율 조정"
+                >
+                  <button
+                    type="button"
+                    data-action="discount-dec"
+                    aria-label="할인 감소"
+                  >
+                    −
+                  </button>
+                  <output data-discount>14%</output>
+                  <button
+                    type="button"
+                    data-action="discount-inc"
+                    aria-label="할인 증가"
+                  >
+                    ＋
+                  </button>
+                </div>
+              </div>
+
+              <figure class="menu-card__thumb">
+                <img
+                  data-thumb
+                  src="https://via.placeholder.com/108x97.png?text=%ED%94%BC%EC%9E%90"
+                  alt="버섯 피자"
+                  loading="lazy"
+                />
+              </figure>
+            </div>
+          </li>
+          <li class="menu-card" data-id="demo-1">
+            <button class="menu-card__delete" aria-label="삭제">x</button>
+
+            <div class="menu-card__head">
+              <h2 class="menu-card__name"><span data-name>버섯 피자</span></h2>
+              <a href="menu_add.html" class="menu-card__edit">수정하기</a>
+            </div>
+
+            <div class="menu-card__body">
+              <div class="menu-card__text">
+                <!-- 원가 -->
+                <p class="menu-card__sub">
+                  <span data-origin-price>15,000원</span>
+                </p>
+
+                <!-- 가격 + 재고 한 줄 -->
+                <div class="menu-card__meta">
+                  <p class="menu-card__price">
+                    <span class="menu-card__discount" data-discount>14%</span>
+                    <span class="menu-card__sale-price" data-sale-price
+                      >13,000원</span
+                    >
+                  </p>
+
+                  <div class="menu-card__stock" role="group" aria-label="재고">
+                    <span class="menu-card__stock-label">재고</span>
+                    <span class="menu-card__stock-count" data-stock>0</span>
+                    <div
+                      class="menu-card__stock-ctrl"
+                      role="group"
+                      aria-label="재고 조정"
+                    >
+                      <button
+                        class="stock-btn"
+                        type="button"
+                        data-action="decrement"
+                        aria-label="재고 감소"
+                      >
+                        −
+                      </button>
+                      <button
+                        class="stock-btn"
+                        type="button"
+                        data-action="increment"
+                        aria-label="재고 증가"
+                      >
+                        ＋
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- ▼ (이동) 할인 비율 스텝퍼: 할인 가격 '아래' -->
+                <div
+                  class="menu-card__discount-ctrl"
+                  role="group"
+                  aria-label="할인 비율 조정"
+                >
+                  <button
+                    type="button"
+                    data-action="discount-dec"
+                    aria-label="할인 감소"
+                  >
+                    −
+                  </button>
+                  <output data-discount>14%</output>
+                  <button
+                    type="button"
+                    data-action="discount-inc"
+                    aria-label="할인 증가"
+                  >
+                    ＋
+                  </button>
+                </div>
+              </div>
+
+              <figure class="menu-card__thumb">
+                <img
+                  data-thumb
+                  src="https://via.placeholder.com/108x97.png?text=%ED%94%BC%EC%9E%90"
+                  alt="버섯 피자"
+                  loading="lazy"
+                />
+              </figure>
+            </div>
+          </li>
+        </ul>
+
+        <!-- 하단 버튼 -->
+        <a href="menu_add.html" class="fab-add" aria-label="메뉴 추가">
+          + 다른 메뉴 추가하기
+        </a>
+      </section>
+
+      <!-- 하단 상태 배지 -->
+      <div
+        class="bottom-status"
+        id="countdown"
+        role="status"
+        aria-live="polite"
+      >
+        주문 마감하기
+      </div>
+
+      <!-- 탭바 -->
+      <nav class="tabbar" aria-label="하단 메뉴">
+        <a href="#" class="tabbar__item is-active">
+          <img
+            src="../images/menu_act.png"
+            alt="메뉴관리"
+            class="tabbar-icon"
+          />
+        </a>
+        <a href="#" class="tabbar__item">
+          <img
+            src="../images/order_deact.png"
+            alt="주문관리"
+            class="tabbar-icon"
+          />
+        </a>
+      </nav>
+
+      <!-- 템플릿 -->
+      <template id="menu-item-template">
+        <li class="menu-card" data-id="">
+          <button class="menu-card__delete" aria-label="삭제">×</button>
+
+          <div class="menu-card__head">
+            <h2 class="menu-card__name" data-name>메뉴명</h2>
+            <a href="menu_add.html" class="menu-card__edit">수정하기</a>
+          </div>
+
+          <div class="menu-card__body">
+            <div class="menu-card__text">
+              <p class="menu-card__sub" data-origin-price>0원</p>
+
+              <div class="menu-card__meta">
+                <p class="menu-card__price">
+                  <span class="menu-card__discount" data-discount>0%</span>
+                  <span class="menu-card__sale-price" data-sale-price>0원</span>
+                </p>
+
+                <div class="menu-card__stock" role="group" aria-label="재고">
+                  <span class="menu-card__stock-label">재고</span>
+                  <span class="menu-card__stock-count" data-stock>0</span>
+                  <div
+                    class="menu-card__stock-ctrl"
+                    role="group"
+                    aria-label="재고 조정"
+                  >
+                    <button
+                      class="stock-btn"
+                      type="button"
+                      data-action="decrement"
+                      aria-label="재고 감소"
+                    >
+                      −
+                    </button>
+                    <button
+                      class="stock-btn"
+                      type="button"
+                      data-action="increment"
+                      aria-label="재고 증가"
+                    >
+                      ＋
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <!-- 템플릿에도 동일하게: 가격 아래에 스텝퍼 -->
+              <div
+                class="menu-card__discount-ctrl"
+                role="group"
+                aria-label="할인 비율 조정"
+              >
+                <button
+                  type="button"
+                  data-action="discount-dec"
+                  aria-label="할인 감소"
+                >
+                  −
+                </button>
+                <output data-discount>0%</output>
+                <button
+                  type="button"
+                  data-action="discount-inc"
+                  aria-label="할인 증가"
+                >
+                  ＋
+                </button>
+              </div>
+            </div>
+
+            <figure class="menu-card__thumb">
+              <img
+                src="https://via.placeholder.com/80x80.png?text=IMG"
+                alt=""
+                data-thumb
+                loading="lazy"
+              />
+            </figure>
+          </div>
+        </li>
+      </template>
+    </main>
+  </body>
+</html>
