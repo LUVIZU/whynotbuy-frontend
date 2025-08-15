@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>사장님 마이페이지</title>
+
+    <!-- 스타일은 별도 CSS에서 정의하세요 -->
+    <link rel="stylesheet" href="../css/styles.css" />
+    <link rel="stylesheet" href="../css/owner_mypage.css" />
+  </head>
+  <body>
+    <main class="page owner-home" aria-live="polite">
+      <!-- 상단 바 -->
+      <header class="topbar">
+        <h1 class="topbar__title">사장님</h1>
+      </header>
+
+      <!-- 본문 -->
+      <section class="owner-actions" aria-label="사장님 메뉴">
+        <!-- 가게 정보 수정 -->
+        <a
+          href="store_enroll.html"
+          class="card-btn"
+          aria-label="가게 정보 수정"
+        >
+          <span class="card-btn__icon" aria-hidden="true">
+            <!-- 아이콘 이미지가 있다면 경로만 바꿔 사용하세요 -->
+            <img src="../images/store.png" alt="" />
+          </span>
+          <span class="card-btn__text">가게 정보 수정</span>
+        </a>
+
+        <!-- 우리 가게 리뷰 -->
+        <a
+          href="owner_review.html"
+          class="card-btn"
+          aria-label="우리 가게 리뷰"
+        >
+          <span class="card-btn__icon" aria-hidden="true">
+            <img src="../images/review!.png" alt="" />
+          </span>
+          <span class="card-btn__text">우리 가게 리뷰</span>
+        </a>
+
+        <!-- 하단 액션 (추후 백엔드 연동) -->
+        <div class="owner-etc-actions" role="group" aria-label="기타 작업">
+          <!-- 나중에 API 연동: id/data-action만 잡아둠 -->
+          <button
+            type="button"
+            id="btn-logout"
+            class="chip-btn"
+            data-action="logout"
+          >
+            로그아웃
+          </button>
+          <button
+            type="button"
+            id="btn-delete-account"
+            class="chip-btn chip-btn--danger"
+            data-action="delete-account"
+          >
+            계정 삭제
+          </button>
+        </div>
+      </section>
+    </main>
+  </body>
+</html>

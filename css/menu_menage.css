@@ -1,0 +1,206 @@
+.bottom-status {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  bottom: 142px;
+  width: 320px;
+  height: 48px;
+  border-radius: 20px;
+  background: var(--maincolor, #a82d2f);
+  color: #fff;
+  border: 1px solid white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  font-weight: 600;
+  box-shadow: 2px 2px 10px 0px #00000066;
+  text-align: center;
+  padding: 0 16px;
+  z-index: 10;
+}
+
+.tabbar {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 100%;
+  height: 112px;
+  background: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  border-top: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+img {
+  display: block;
+}
+
+button {
+  font-family: inherit;
+}
+
+.tabbar__item img {
+  margin-bottom: 45px;
+}
+
+/* ===== 주문 카드 ===== */
+.order-card {
+  width: 320px;
+  min-height: 207px;
+  background: #ffffff;
+  border-radius: 10px;
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.2);
+  padding: 20px;
+  box-sizing: border-box;
+}
+
+/* ===== 카드 상단 영역 ===== */
+.order-card__head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.order-card__order-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.order-card__label {
+  font-family: "GamtanRoad Dotum", sans-serif;
+  font-weight: 400;
+  font-size: 16px;
+  line-height: 24px;
+}
+
+.order-card__number {
+  font-family: "GamtanRoad Dotum", sans-serif;
+  font-weight: 400;
+  font-size: 16px;
+  line-height: 24px;
+  text-decoration: underline;
+  color: #007aff;
+}
+
+/* ===== 남은 시간 배지 ===== */
+.order-card__remain {
+  background: #dcedff;
+  border-radius: 8px;
+  padding: 5px 8px;
+  font-size: 12px;
+  font-weight: 500;
+  color: #007aff;
+}
+
+/* ===== 주문 품목 ===== */
+.order-card__items {
+  margin: 8px 0;
+}
+
+.order-item {
+  display: flex;
+  gap: 4px;
+}
+
+.order-item__name,
+.order-item__qty {
+  font-size: 16px;
+  line-height: 24px;
+}
+
+/* ===== 픽업 예약 시간 ===== */
+.order-card__pickup {
+  margin: 8px 0;
+}
+
+.pickup-label {
+  display: block;
+  font-size: 16px;
+  line-height: 24px;
+}
+
+.pickup-time {
+  display: block;
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 24px;
+}
+
+/* ===== 가격 영역 ===== */
+.order-card__price {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 4px;
+  width: 100%;
+}
+
+.origin-price {
+  font-family: Pretendard, sans-serif;
+  font-weight: 400;
+  font-size: 12px;
+  line-height: 100%;
+  text-decoration: line-through;
+  color: #777777;
+}
+
+.discount-rate {
+  font-family: Pretendard, sans-serif;
+  font-weight: 400;
+  font-size: 12px;
+  line-height: 100%;
+  color: #a82d2f;
+}
+
+.final-price {
+  font-family: Pretendard, sans-serif;
+  font-weight: 400;
+  font-size: 16px;
+  line-height: 100%;
+  color: #000000;
+}
+
+/* ===== 리스트 기본값 정리 ===== */
+ul,
+li {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+/* 세로 스택 + 간격 */
+.order-list {
+  display: flex;
+  flex-direction: column; /* 세로 정렬 */
+  align-items: center; /* 중앙 정렬 */
+  gap: 8px; /* 카드 간 간격 */
+}
+
+/* 메인 전체를 세로 레이아웃 + 스크롤 */
+.order-section {
+  flex: 1;
+  overflow-y: auto; /* 세로 스크롤 */
+  overflow-x: hidden; /* 가로 스크롤 숨김 */
+  padding: 16px;
+  padding-bottom: 180px; /* 하단 버튼 + 탭바 높이 확보 */
+  box-sizing: border-box;
+  background: none; /* 배경 제거 */
+
+  /* 스크롤바 숨기기 */
+  -ms-overflow-style: none; /* IE, Edge */
+  scrollbar-width: none; /* Firefox */
+}
+.order-section::-webkit-scrollbar {
+  display: none; /* Chrome, Safari, Opera */
+}
+
+main {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden; /* 전체 스크롤 방지 */
+  background: none; /* 배경 제거 */
+}
