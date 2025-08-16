@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>우리 가게 리뷰</title>
+    <link rel="stylesheet" href="../css/styles.css" />
+    <link rel="stylesheet" href="../css/owner_review.css" />
+  </head>
+  <body>
+    <main class="review-container">
+      <!-- 상단 바 -->
+      <header class="topbar">
+        <h1 class="topbar__title">우리 가게 리뷰</h1>
+        <button class="topbar__back" aria-label="뒤로가기">
+          <img src="../images/back.png" alt="뒤로가기" class="back-icon" />
+        </button>
+      </header>
+
+      <!-- 리뷰 요약 -->
+      <section class="review-summary">
+        <h2 class="summary-title">
+          리뷰 요약
+          <img src="../images/ai_blue.png" alt="AI 아이콘" class="ai-icon" />
+        </h2>
+        <p class="summary-text">
+          버섯 피자가 유명하고, 피자를 다시 구워주셔서 따뜻하게 먹을 수
+          있다는... 버섯 피자가 유명하고, 피자를 다시 구워주셔서 따뜻하게 먹을
+          수 있다는게 정말 좋아요.
+        </p>
+      </section>
+
+      <!-- 리뷰 목록 -->
+      <section class="review-list">
+        <div class="review-card">
+          <div class="review-date">7월 24일 (목)</div>
+          <div class="review-text">
+            버섯 피자 하나랑 다른 피자 하나를 먹었는데 어쩌구 저쩌구 사장님이
+            다시 구워 주셔서 따뜻하게 먹을 수 있었어요, 최고최고
+          </div>
+          <div class="review-items">
+            버섯 피자 1개<br />
+            다른 피자 1개
+          </div>
+        </div>
+
+        <div class="review-card">
+          <div class="review-date">7월 24일 (목)</div>
+          <div class="review-text">버섯 피자 최고</div>
+          <div class="review-items">버섯 피자 1개</div>
+        </div>
+
+        <div class="review-card">
+          <div class="review-date">7월 24일 (목)</div>
+          <div class="review-text">
+            버섯 피자 하나랑 다른 피자 하나를 먹었는데 어쩌구 저쩌구 사장님이
+            다시 구워 주셔서 따뜻하게 먹을 수 있었어요, 최고최고
+          </div>
+          <div class="review-items">
+            버섯 피자 1개<br />
+            다른 피자 1개
+          </div>
+        </div>
+
+        <div class="review-card">
+          <div class="review-date">7월 24일 (목)</div>
+          <div class="review-text">버섯 피자 최고</div>
+          <div class="review-items">버섯 피자 1개</div>
+        </div>
+        <div class="review-card">
+          <div class="review-date">7월 24일 (목)</div>
+          <div class="review-text">버섯 피자 최고</div>
+          <div class="review-items">버섯 피자 1개</div>
+        </div>
+      </section>
+
+      <!-- 템플릿 (나중에 JS에서 사용) -->
+      <template id="review-card-template">
+        <div class="review-card">
+          <div class="review-date"></div>
+          <div class="review-text"></div>
+          <div class="review-items"></div>
+        </div>
+      </template>
+    </main>
+  </body>
+</html>

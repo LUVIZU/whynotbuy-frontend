@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <title>가게 등록</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="stylesheet" href="../css/styles.css" />
+    <link rel="stylesheet" href="../css/store_enroll.css" />
+    <script src="../js/store_enroll.js" defer></script>
+  </head>
+  <body>
+    <main id="app" aria-live="polite">
+      <!-- Topbar -->
+      <header class="topbar">
+        <h1 class="topbar__title">가게 등록</h1>
+      </header>
+
+      <form action="#" method="post" autocomplete="off" class="enroll-form">
+        <!-- 상호명 -->
+        <label for="store-name">상호명</label>
+        <input
+          id="store-name"
+          name="storeName"
+          type="text"
+          autocomplete="organization"
+          required
+        />
+
+        <!-- 위치 -->
+        <label for="store-address">위치</label>
+        <input
+          id="store-address"
+          name="address"
+          type="text"
+          autocomplete="street-address"
+          required
+        />
+
+        <!-- 영업시간 -->
+        <p class="time-label">영업시간</p>
+        <div class="time-row">
+          <input
+            id="open-time"
+            name="openTime"
+            type="text"
+            placeholder="시작 시간"
+            pattern="[0-9]{2}:[0-9]{2}"
+            inputmode="numeric"
+            required
+          />
+          <span class="tilde" aria-hidden="true"></span>
+          <input
+            id="close-time"
+            name="closeTime"
+            type="text"
+            placeholder="종료 시간"
+            pattern="[0-9]{2}:[0-9]{2}"
+            inputmode="numeric"
+            required
+          />
+        </div>
+
+        <button type="submit">위치 등록하기</button>
+      </form>
+
+      <!-- 휠 피커 -->
+      <div class="time-wheel" id="time-wheel" hidden>
+        <div class="center-bar" aria-hidden="true"></div>
+        <div class="col hour"></div>
+        <div class="col minute"></div>
+        <div class="col ampm"></div>
+      </div>
+    </main>
+  </body>
+</html>

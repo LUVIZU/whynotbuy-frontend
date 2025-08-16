@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>메뉴 추가/수정</title>
+    <link rel="stylesheet" href="../css/menu_add.css" />
+    <link rel="stylesheet" href="../css/style.css" />
+  </head>
+  <body>
+    <main class="page">
+      <!-- 상단 바 -->
+      <header class="topbar">
+        <h1 class="topbar__title">메뉴 추가/수정</h1>
+        <button class="topbar__back" aria-label="뒤로가기">
+          <img src="../images/back.png" alt="뒤로가기" class="back-icon" />
+        </button>
+        <button
+          class="topbar__action"
+          id="go-mypage"
+          aria-label="마이페이지로 이동"
+        >
+          <img
+            src="../images/mypage.png"
+            alt="마이페이지"
+            class="icon-settings"
+          />
+        </button>
+      </header>
+
+      <!-- 폼 -->
+      <form id="menu-form" class="form" autocomplete="off">
+        <!-- 메뉴 사진 -->
+        <!-- 메뉴 사진 -->
+        <div class="field field--photo">
+          <label for="photo-input" class="field__label">메뉴 사진</label>
+
+          <div class="photo">
+            <button
+              type="button"
+              class="photo__trigger"
+              id="photo-trigger"
+              data-action="photo-trigger"
+              aria-controls="photo-input"
+              aria-label="메뉴 사진 추가"
+            >
+              +
+            </button>
+            <input
+              id="photo-input"
+              name="image"
+              type="file"
+              accept="image/*"
+              hidden
+              data-field="imageFile"
+            />
+          </div>
+        </div>
+
+        <!-- 메뉴명 -->
+        <div class="field">
+          <label for="menu-name" class="field__label">메뉴명</label>
+          <input
+            id="menu-name"
+            name="name"
+            type="text"
+            class="input input--xl"
+            required
+            data-field="name"
+          />
+        </div>
+
+        <!-- 가격 -->
+        <div class="field">
+          <label for="menu-price" class="field__label">가격</label>
+          <input
+            id="menu-price"
+            name="price"
+            type="text"
+            class="input input--md"
+            inputmode="numeric"
+            data-field="price"
+          />
+        </div>
+
+        <!-- 마감 세일 할인가 + 할인 스텝퍼 -->
+        <section class="final-price-section">
+          <div class="final-price__head">
+            <h2 class="section-title">마감 세일 할인가</h2>
+          </div>
+
+          <div class="final-price__row">
+            <!-- 왼쪽: 굵은 가격 -->
+            <p class="final-price__value">
+              <output id="final-price" name="finalPrice" data-field="finalPrice"
+                >13,000 <span class="currency">원</span></output
+              >
+            </p>
+
+            <!-- 오른쪽: 스텝퍼 (− 14% ＋) -->
+            <div class="stepper" role="group" aria-label="할인 비율 조정">
+              <button
+                type="button"
+                class="stepper__btn"
+                data-action="discount-dec"
+                aria-label="할인 감소"
+              >
+                −
+              </button>
+              <output
+                class="stepper__value"
+                id="discount-display"
+                data-field="discountPercent"
+                >14%</output
+              >
+              <button
+                type="button"
+                class="stepper__btn"
+                data-action="discount-inc"
+                aria-label="할인 증가"
+              >
+                ＋
+              </button>
+            </div>
+          </div>
+        </section>
+
+        <!-- 메뉴 설명 (자동 작성) -->
+        <section class="desc">
+          <div class="desc__header">
+            <h2 class="section-title">메뉴 설명 (자동 작성)</h2>
+            <img src="../images/ai.png" alt="AI 아이콘" class="ai-icon" />
+          </div>
+
+          <!-- 자동 생성 텍스트/수정 가능한 영역 -->
+          <div class="desc__box">
+            <textarea
+              id="menu-desc"
+              name="description"
+              rows="4"
+              class="textarea"
+              data-field="description"
+            ></textarea>
+          </div>
+        </section>
+
+        <!-- 추가하기 버튼 -->
+        <div class="actions">
+          <button
+            type="submit"
+            id="submit-btn"
+            class="btn btn--primary btn--lg"
+          >
+            추가하기
+          </button>
+        </div>
+      </form>
+
+      <!-- 하단 탭바 -->
+      <nav class="tabbar" aria-label="하단 메뉴">
+        <a href="#" class="tabbar__item is-active">
+          <img
+            src="../images/menu_act.png"
+            alt="메뉴관리"
+            class="tabbar-icon"
+          />
+        </a>
+        <a href="#" class="tabbar__item">
+          <img
+            src="../images/order_deact.png"
+            alt="주문관리"
+            class="tabbar-icon"
+          />
+        </a>
+      </nav>
+    </main>
+
+    <!-- 토스트/오류 템플릿 (필요하면 사용) -->
+    <template id="toast-template">
+      <div class="toast" role="status" aria-live="polite" data-role="toast">
+        <p data-text>메시지</p>
+      </div>
+    </template>
+    <template id="error-template">
+      <p class="form-error" role="alert" data-text>오류가 발생했습니다.</p>
+    </template>
+  </body>
+</html>
