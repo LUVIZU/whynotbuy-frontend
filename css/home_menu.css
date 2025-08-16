@@ -265,8 +265,8 @@ a {
   height: 20px;
   margin-left: 135px;
   position: absolute;
-  right: 16px;
-  top: 16px;
+  right: 18px;
+  top: 18px;
   z-index: 999;
   /* 하트를 맨 위로 올려서 클릭 방지 */
 }

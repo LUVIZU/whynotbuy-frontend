@@ -4,7 +4,6 @@
 document.addEventListener("DOMContentLoaded", () => {
   /* ===== 설정 ===== */
   const API_BASE = "https://api-whynotbuy.store";
-
   const PAGE_SIZE = 10;
 
   const $addr = document.querySelector(".loc_text");
@@ -27,7 +26,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const hadAlias = applySelectedLocationAlias(); // 세션/캐시 우선 반영
   if (!hadAlias && $addr) $addr.textContent = "주소 설정"; // "홍제동" 가리기
   fetchActiveAndApply(); // 서버 활성 위치로 최종 덮어쓰기
-  $sortBtn.textContent = sortLabel(state.sortType);
+  if ($sortBtn) $sortBtn.textContent = sortLabel(state.sortType);
   fetchAndRender();
 
   /* ===== 이벤트 ===== */
@@ -55,6 +54,20 @@ document.addEventListener("DOMContentLoaded", () => {
       window.innerHeight + window.scrollY >= document.body.offsetHeight - 200;
     if (nearBottom) fetchAndRender();
   });
+
+  /* ===== 유틸 ===== */
+  const PLACEHOLDER_IMG = "../images/store_placeholder.png"; // 프로젝트에 준비 권장
+
+  // 백엔드 필드명 호환: menuImage | imageUrl | storeImageUrl | store.imageUrl
+  function getImageUrl(m) {
+    return (
+      m?.menuImage ||
+      m?.imageUrl ||
+      m?.storeImageUrl ||
+      m?.store?.imageUrl ||
+      PLACEHOLDER_IMG
+    );
+  }
 
   /* ===== 함수들 ===== */
   function sortLabel(t) {
@@ -182,7 +195,7 @@ document.addEventListener("DOMContentLoaded", () => {
       li.innerHTML = `
         <button class="like_btn" aria-label="찜" data-menu-id="${m.menuId}">
           <img src="${
-            liked ? "../images/heart_red.svg" : "../images/like.svg"
+            liked ? "../images/like_red.svg" : "../images/like.svg"
           }" alt="찜" />
         </button>
         <a href="order.html?menuId=${encodeURIComponent(
@@ -211,7 +224,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
             <div class="menu_right">
               <img class="menu_thumb"
-                   src="${m.menuImage || "../images/sample_mango.jpg"}"
+                   src="${getImageUrl(m)}"
                    alt="${escapeHtml(m.name || "메뉴")}">
             </div>
           </div>
@@ -246,7 +259,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const img = btnEl.querySelector("img");
     if (img) {
       img.src = state.likes.has(menuId)
-        ? "../images/heart_red.svg"
+        ? "../images/like_red.svg"
         : "../images/like.svg";
     }
   }
@@ -262,6 +275,8 @@ document.addEventListener("DOMContentLoaded", () => {
       .replaceAll('"', "&quot;")
       .replaceAll("'", "&#039;");
   }
+
+  // 별칭(label) 우선, 없으면 도로명(roadAddressName) → 마지막에만 locationName 등 fallback
   async function fetchActiveAndApply() {
     try {
       const res = await fetch(`${API_BASE}/api/v1/users/locations/active`, {
@@ -272,18 +287,30 @@ document.addEventListener("DOMContentLoaded", () => {
 
       const data = await res.json();
       const loc = data?.result ?? data; // {isSuccess,result:{...}} or {...}
-      const alias = loc?.locationName;
 
-      if (alias && $addr) {
-        $addr.textContent = alias; // 화면 반영
-        localStorage.setItem("selected_address_label", alias); // 캐시
-        // 다음 방문 빠른 표시용(선택)
-        if (isFinite(loc.latitude) && isFinite(loc.longitude)) {
+      // 백엔드 필드 호환: locationAlias | alias | nickname | locationName
+      const alias =
+        loc?.locationAlias ||
+        loc?.alias ||
+        loc?.nickname ||
+        loc?.locationName ||
+        null;
+
+      const road = loc?.roadAddressName || null;
+
+      // ✅ 별칭 우선 표시 (별칭 없을 때만 road, 그것도 없으면 기존 locationName)
+      const label = alias || road || loc?.locationName || null;
+
+      if (label && $addr) {
+        $addr.textContent = label;
+        localStorage.setItem("selected_address_label", label);
+
+        if (isFinite(Number(loc.latitude)) && isFinite(Number(loc.longitude))) {
           sessionStorage.setItem(
             "selected_location",
             JSON.stringify({
               id: loc.locationId,
-              name: alias,
+              name: label, // 상단 표시와 동일하게 별칭 저장
               lat: Number(loc.latitude),
               lng: Number(loc.longitude),
             })

@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, maximum-scale=1.0, user-scalable=no"
+    />
+    <title>customer_mypage</title>
+
+    <!-- Pretendard -->
+    <link
+      href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css"
+      rel="stylesheet"
+    />
+
+    <!-- 공통/개별 CSS -->
+    <link rel="stylesheet" href="../css/style.css" />
+    <link rel="stylesheet" href="../css/customer_mypage.css" />
+  </head>
+
+  <body>
+    <div class="app_frame">
+      <div class="top_bar">
+        <div class="top_bar_inner">
+          <span class="top_title">MY</span>
+        </div>
+      </div>
+
+      <!-- ====== 내용 시작 ====== -->
+      <div class="content">
+        <!-- 인사 -->
+        <section class="greeting_box">
+          <h2 class="greeting_title"><span id="nickname">비회원</span> 님</h2>
+          <div class="divider"></div>
+          <div class="student">
+            <img src="../images/student.svg" alt="학생 인증" />
+          </div>
+        </section>
+
+        <!-- 여백 -->
+        <div class="content_spacer" aria-hidden="true"></div>
+
+        <!-- 액션 버튼들 -->
+        <section class="action_buttons">
+          <button class="btn_secondary" id="logout_btn" type="button">
+            로그아웃
+          </button>
+          <button class="btn_danger" id="delete_btn" type="button">
+            계정 삭제
+          </button>
+        </section>
+      </div>
+      <!-- ====== 내용 끝 ====== -->
+
+      <!-- 하단 네비 -->
+      <div class="bottom_nav">
+        <div class="bottom_nav_item">
+          <a href="home_store.html"
+            ><img src="../images/home.svg" alt="홈"
+          /></a>
+        </div>
+        <div class="bottom_nav_item">
+          <a href="like_store.html"
+            ><img src="../images/heart.svg" alt="찜"
+          /></a>
+        </div>
+        <div class="bottom_nav_item">
+          <a href="purchase_log.html"
+            ><img src="../images/shoplist.svg" alt="구매내역"
+          /></a>
+        </div>
+        <div class="bottom_nav_item">
+          <a href="customer_mypage.html"
+            ><img src="../images/my_red.svg" alt="MY"
+          /></a>
+        </div>
+      </div>
+    </div>
+
+    <!-- JS -->
+    <script src="../js/customer_mypage.js"></script>
+  </body>
+</html>

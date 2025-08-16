@@ -38,13 +38,13 @@
   color: inherit;
   display: flex;
   align-items: center;
-  padding: 24px;
+  padding: 15px;
   background: white;
   border-radius: 10px;
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
   width: 345px;
   height: 83px;
-  gap: 24px;
+  gap: 15px;
 }
 
 .location_card.active {
@@ -72,11 +72,16 @@
   font-weight: 500;
   font-size: 16px;
   color: #777777;
+  display: inline-block;
+  max-width: 230px; /* 👉 원하는 글자 길이에 맞게 조정 */
+  text-overflow: ellipsis; /* ... 처리 */
 }
 
 .edit_icon {
   width: 20px;
   height: 20px;
+  margin-left: 280px;
+  position: absolute;
 }
 
 .plus_icon {

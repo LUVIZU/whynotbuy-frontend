@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+    />
+    <title>purchase_log</title>
+
+    <!-- Pretendard -->
+    <link
+      href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css"
+      rel="stylesheet"
+    />
+
+    <!-- 공통/개별 CSS -->
+    <link rel="stylesheet" href="../css/style.css" />
+    <link rel="stylesheet" href="../css/purchase_log.css" />
+  </head>
+
+  <body>
+    <div class="app_frame">
+      <div class="top_bar">
+        <div class="top_bar_inner">
+          <span class="top_title">구매내역</span>
+        </div>
+      </div>
+
+      <!-- ====== 내용 시작 ====== -->
+      <div class="content">
+        <div class="content">
+          <!-- 주문 카드 -->
+          <article class="order_card">
+            <header class="order_header">
+              <div class="order_date">7월 24일 (목)</div>
+              <a class="order_id" href="#" aria-label="주문번호 상세"
+                >주문번호&nbsp;htm3k</a
+              >
+            </header>
+
+            <div class="divider"></div>
+
+            <section class="order_body">
+              <h3 class="store_name">Lanespan Pizza & Pub</h3>
+              <ul class="order_items">
+                <li>버섯 피자&nbsp;&nbsp;1개</li>
+                <li>다른 피자&nbsp;&nbsp;1개</li>
+              </ul>
+
+              <div class="price_row">
+                <span class="old_price">15,000 원</span>
+                <span class="sale_pct">14%</span>
+                <span class="now_price">13,000 원</span>
+              </div>
+            </section>
+
+            <!-- 상태 A: 리뷰 남기기 버튼 -->
+            <footer class="order_footer order_footer--cta">
+              <button type="button" class="review_btn">리뷰 남기기</button>
+            </footer>
+          </article>
+
+          <!-- 상태 B: 내 리뷰 표시 예시 -->
+          <article class="order_card">
+            <header class="order_header">
+              <div class="order_date">7월 24일 (목)</div>
+              <a class="order_id" href="#">주문번호&nbsp;htm3k</a>
+            </header>
+
+            <div class="divider"></div>
+
+            <section class="order_body">
+              <h3 class="store_name">Lanespan Pizza & Pub</h3>
+              <ul class="order_items">
+                <li>버섯 피자&nbsp;&nbsp;1개</li>
+                <li>다른 피자&nbsp;&nbsp;1개</li>
+              </ul>
+
+              <div class="price_row">
+                <span class="old_price">15,000 원</span>
+                <span class="sale_pct">14%</span>
+                <span class="now_price">13,000 원</span>
+              </div>
+            </section>
+
+            <footer class="order_footer order_footer--mine">
+              <div class="my_review_title">내 리뷰</div>
+              <p class="my_review_txt">버섯 피자 짱.</p>
+            </footer>
+          </article>
+          <article class="order_card">
+            <header class="order_header">
+              <div class="order_date">7월 24일 (목)</div>
+              <a class="order_id" href="#">주문번호&nbsp;htm3k</a>
+            </header>
+
+            <div class="divider"></div>
+
+            <section class="order_body">
+              <h3 class="store_name">Lanespan Pizza & Pub</h3>
+              <ul class="order_items">
+                <li>버섯 피자&nbsp;&nbsp;1개</li>
+                <li>다른 피자&nbsp;&nbsp;1개</li>
+              </ul>
+
+              <div class="price_row">
+                <span class="old_price">15,000 원</span>
+                <span class="sale_pct">14%</span>
+                <span class="now_price">13,000 원</span>
+              </div>
+            </section>
+
+            <footer class="order_footer order_footer--mine">
+              <div class="my_review_title">내 리뷰</div>
+              <p class="my_review_txt">버섯 피자 짱.</p>
+            </footer>
+          </article>
+        </div>
+      </div>
+      <!-- ====== 내용 끝 ====== -->
+
+      <!-- 하단 네비 -->
+      <div class="bottom_nav">
+        <div class="bottom_nav_item">
+          <a href="home_store.html"
+            ><img src="../images/home.svg" alt="홈"
+          /></a>
+        </div>
+        <div class="bottom_nav_item">
+          <a href="like_store.html"
+            ><img src="../images/heart.svg" alt="찜"
+          /></a>
+        </div>
+        <div class="bottom_nav_item">
+          <a href="purchase_log.html"
+            ><img src="../images/shoplist_red.svg" alt="구매내역"
+          /></a>
+        </div>
+        <div class="bottom_nav_item">
+          <a href="customer_mypage.html"
+            ><img src="../images/my.svg" alt="MY"
+          /></a>
+        </div>
+      </div>
+    </div>
+
+    <!-- 전용 JS -->
+    <script src="../js/purchase_log.js"></script>
+  </body>
+</html>
