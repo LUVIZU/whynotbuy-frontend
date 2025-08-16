@@ -10,7 +10,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // ===== 요소 캐시 =====
   const inputs = Array.from(document.querySelectorAll(".input_field"));
   const alias_input = inputs[0]; // 별칭(name)
-  const addr_input = inputs[1]; // 주소(표시용 텍스트)
+  const addr_input = inputs[1]; // 도로명 주소(roadAddressName)
   const search_icon = document.querySelector(".search_icon");
   const btn_delete = document.querySelector(".delete_button");
   const btn_submit = document.querySelector(".submit_button");
@@ -21,7 +21,7 @@ document.addEventListener("DOMContentLoaded", () => {
     return;
   }
 
-  // 좌표는 내부 상태로 관리(숨김 input 없어도 가능)
+  // 좌표는 내부 상태로 관리
   let current_lat = null;
   let current_lng = null;
 
@@ -45,60 +45,92 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // ===== 이벤트 =====
-  // 검색 아이콘: 브라우저 현재 위치 사용(간단 버전)
+  // (1) 현재 위치 → 좌표 획득 후 역지오코딩으로 도로명 주소 자동 채움
   search_icon?.addEventListener("click", () => {
-    if (!navigator.geolocation)
-      return alert("이 브라우저는 위치 접근을 지원하지 않습니다.");
+    if (!navigator.geolocation) {
+      alert("이 브라우저는 위치 접근을 지원하지 않습니다.");
+      return;
+    }
     navigator.geolocation.getCurrentPosition(
-      (pos) => {
+      async (pos) => {
         current_lat = pos.coords.latitude;
         current_lng = pos.coords.longitude;
-        // 주소 입력칸에는 좌표를 표시(지오코딩이 없다면 이렇게라도 보여주자)
-        addr_input.value = `(${current_lat.toFixed(5)}, ${current_lng.toFixed(
-          5
-        )})`;
+
+        // 역지오코딩으로 도로명 주소 자동 세팅
+        const road = await reverse_geocode(current_lat, current_lng);
+        if (road) {
+          addr_input.value = road;
+        } else if (!addr_input.value.trim()) {
+          addr_input.placeholder = "도로명 주소를 입력하세요";
+        }
+
         if (!alias_input.value.trim()) alias_input.value = "내 위치";
       },
       (err) => {
         console.warn("geolocation error", err);
-        alert("현재 위치를 가져오지 못했습니다. 위치 권한을 확인해 주세요.");
+        alert("현재 위치를 가져올 수 없습니다. 위치 권한을 확인해 주세요.");
       },
       { enableHighAccuracy: true, timeout: 8000 }
     );
   });
 
-  // 등록/수정 제출
-  btn_submit.addEventListener("click", async (e) => {
-    e.preventDefault();
-
-    const name = alias_input.value.trim();
-
-    // 1) 주소칸에서 좌표 패턴을 우선 파싱
+  // (2) 주소 입력칸에 (lat,lng) 텍스트가 들어오면 자동 역지오 → 도로명으로 치환
+  addr_input?.addEventListener("input", async () => {
     const parsed = parse_latlng_from_text(addr_input.value);
     if (parsed) {
       current_lat = parsed.lat;
       current_lng = parsed.lng;
+      const road = await reverse_geocode(current_lat, current_lng);
+      if (road) addr_input.value = road;
+    }
+  });
+
+  // (3) 등록/수정 제출
+  btn_submit.addEventListener("click", async (e) => {
+    e.preventDefault();
+
+    const name = alias_input.value.trim();
+    let road = addr_input.value.trim();
+
+    // 주소칸에 좌표가 들어왔을 가능성 대비
+    const parsed = parse_latlng_from_text(road);
+    if (parsed) {
+      current_lat = parsed.lat;
+      current_lng = parsed.lng;
+      const r = await reverse_geocode(current_lat, current_lng);
+      if (r) road = r;
+    }
+
+    // ★ lat/lng이 없고 도로명만 있을 때 → 지오코딩으로 좌표 채움
+    if ((!is_finite_num(current_lat) || !is_finite_num(current_lng)) && road) {
+      const g = await geocode_road(road);
+      if (g) {
+        current_lat = g.lat;
+        current_lng = g.lng;
+      }
     }
 
     if (!name) return alert("주소지 별칭을 입력해 주세요.");
-    if (!is_finite_num(current_lat) || !is_finite_num(current_lng)) {
-      return alert(
-        "좌표가 없습니다. 검색 아이콘을 눌러 현재 위치를 가져오거나, (lat, lng) 형식으로 입력해 주세요."
-      );
-    }
+    if (!is_edit && !road) return alert("도로명 주소를 입력해 주세요.");
 
     try {
       lock(btn_submit, true);
 
-      const body = {
-        name,
-        latitude: Number(current_lat),
-        longitude: Number(current_lng),
-      };
+      // 스웨거:
+      // - POST:  { name, latitude?, longitude?, roadAddressName }
+      // - PATCH: { name?, latitude?, longitude? }  (일반적으로 roadAddressName 미수용)
+      let body = {};
+      if (is_edit) {
+        body = { name };
+      } else {
+        body = { name, roadAddressName: road };
+      }
+      if (is_finite_num(current_lat)) body.latitude = Number(current_lat);
+      if (is_finite_num(current_lng)) body.longitude = Number(current_lng);
 
       if (is_edit) {
         await api(`/api/v1/users/locations/${encodeURIComponent(edit_id)}`, {
-          method: "PATCH", // 서버가 PUT이라면 PUT으로 교체
+          method: "PATCH", // 서버가 PUT이면 PUT으로 변경
           body,
         });
         alert("수정되었습니다.");
@@ -114,13 +146,13 @@ document.addEventListener("DOMContentLoaded", () => {
       window.location.href = "gps_set.html";
     } catch (err) {
       console.error(err);
-      alert("저장에 실패했습니다. 로그인/권한을 확인해 주세요.");
+      alert("저장에 실패했습니다. 돋보기 버튼을 클릭 후 시도해주세요.");
     } finally {
       lock(btn_submit, false);
     }
   });
 
-  // 삭제
+  // (4) 삭제
   btn_delete?.addEventListener("click", async (e) => {
     e.preventDefault();
     if (!is_edit) return;
@@ -135,7 +167,7 @@ document.addEventListener("DOMContentLoaded", () => {
       window.location.href = "gps_set.html";
     } catch (err) {
       console.error(err);
-      alert("삭제에 실패했습니다. 로그인/권한을 확인해 주세요.");
+      alert("삭제에 실패했습니다. 현재 위치는 삭제할 수 없습니다.");
     } finally {
       lock(btn_delete, false);
     }
@@ -143,9 +175,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // ===== 함수들 =====
   async function load_for_edit(id) {
-    // 단건 조회가 명세에 없어서 목록에서 찾아 채움
+    // 단건 조회가 없어서 목록에서 찾아 채움
     const list_json = await api("/api/v1/users/locations", { method: "GET" });
-    const list = unwrap(list_json); // {isSuccess,result:{locationInfoList}} 대응
+    const list = unwrap(list_json); // {isSuccess,result:{locationInfoList}} / 배열
 
     const item = Array.isArray(list)
       ? list.find((x) => String(x.locationId ?? x.id) === String(id))
@@ -154,11 +186,26 @@ document.addEventListener("DOMContentLoaded", () => {
     if (!item) throw new Error("NOT_FOUND");
 
     alias_input.value = item.locationName || item.name || "";
-    current_lat = item.latitude;
-    current_lng = item.longitude;
-    addr_input.value = `(${Number(current_lat).toFixed(5)}, ${Number(
-      current_lng
-    ).toFixed(5)})`;
+
+    // 도로명 주소 우선 세팅, 없고 좌표만 있으면 역지오코딩
+    const road =
+      item.roadAddressName ||
+      item.addressRoad ||
+      item.roadAddr ||
+      item.addressName ||
+      "";
+
+    current_lat = item.latitude ?? null;
+    current_lng = item.longitude ?? null;
+
+    if (road) {
+      addr_input.value = road;
+    } else if (is_finite_num(current_lat) && is_finite_num(current_lng)) {
+      const r = await reverse_geocode(current_lat, current_lng);
+      addr_input.value = r || "";
+    } else {
+      addr_input.value = "";
+    }
   }
 
   async function api(path, opt = {}) {
@@ -190,7 +237,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function parse_latlng_from_text(text) {
     if (!text) return null;
-    // 지원 패턴 예: "37.123,127.456" / "(37.123, 127.456)" / "37.123 127.456"
+    // "(37.123, 127.456)" / "37.123,127.456" / "37.123 127.456"
     const m = String(text).match(
       /(-?\d+(?:\.\d+)?)\s*[, ]\s*(-?\d+(?:\.\d+)?)/
     );
@@ -203,6 +250,90 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function is_finite_num(n) {
     return typeof n === "number" && isFinite(n);
+  }
+
+  // ✅ 역지오코딩: 백엔드 가능한 엔드포인트들을 순차 시도
+  // ✅ 역지오코딩: 다양한 스펙을 순차 시도하고, 실패해도 조용히 빈 문자열 반환
+  async function reverse_geocode(lat, lng) {
+    const tryFetch = async (path, init) => {
+      try {
+        const r = await fetch(path, { credentials: "include", ...init });
+        if (!r.ok) return null;
+        const j = await r.json().catch(() => ({}));
+        return (
+          j?.result?.roadAddressName ||
+          j?.roadAddressName ||
+          j?.result?.address?.roadAddressName ||
+          null
+        );
+      } catch {
+        return null;
+      }
+    };
+
+    // 1) GET 다양한 쿼리 키
+    const getCandidates = [
+      `${API_BASE}/api/v1/geo/reverse?lat=${lat}&lng=${lng}`,
+      `${API_BASE}/api/v1/geo/reverse?latitude=${lat}&longitude=${lng}`,
+      `${API_BASE}/api/v1/users/locations/reverse?lat=${lat}&lng=${lng}`,
+      `${API_BASE}/api/v1/locations/reverse?latitude=${lat}&longitude=${lng}`,
+    ];
+    for (const url of getCandidates) {
+      const road = await tryFetch(url);
+      if (road) return road;
+    }
+
+    // 2) POST JSON 바디를 요구하는 경우
+    const postCandidates = [
+      `${API_BASE}/api/v1/geo/reverse`,
+      `${API_BASE}/api/v1/users/locations/reverse`,
+      `${API_BASE}/api/v1/locations/reverse`,
+    ];
+    const bodies = [
+      { lat, lng },
+      { latitude: lat, longitude: lng },
+    ];
+    for (const url of postCandidates) {
+      for (const body of bodies) {
+        const road = await tryFetch(url, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(body),
+        });
+        if (road) return road;
+      }
+    }
+
+    // 전부 실패 → 자동 채움 생략
+    return "";
+  }
+
+  // 주소 → 좌표: 등록/수정 시 좌표가 비어 있으면 보강
+  async function geocode_road(road) {
+    const qs = encodeURIComponent(road);
+    const candidates = [
+      (q) => `/api/v1/geo/geocode?query=${q}`,
+      (q) => `/api/v1/users/locations/geocode?roadAddressName=${q}`,
+      (q) => `/api/v1/locations/geocode?roadAddressName=${q}`,
+    ];
+    for (const build of candidates) {
+      try {
+        const r = await fetch(API_BASE + build(qs), { credentials: "include" });
+        if (!r.ok) continue;
+        const j = await r.json().catch(() => ({}));
+        const lat =
+          j?.result?.latitude ?? j?.latitude ?? j?.result?.coords?.lat ?? null;
+        const lng =
+          j?.result?.longitude ??
+          j?.longitude ??
+          j?.result?.coords?.lng ??
+          null;
+        const nlat = Number(lat),
+          nlng = Number(lng);
+        if (isFinite(nlat) && isFinite(nlng)) return { lat: nlat, lng: nlng };
+      } catch {}
+    }
+    return null;
   }
 
   function lock(el, on) {

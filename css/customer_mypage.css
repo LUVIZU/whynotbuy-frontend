@@ -1,0 +1,85 @@
+.top_bar_inner {
+  height: 100%;
+  display: flex;
+  position: relative;
+  align-items: center;
+  text-align: center;
+  margin-top: 30px;
+  justify-content: center;
+  color: white;
+  font-size: 20px;
+  font-weight: 600;
+}
+
+/* 페이지 전용 스타일 - 공통 style.css 위에 얹힘 (390×844 기준) */
+.content {
+  padding: 0px;
+}
+
+/* 인사 영역 */
+.greeting_box {
+  height: 349px;
+  background: #ffffff;
+  border-radius: 0 0 25px 25px; /* 상단0 / 우하단20 / 좌하단20 */
+  padding: 18px 16px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+.greeting_title {
+  font-size: 20px;
+  font-weight: 700;
+  color: #111;
+}
+.divider {
+  height: 1px;
+  background: #ececec;
+  margin-top: 20px;
+  margin-bottom: 30px;
+}
+
+/* 학생 인증 카드 */
+.student {
+  height: 55px;
+  display: flex; /* 가로/세로 중앙 정렬 */
+  justify-content: center;
+  align-items: center;
+}
+
+/* 이미지 크기 직접 지정(가로 자동) */
+.student img {
+  height: 55px;
+  width: auto; /* 비율 유지 */
+  max-width: 100%;
+  display: block;
+}
+
+/* 여백 */
+.content_spacer {
+  height: 60px;
+}
+
+/* 하단 액션 버튼 */
+.action_buttons {
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+}
+.btn_secondary,
+.btn_danger {
+  min-width: 120px;
+  height: 44px;
+  padding: 0 16px;
+  border-radius: 22px;
+  font-size: 14px;
+  font-weight: 600;
+  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.2);
+}
+.btn_secondary {
+  background: #ffffff;
+  border: 1px solid #e1e1e1;
+  color: #111;
+}
+.btn_danger {
+  background: #fff;
+  border: 1px solid #f2c7c7;
+  color: #d33;
+}

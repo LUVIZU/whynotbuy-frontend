@@ -6,6 +6,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const API_BASE = "https://api-whynotbuy.store";
   const DEFAULT_COORDS = { lat: 37.602, lng: 126.9565 }; // 스웨거 기본값
   const PAGE_SIZE = 10;
+  const PLACEHOLDER_IMG = "../images/store_placeholder.png"; // 없으면 하나 추가 권장
 
   const $addr = document.querySelector(".loc_text");
   const $list = document.querySelector(".store_list");
@@ -24,10 +25,9 @@ document.addEventListener("DOMContentLoaded", () => {
     stores: [], // 서버에서 받은 원본 목록 누적
     likes: new Set(JSON.parse(localStorage.getItem("likes_store") || "[]")), // storeId 세트
     searchActive: false, // 검색 모드 여부
-    address_label:
-      localStorage.getItem("selected_address_label") || "주소 설정",
   };
-  // ...상단 변수/상태 선언 아래에 추가
+
+  /* ========= 세션 선택 위치 적용 ========= */
   function getSelectedFromSession() {
     try {
       return JSON.parse(sessionStorage.getItem("selected_location") || "null");
@@ -35,33 +35,45 @@ document.addEventListener("DOMContentLoaded", () => {
       return null;
     }
   }
+
   function applySelectedLocation() {
     const sel = getSelectedFromSession();
     if (!sel) return;
 
-    // 별칭 적용
+    // 별칭(라벨) 적용
     if (sel.name) {
       state.address_label = sel.name;
-      $addr && ($addr.textContent = sel.name);
+      if ($addr) $addr.textContent = sel.name;
       localStorage.setItem("selected_address_label", sel.name);
     }
 
-    // 좌표 적용
+    // 좌표 적용(문자/숫자 모두 허용)
     const lat = Number(sel.lat);
     const lng = Number(sel.lng);
     if (isFinite(lat) && isFinite(lng)) {
       state.coords = { lat, lng };
-      // 다음 방문을 위해 저장(필요 없으면 이 줄 삭제)
+      // 다음 방문 저장(필요 없으면 삭제)
       localStorage.setItem("selected_location", JSON.stringify({ lat, lng }));
     }
   }
 
   /* ========= 초기 렌더 ========= */
   applySelectedLocation(); // 세션 우선
-  if (!$addr.textContent || $addr.textContent === "주소 설정") {
-    fetchActiveAndApply(); // 없으면 서버 active 값 사용
+  if (!$addr?.textContent || $addr.textContent === "주소 설정") {
+    fetchActiveAndApply(); // 없으면 서버 active 값 사용(+지오코딩 보강)
+  } else {
+    $addr.textContent = state.address_label;
   }
-  $addr.textContent = state.address_label;
+
+  if ($nearBtn) {
+    $nearBtn.textContent =
+      state.sortType === "DISTANCE"
+        ? "가까운순"
+        : state.sortType === "REVIEW"
+        ? "리뷰순"
+        : "신규순";
+  }
+
   // 첫 페이지 로드
   fetchAndRender();
 
@@ -87,7 +99,7 @@ document.addEventListener("DOMContentLoaded", () => {
     resetAndReload();
   });
 
-  // 검색(클라이언트 필터) — 스웨거에 keyword 파라미터가 없어서 로컬 필터로 처리
+  // 검색(클라이언트 필터)
   let searchTimer;
   $searchInput?.addEventListener("input", () => {
     const q = ($searchInput.value || "").trim();
@@ -115,24 +127,123 @@ document.addEventListener("DOMContentLoaded", () => {
     if (nearBottom) fetchAndRender();
   });
 
-  /* ========= 함수들 ========= */
+  /* ========= 유틸 ========= */
   function readCoords() {
-    // 1) sessionStorage 우선
+    // 1) sessionStorage
     try {
       const s = JSON.parse(
         sessionStorage.getItem("selected_location") || "null"
       );
-      if (s && typeof s.lat === "number" && typeof s.lng === "number") return s;
+      if (s?.lat != null && s?.lng != null) {
+        const lat = Number(s.lat),
+          lng = Number(s.lng);
+        if (isFinite(lat) && isFinite(lng)) return { lat, lng };
+      }
     } catch {}
 
-    // 2) localStorage 다음
+    // 2) localStorage
     try {
       const l = JSON.parse(localStorage.getItem("selected_location") || "null");
-      if (l && typeof l.lat === "number" && typeof l.lng === "number") return l;
+      if (l?.lat != null && l?.lng != null) {
+        const lat = Number(l.lat),
+          lng = Number(l.lng);
+        if (isFinite(lat) && isFinite(lng)) return { lat, lng };
+      }
     } catch {}
 
     // 3) 기본값
     return DEFAULT_COORDS;
+  }
+
+  // 스토어 이미지 URL 필드 호환 (백엔드 컬럼 추가 반영)
+  function getStoreImageUrl(s) {
+    return (
+      s?.thumbnailUrl || // 기존 사용 키
+      s?.imageUrl || // 새로 추가될 수 있는 키
+      s?.storeImageUrl || // 변형 키
+      s?.store?.imageUrl || // 중첩 케이스
+      PLACEHOLDER_IMG
+    );
+  }
+
+  // 주소 → 좌표 (백엔드 후보 엔드포인트들 순차 시도)
+  async function geocode_road(road) {
+    if (!road) return null;
+    const q = encodeURIComponent(road);
+    const endpoints = [
+      (qs) => `/api/v1/geo/geocode?query=${qs}`,
+      (qs) => `/api/v1/users/locations/geocode?roadAddressName=${qs}`,
+      (qs) => `/api/v1/locations/geocode?roadAddressName=${qs}`,
+    ];
+    for (const build of endpoints) {
+      try {
+        const r = await fetch(API_BASE + build(q), { credentials: "include" });
+        if (!r.ok) continue;
+        const j = await r.json().catch(() => ({}));
+        const lat =
+          j?.result?.latitude ?? j?.latitude ?? j?.result?.coords?.lat ?? null;
+        const lng =
+          j?.result?.longitude ??
+          j?.longitude ??
+          j?.result?.coords?.lng ??
+          null;
+        const nlat = Number(lat),
+          nlng = Number(lng);
+        if (isFinite(nlat) && isFinite(nlng)) return { lat: nlat, lng: nlng };
+      } catch {}
+    }
+    return null;
+  }
+
+  // 상점 좌표 키 호환
+  function getStoreCoords(s) {
+    const lat =
+      s?.latitude ?? s?.lat ?? s?.store?.latitude ?? s?.store?.lat ?? null;
+    const lng =
+      s?.longitude ?? s?.lng ?? s?.store?.longitude ?? s?.store?.lng ?? null;
+    const nlat = Number(lat),
+      nlng = Number(lng);
+    return isFinite(nlat) && isFinite(nlng) ? { lat: nlat, lng: nlng } : null;
+  }
+
+  // 하버사인 거리(m)
+  function haversineMeters(a, b) {
+    const R = 6371000;
+    const toRad = (d) => (d * Math.PI) / 180;
+    const dLat = toRad(b.lat - a.lat);
+    const dLng = toRad(b.lng - a.lng);
+    const lat1 = toRad(a.lat),
+      lat2 = toRad(b.lat);
+    const h =
+      Math.sin(dLat / 2) ** 2 +
+      Math.cos(lat1) * Math.cos(lat2) * Math.sin(dLng / 2) ** 2;
+    return 2 * R * Math.atan2(Math.sqrt(h), Math.sqrt(1 - h));
+  }
+
+  // 거리 텍스트: 클라 계산 우선 → 없을 때만 서버값 사용
+  function getDistanceTextForStore(s) {
+    let meters = null;
+    const storeC = getStoreCoords(s);
+    if (
+      storeC &&
+      state?.coords &&
+      isFinite(state.coords.lat) &&
+      isFinite(state.coords.lng)
+    ) {
+      meters = haversineMeters(state.coords, storeC);
+    }
+    if (!(typeof meters === "number" && isFinite(meters))) {
+      const server =
+        typeof s.distance === "number"
+          ? s.distance
+          : typeof s.distanceMeter === "number"
+          ? s.distanceMeter
+          : null;
+      if (typeof server === "number" && isFinite(server)) meters = server;
+    }
+    return typeof meters === "number" && isFinite(meters)
+      ? formatDistance(meters)
+      : "";
   }
 
   // API URL 작성
@@ -146,6 +257,7 @@ document.addEventListener("DOMContentLoaded", () => {
     return `${API_BASE}/api/v1/store?${q.toString()}`;
   }
 
+  /* ========= 데이터 조회 & 렌더 ========= */
   async function fetchAndRender() {
     if (state.loading || !state.hasMore) return;
     state.loading = true;
@@ -227,9 +339,9 @@ document.addEventListener("DOMContentLoaded", () => {
         $list.dataset.empty = "1";
         $list.innerHTML = `
         <li class="store_card empty_card" aria-live="polite">
-        <div class="meta" style="justify-content:center; padding:25px 0">
-        <strong class="name empty_msg">표시할 가게가 없습니다</strong>
-        </div>
+          <div class="meta" style="justify-content:center; padding:25px 0">
+            <strong class="name empty_msg">표시할 가게가 없습니다</strong>
+          </div>
         </li>`;
       }
       return;
@@ -247,24 +359,16 @@ document.addEventListener("DOMContentLoaded", () => {
       li.className = "store_card";
 
       const href = `store_home.html?storeId=${encodeURIComponent(s.storeId)}`;
-
-      const distanceText =
-        typeof s.distance === "number"
-          ? formatDistance(s.distance)
-          : typeof s.distanceMeter === "number"
-          ? formatDistance(s.distanceMeter)
-          : "";
-
+      const distanceText = getDistanceTextForStore(s);
       const storeName = s.name ?? s.storeName ?? "가게";
-
       const liked = state.likes.has(s.storeId);
 
       li.innerHTML = `
         <a href="${href}">
           ${renderBadge(s)}
-          <img class="thumb" src="${
-            s.thumbnailUrl || "../images/sample_bingsu_1.jpg"
-          }" alt="${escapeHtml(storeName)}" />
+          <img class="thumb" src="${getStoreImageUrl(s)}" alt="${escapeHtml(
+        storeName
+      )}" />
           <div class="meta">
             <div class="title_row">
               <strong class="name">${escapeHtml(storeName)}</strong>
@@ -284,10 +388,10 @@ document.addEventListener("DOMContentLoaded", () => {
       frag.appendChild(li);
     });
 
-    // 기존 노드 싹 지우고 다시 채우는 대신, 전체를 교체 (검색때 깜빡임 줄임)
+    // 전체 교체 (검색 시 깜빡임 최소화)
     $list.replaceChildren(frag);
 
-    // 찜 토글 이벤트(버튼이 a 안에 있어도 동작하도록 기본 이동 막음)
+    // 찜 토글 이벤트
     $list.querySelectorAll(".like_btn").forEach((btn) => {
       btn.addEventListener("click", (e) => {
         e.preventDefault();
@@ -341,6 +445,9 @@ document.addEventListener("DOMContentLoaded", () => {
       .replaceAll('"', "&quot;")
       .replaceAll("'", "&#039;");
   }
+
+  /* ========= 활성 위치 불러와 상단 라벨/좌표 반영 ========= */
+  // 별칭(label) 우선 → 없으면 도로명(roadAddressName) → 마지막으로 locationName
   async function fetchActiveAndApply() {
     try {
       const res = await fetch(`${API_BASE}/api/v1/users/locations/active`, {
@@ -348,6 +455,7 @@ document.addEventListener("DOMContentLoaded", () => {
         credentials: "include",
       });
       if (!res.ok) return;
+
       const data = await res.json();
       const loc =
         data?.result && data.result.locationId != null
@@ -356,15 +464,44 @@ document.addEventListener("DOMContentLoaded", () => {
           ? data
           : null;
       if (!loc) return;
-      const alias = loc.locationName || "주소 설정";
-      state.address_label = alias;
-      $addr && ($addr.textContent = alias);
-      if (isFinite(loc.latitude) && isFinite(loc.longitude)) {
+
+      // 별칭 호환 키들
+      const alias =
+        loc.locationAlias ||
+        loc.alias ||
+        loc.nickname ||
+        loc.locationName ||
+        null;
+
+      const road = loc.roadAddressName || null;
+
+      const label = alias || road || loc.locationName || "주소 설정";
+      state.address_label = label;
+
+      if ($addr) $addr.textContent = label;
+      localStorage.setItem("selected_address_label", label);
+
+      // 좌표 세팅: 우선 서버 lat/lng → 없으면 주소 지오코딩
+      if (isFinite(Number(loc.latitude)) && isFinite(Number(loc.longitude))) {
         state.coords = {
           lat: Number(loc.latitude),
           lng: Number(loc.longitude),
         };
+      } else if (road || alias || loc.locationName) {
+        const g = await geocode_road(road || alias || loc.locationName);
+        if (g) state.coords = g;
       }
+
+      // 세션 저장 (다른 페이지 즉시 반영)
+      sessionStorage.setItem(
+        "selected_location",
+        JSON.stringify({
+          id: loc.locationId,
+          name: label,
+          lat: state.coords.lat,
+          lng: state.coords.lng,
+        })
+      );
     } catch (e) {
       console.warn("활성 위치 로드 실패", e);
     }
