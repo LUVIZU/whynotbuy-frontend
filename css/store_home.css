@@ -99,6 +99,10 @@
     line-height: 1.2;
     margin-top: 4px;
   }
+
+  .copy_logo {
+    cursor: pointer;
+  }
   
   .address {
     color: #525252;
