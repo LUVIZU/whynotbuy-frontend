@@ -73,20 +73,21 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // ✅ 도로명 주소 우선 표시 (백엔드 호환 키 모두 대응)
     const road =
-      item?.roadAddressName ??
-      item?.addressRoad ??
-      item?.roadAddr ??
-      item?.addressName ??
-      null;
+      item.roadAddressName ||
+      item.addressRoad ||
+      item.roadAddr ||
+      item.addressName ||
+      item.address ||
+      ""; // 백엔드 과거 호환
     const address_text =
-      road ??
+      road ||
       (isFinite(latitude) && isFinite(longitude)
         ? `(${Number(latitude).toFixed(5)}, ${Number(longitude).toFixed(5)})`
         : "-");
 
     // 데이터 저장용
     el.dataset.name = locationName ?? "";
-    el.dataset.address = address_text;
+    el.dataset.address = road || address_text; // 도로명 있으면 그걸 저장
     el.dataset.lat = latitude ?? "";
     el.dataset.lng = longitude ?? "";
 

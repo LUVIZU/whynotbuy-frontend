@@ -1,0 +1,7 @@
+{
+  "name": "whynotbuy-frontend",
+  "private": true,
+  "scripts": {
+    "vercel-build": "node -e \"require('fs').writeFileSync('js/config.js',`window.RUNTIME_CONFIG={KAKAO_JS_KEY:'${process.env.KAKAO_JS_KEY}'};`)\""
+  }
+}
