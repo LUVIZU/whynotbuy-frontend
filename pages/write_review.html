@@ -41,8 +41,12 @@
         <!-- 주문 카드 -->
         <article class="order_card">
           <header class="order_header">
-            <div class="order_date">7월 24일 (목)</div>
-            <a class="order_id" href="#" aria-label="주문번호 상세"
+            <div class="order_date" id="order_date">7월 24일 (목)</div>
+            <a
+              class="order_id"
+              id="order_code"
+              href="#"
+              aria-label="주문번호 상세"
               >주문번호&nbsp;htm3k</a
             >
           </header>
@@ -51,15 +55,15 @@
 
           <section class="order_body">
             <h3 class="store_name" id="store_name">Lanespan Pizza & Pub</h3>
-            <ul class="order_items">
+            <ul class="order_items" id="order_items">
               <li>버섯 피자&nbsp;&nbsp;1개</li>
               <li>다른 피자&nbsp;&nbsp;1개</li>
             </ul>
 
             <div class="price_row">
-              <span class="old_price">15,000 원</span>
-              <span class="sale_pct">14%</span>
-              <span class="now_price">13,000 원</span>
+              <span class="old_price" id="old_price">15,000 원</span>
+              <span class="sale_pct" id="sale_pct">14%</span>
+              <span class="now_price" id="now_price">13,000 원</span>
             </div>
           </section>
         </article>
@@ -71,6 +75,7 @@
             id="review_text"
             class="review_textarea"
             placeholder="리뷰를 작성해주세요"
+            maxlength="1000"
           ></textarea>
         </section>
 
@@ -111,7 +116,7 @@
       </div>
     </div>
 
-    <!-- 필요 시 전용 JS 연결 -->
-    <!-- <script src="../js/write_review.js"></script> -->
+    <!-- 전용 JS -->
+    <script src="../js/write_review.js"></script>
   </body>
 </html>

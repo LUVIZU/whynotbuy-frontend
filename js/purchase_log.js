@@ -22,7 +22,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const fmtDate = (iso) => {
     try {
       const d = new Date(iso);
-      const kst = new Date(d.getTime() + 9 * 60 * 60 * 1000); // UTC→KST 보정(백엔드가 KST면 제거해도 됨)
+      const kst = new Date(d.getTime() + 9 * 60 * 60 * 1000); // UTC→KST 보정(백엔드가 KST면 제거 가능)
       return `${kst.getMonth() + 1}월 ${kst.getDate()}일 (${
         weekday[kst.getDay()]
       })`;
@@ -92,6 +92,7 @@ document.addEventListener("DOMContentLoaded", () => {
       const storeName = o.storeName;
       const orderTime = o.orderTime;
 
+      // 가격
       const nowPrice = o.totalPrice ?? o.salePrice ?? o.price ?? 0;
       const oldPrice = o.originalPrice ?? o.beforePrice ?? null;
       const salePct =
@@ -100,6 +101,7 @@ document.addEventListener("DOMContentLoaded", () => {
           ? Math.round(((oldPrice - nowPrice) / oldPrice) * 100)
           : null);
 
+      // 아이템 요약: 문자열 배열로 들어온다고 가정 (예: ["버섯 피자 1개", "다른 피자 1개"])
       const summaries = Array.isArray(o.menuSummaries) ? o.menuSummaries : [];
       const itemsHtml = summaries.map((s) => `<li>${xss(s)}</li>`).join("");
 
@@ -117,7 +119,10 @@ document.addEventListener("DOMContentLoaded", () => {
         </header>
         <div class="divider"></div>
         <section class="order_body">
-          <h3 class="store_name">${xss(storeName)}</h3>
+          <h3 class="store_name" data-store-id="${o.storeId || ""}">
+          ${xss(storeName)}
+          </h3>
+
           <ul class="order_items">${itemsHtml}</ul>
           <div class="price_row">
             ${
@@ -142,10 +147,15 @@ document.addEventListener("DOMContentLoaded", () => {
           </footer>`
             : `
           <footer class="order_footer order_footer--cta">
-            <button type="button" class="review_btn" 
-              data-order-id="${orderId}" data-order-num="${encodeURIComponent(
-                orderNum
-              )}">
+            <button type="button" class="review_btn"
+              data-order-id="${orderId}"
+              data-order-num="${xss(orderNum)}"
+              data-store-name="${xss(storeName)}"
+              data-items='${JSON.stringify(summaries)}'
+              data-old-price="${oldPrice ?? ""}"
+              data-sale-pct="${salePct ?? ""}"
+              data-now-price="${nowPrice}"
+              data-order-date="${xss(fmtDate(orderTime))}">
               리뷰 남기기
             </button>
           </footer>`
@@ -158,12 +168,47 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   /* ===== 이벤트 ===== */
-  // 리뷰 남기기 → write_review로 이동
+  // 리뷰 남기기 → write_review로 이동(sessionStorage로 페이로드 전달)
   $list.addEventListener("click", (e) => {
+    const storeEl = e.target.closest(".store_name");
+    if (storeEl) {
+      const storeId = storeEl.dataset.storeId;
+      const storeName = storeEl.textContent.trim();
+
+      if (storeId) {
+        // storeId가 있으면 id 기반으로 이동
+        location.href = `../pages/store_home.html?storeId=${encodeURIComponent(
+          storeId
+        )}`;
+      } else {
+        // storeName으로 이동 (백엔드에 따라 다르게 처리)
+        location.href = `../pages/store_home.html?storeName=${encodeURIComponent(
+          storeName
+        )}`;
+      }
+      return;
+    }
     const btn = e.target.closest(".review_btn");
     if (!btn) return;
-    const { orderId, orderNum } = btn.dataset;
-    location.href = `write_review.html?orderId=${orderId}&orderNum=${orderNum}`;
+
+    const payload = {
+      order_id: Number(btn.dataset.orderId),
+      store_name: btn.dataset.storeName,
+      items: JSON.parse(btn.dataset.items || "[]"), // 문자열 배열 ex) ["버섯 피자 1개", ...]
+      old_price: btn.dataset.oldPrice ? Number(btn.dataset.oldPrice) : null,
+      sale_pct: btn.dataset.salePct ? Number(btn.dataset.salePct) : null,
+      now_price: Number(btn.dataset.nowPrice || 0),
+      order_date_label: btn.dataset.orderDate || "",
+      order_code: btn.dataset.orderNum || "",
+    };
+
+    if (!payload.order_id) {
+      alert("주문 식별자가 없습니다.");
+      return;
+    }
+
+    sessionStorage.setItem("review_target", JSON.stringify(payload));
+    location.href = "../pages/write_review.html";
   });
 
   // 인피니트 스크롤(바닥 200px 근처)
