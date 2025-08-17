@@ -3,6 +3,7 @@ a {
   text-decoration: none; /* 밑줄 제거 */
 }
 
+/* ===== 상단/전체 프레임 ===== */
 .top_bar_inner {
   height: 100%;
   display: flex;
@@ -15,9 +16,29 @@ a {
   font-size: 20px;
   font-weight: 600;
 }
+
+.app_frame {
+  width: 390px;
+  height: 844px;
+  background: #ffffff;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  /* overflow: hidden; <= 제거해서 스크롤 가능 */
+}
+
+.top_bar {
+  height: 120px; /* 고정 */
+  flex-shrink: 0;
+}
+
+.bottom_nav {
+  height: 112px; /* 고정 */
+  flex-shrink: 0;
+}
+
 .content {
   padding: 8px;
-
   flex: 1 1 auto;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch; /* iOS 부드러운 스크롤 */
@@ -33,27 +54,8 @@ a {
 .content::-webkit-scrollbar-track {
   background: transparent;
 }
-.app_frame {
-  width: 390px;
-  height: 844px;
-  background: #ffffff;
-  display: flex;
-  flex-direction: column;
-  position: relative;
-  /* overflow: hidden;  <= 이거 제거! */
-}
 
-.top_bar {
-  height: 120px; /* 고정 */
-  flex-shrink: 0;
-}
-
-.bottom_nav {
-  height: 112px; /* 고정 */
-  flex-shrink: 0;
-}
-
-/* 카드 공통 */
+/* ===== 카드 공통 ===== */
 .order_card {
   background: #fff;
   border-radius: 22px; /* 전체 라운드 */
@@ -90,6 +92,7 @@ a {
   font-size: 18px;
   font-weight: 800;
   margin: 4px 0 10px;
+  cursor: pointer; /* 클릭 가능 표시 */
 }
 .order_items {
   list-style: none;
@@ -100,7 +103,6 @@ a {
 .order_items li {
   margin: 6px 0;
 }
-
 .price_row {
   display: flex;
   align-items: center;
@@ -121,15 +123,14 @@ a {
 
 /* 푸터 (하단만 R값) */
 .order_footer {
-  background: #111;
-  color: #fff;
   padding: 12px 16px;
-  border-radius: 0 0 22px 22px; /* ⬅ 하단만 R값 */
+  border-radius: 0 0 22px 22px; /* 하단만 라운드 */
 }
 
 /* 상태 A: 리뷰 남기기 CTA */
 .order_footer--cta {
   background: #111;
+  color: #fff;
 }
 .review_btn {
   width: 100%;
@@ -139,13 +140,14 @@ a {
   background: transparent;
   color: #fff;
   font-weight: 700;
+  cursor: pointer; /* 버튼도 포인터 */
 }
 
 /* 상태 B: 내 리뷰 */
 .order_footer--mine {
   background: #f1f1f1;
   color: #111;
-  border-radius: 0 0 22px 22px; /* 하단만 R값 유지 */
+  border-radius: 0 0 22px 22px;
   height: auto;
 }
 .my_review_title {
@@ -156,11 +158,4 @@ a {
 .my_review_txt {
   margin: 0;
   color: #222;
-}
-.store_name {
-  cursor: pointer; /* 클릭 가능 표시 */
-}
-
-.review_btn {
-  cursor: pointer; /* 버튼도 마우스 올리면 포인터 */
 }
