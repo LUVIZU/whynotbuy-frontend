@@ -1,28 +1,26 @@
 // ../js/purchase_log.js
 document.addEventListener("DOMContentLoaded", () => {
-  /* ===== 설정 ===== */
   const API_BASE = "https://api-whynotbuy.store";
   const PAGE_SIZE = 10;
 
-  /* ===== 엘리먼트 ===== */
   const $list = document.getElementById("purchase_list");
   const $empty = document.getElementById("empty_state");
   const $loading = document.getElementById("loading");
 
-  /* ===== 상태 ===== */
-  const state = {
-    cursor: null,
-    hasMore: true,
-    loading: false,
-  };
+  const state = { cursor: null, hasMore: true, loading: false };
 
-  /* ===== 유틸 ===== */
+  /* ========== 방금 작성한 리뷰들(낙관적 표시용) - 문자열로 통일 ========== */
+  const reviewedLocal = new Set(
+    JSON.parse(sessionStorage.getItem("reviewed_order_ids") || "[]").map(String)
+  );
+
+  /* ========== 유틸 ========== */
   const fmtPrice = (n) => (n ?? 0).toLocaleString("ko-KR") + " 원";
   const weekday = ["일", "월", "화", "수", "목", "금", "토"];
   const fmtDate = (iso) => {
     try {
       const d = new Date(iso);
-      const kst = new Date(d.getTime() + 9 * 60 * 60 * 1000); // UTC→KST 보정(백엔드가 KST면 제거 가능)
+      const kst = new Date(d.getTime() + 9 * 3600 * 1000);
       return `${kst.getMonth() + 1}월 ${kst.getDate()}일 (${
         weekday[kst.getDay()]
       })`;
@@ -37,10 +35,66 @@ document.addEventListener("DOMContentLoaded", () => {
       .replace(/>/g, "&gt;")
       .replace(/"/g, "&quot;")
       .replace(/'/g, "&#039;");
-
   const setLoading = (on) => ($loading.hidden = !on);
+  const truthy = (v) =>
+    v === true ||
+    v === 1 ||
+    v === "1" ||
+    v === "true" ||
+    v === "Y" ||
+    v === "y";
 
-  /* ===== API ===== */
+  /* ========== 리뷰 유무/내용 추출 (+낙관적 표시 반영) ========== */
+  function extractReview(o) {
+    const r =
+      o?.myReview ||
+      o?.review ||
+      (Array.isArray(o?.reviews) && o.reviews[0]) ||
+      null;
+
+    const optimistic = reviewedLocal.has(String(o?.orderId));
+
+    const has =
+      optimistic ||
+      truthy(o?.hasReview) ||
+      truthy(o?.reviewExists) ||
+      truthy(o?.reviewed) ||
+      truthy(o?.isReviewed) ||
+      ["DONE", "WRITTEN", "EXISTS", "Y", "YES"].includes(
+        String(o?.reviewStatus || "").toUpperCase()
+      ) ||
+      !!o?.reviewId ||
+      (typeof o?.reviewCount === "number" && o.reviewCount > 0) ||
+      !!r;
+
+    const text = r?.content || r?.text || r?.body || r?.comment || "";
+    return { has, text };
+  }
+
+  /* ========== 재조회 헬퍼 & BFCache 대응 ========== */
+  function resetAndFetch() {
+    state.cursor = null;
+    state.hasMore = true;
+    state.loading = false;
+    $list.innerHTML = "";
+    $empty.hidden = true;
+    fetchOrders();
+  }
+
+  window.addEventListener("pageshow", (e) => {
+    if (
+      e.persisted ||
+      performance.getEntriesByType("navigation")[0]?.type === "back_forward"
+    ) {
+      resetAndFetch();
+    }
+  });
+
+  if (new URLSearchParams(location.search).get("updated") === "1") {
+    resetAndFetch();
+  }
+
+  /* ========== API ========== */
   async function fetchOrders() {
     if (state.loading || !state.hasMore) return;
     state.loading = true;
@@ -51,9 +105,10 @@ document.addEventListener("DOMContentLoaded", () => {
     q.set("size", PAGE_SIZE);
 
     try {
-      const res = await fetch(`${API_BASE}/api/v1/orders?` + q.toString(), {
+      const res = await fetch(`${API_BASE}/api/v1/orders?${q}`, {
         method: "GET",
-        credentials: "include", // JWT 쿠키 인증
+        credentials: "include",
+        cache: "no-store",
       });
 
       if (res.status === 401 || res.status === 403) {
@@ -82,7 +137,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  /* ===== 렌더 ===== */
+  /* ========== 렌더 ========== */
   function renderAppend(items) {
     const frag = document.createDocumentFragment();
 
@@ -92,7 +147,6 @@ document.addEventListener("DOMContentLoaded", () => {
       const storeName = o.storeName;
       const orderTime = o.orderTime;
 
-      // 가격
       const nowPrice = o.totalPrice ?? o.salePrice ?? o.price ?? 0;
       const oldPrice = o.originalPrice ?? o.beforePrice ?? null;
       const salePct =
@@ -101,12 +155,10 @@ document.addEventListener("DOMContentLoaded", () => {
           ? Math.round(((oldPrice - nowPrice) / oldPrice) * 100)
           : null);
 
-      // 아이템 요약: 문자열 배열로 들어온다고 가정 (예: ["버섯 피자 1개", "다른 피자 1개"])
       const summaries = Array.isArray(o.menuSummaries) ? o.menuSummaries : [];
       const itemsHtml = summaries.map((s) => `<li>${xss(s)}</li>`).join("");
 
-      const hasReview = !!(o.myReview || o.hasReview);
-      const myReviewText = o.myReview?.content || o.myReview?.text || "";
+      const { has: hasReview, text: myReviewText } = extractReview(o);
 
       const li = document.createElement("li");
       li.className = "order_card";
@@ -120,9 +172,8 @@ document.addEventListener("DOMContentLoaded", () => {
         <div class="divider"></div>
         <section class="order_body">
           <h3 class="store_name" data-store-id="${o.storeId || ""}">
-          ${xss(storeName)}
+            ${xss(storeName)}
           </h3>
-
           <ul class="order_items">${itemsHtml}</ul>
           <div class="price_row">
             ${
@@ -167,34 +218,31 @@ document.addEventListener("DOMContentLoaded", () => {
     $list.appendChild(frag);
   }
 
-  /* ===== 이벤트 ===== */
-  // 리뷰 남기기 → write_review로 이동(sessionStorage로 페이로드 전달)
+  /* ========== 이벤트 ========== */
   $list.addEventListener("click", (e) => {
     const storeEl = e.target.closest(".store_name");
     if (storeEl) {
       const storeId = storeEl.dataset.storeId;
       const storeName = storeEl.textContent.trim();
-
       if (storeId) {
-        // storeId가 있으면 id 기반으로 이동
         location.href = `../pages/store_home.html?storeId=${encodeURIComponent(
           storeId
         )}`;
       } else {
-        // storeName으로 이동 (백엔드에 따라 다르게 처리)
         location.href = `../pages/store_home.html?storeName=${encodeURIComponent(
           storeName
         )}`;
       }
       return;
     }
+
     const btn = e.target.closest(".review_btn");
     if (!btn) return;
 
     const payload = {
       order_id: Number(btn.dataset.orderId),
       store_name: btn.dataset.storeName,
-      items: JSON.parse(btn.dataset.items || "[]"), // 문자열 배열 ex) ["버섯 피자 1개", ...]
+      items: JSON.parse(btn.dataset.items || "[]"),
       old_price: btn.dataset.oldPrice ? Number(btn.dataset.oldPrice) : null,
       sale_pct: btn.dataset.salePct ? Number(btn.dataset.salePct) : null,
       now_price: Number(btn.dataset.nowPrice || 0),
@@ -211,13 +259,12 @@ document.addEventListener("DOMContentLoaded", () => {
     location.href = "../pages/write_review.html";
   });
 
-  // 인피니트 스크롤(바닥 200px 근처)
   window.addEventListener("scroll", () => {
     const nearBottom =
       window.innerHeight + window.scrollY >= document.body.offsetHeight - 200;
     if (nearBottom) fetchOrders();
   });
 
-  /* ===== 시작 ===== */
+  /* ========== 시작 ========== */
   fetchOrders();
 });

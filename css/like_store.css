@@ -185,6 +185,25 @@ a {
   overflow: hidden;
   box-shadow: 0 6px 18px rgba(0, 0, 0, 0.12);
 }
+.store_card .like_btn {
+  position: absolute;
+  right: 15px; /* 오른쪽 여백 */
+  bottom: 8px; /* 아래 여백 */
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+}
+
+.store_card .like_btn img {
+  width: 22px;
+  height: 20px;
+}
+.store_card.empty_card .empty_msg {
+  font-size: 16px; /* 원하는 크기 */
+  font-weight: 600;
+  color: #666;
+}
 
 .badge {
   position: absolute;
@@ -206,7 +225,7 @@ a {
 }
 
 .meta {
-  padding: 14px 18px;
+  padding: 10px 18px;
   display: flex;
 }
 
@@ -225,19 +244,4 @@ a {
   font-size: 15px;
   color: #2b7de9;
   text-decoration: none;
-}
-
-/* 하트 버튼 – 꽉찬/라인 두 상태 */
-.like_btn {
-  border: none;
-  background: transparent;
-  padding: 0;
-  width: 22px;
-  height: 20px;
-  margin-left: 135px;
-}
-.like_btn img {
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
 }
