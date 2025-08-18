@@ -174,16 +174,13 @@ a {
 /* 리스트 */
 .menu_list {
   text-decoration: none; /* 밑줄 제거 */
-
   margin-right: 25px;
   margin-left: 25px;
-
   display: flex;
   flex-direction: column;
   gap: 16px;
   list-style: none;
 }
-
 /* 카드 베이스 */
 .menu_card {
   position: relative;
@@ -191,7 +188,7 @@ a {
   border-radius: 16px;
   overflow: hidden;
   box-shadow: 0 6px 18px rgba(0, 0, 0, 0.12);
-  padding: 16px;
+  padding: 15px;
 }
 
 /* 상단 레이아웃 */
@@ -292,3 +289,16 @@ a {
   color: #8b8b8b;
   font-size: 14px;
 }
+/* 공통 빈 상태 스타일: 가게/메뉴 동일 적용 */
+.menu_empty_card {
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.12);
+  padding: 25px 20px;
+  text-align: center;
+}
+
+.menu_empty_msg {
+font-size: 16px; /* 원하는 크기 */
+  font-weight: 600;
+  color: #666;

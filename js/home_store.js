@@ -1,4 +1,4 @@
-// js/home_store.js
+// ../js/home_store.js
 // 규칙: JWT는 쿠키에 저장되어 있고, 모든 요청은 credentials: 'include'
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -26,6 +26,15 @@ document.addEventListener("DOMContentLoaded", () => {
     likes: new Set(JSON.parse(localStorage.getItem("likes_store") || "[]")), // storeId 세트
     searchActive: false,
   };
+
+  /* ========= 찜(가게) 엔드포인트 ========= */
+  // POST:   /api/v1/favorites/stores/{storeId}   -> 추가
+  // DELETE: /api/v1/favorites/stores/{storeId}   -> 삭제
+  const like_api = {
+    like: (id) => `${API_BASE}/api/v1/favorites/stores/${id}`,
+    unlike: (id) => `${API_BASE}/api/v1/favorites/stores/${id}`,
+  };
+  const like_inflight = new Set(); // 클릭 연타 방지
 
   /* ========= 세션 선택 위치 적용 ========= */
   applySelectedLocationFromSession();
@@ -357,7 +366,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // 전체 교체
     $list.replaceChildren(frag);
 
-    // 찜 토글
+    // 찜 토글 바인딩
     $list.querySelectorAll(".like_btn").forEach((btn) => {
       btn.addEventListener("click", (e) => {
         e.preventDefault();
@@ -377,21 +386,70 @@ document.addEventListener("DOMContentLoaded", () => {
     return "";
   }
 
-  function toggleLike(storeId, btnEl) {
-    if (state.likes.has(storeId)) state.likes.delete(storeId);
-    else state.likes.add(storeId);
+  /* ========= 찜 토글 (서버 동기화) ========= */
+  async function toggleLike(storeId, btnEl) {
+    if (like_inflight.has(storeId)) return; // 연타 방지
+    like_inflight.add(storeId);
 
+    const wasLiked = state.likes.has(storeId);
+    const nowLiked = !wasLiked;
+
+    // 1) 낙관적 업데이트 (UI + 메모리 + 로컬)
+    applyLikeUI(btnEl, nowLiked);
+    if (nowLiked) state.likes.add(storeId);
+    else state.likes.delete(storeId);
+    persistLikes();
+
+    try {
+      const url = nowLiked ? like_api.like(storeId) : like_api.unlike(storeId);
+      const method = nowLiked ? "POST" : "DELETE";
+
+      const res = await fetch(url, { method, credentials: "include" });
+      if (res.status === 401) {
+        rollback();
+        alert("로그인이 필요합니다. 다시 로그인해주세요.");
+        window.location.href = "../pages/login.html";
+        return;
+      }
+      if (!res.ok) throw new Error(`like api ${method} failed: ${res.status}`);
+
+      // (선택) 응답의 favoritedStatus 신뢰하고 재동기화
+      const data = await res.json().catch(() => null);
+      const status =
+        data?.result?.favoritedStatus ?? data?.favoritedStatus ?? nowLiked;
+
+      if (status !== nowLiked) {
+        applyLikeUI(btnEl, status);
+        if (status) state.likes.add(storeId);
+        else state.likes.delete(storeId);
+        persistLikes();
+      }
+    } catch (e) {
+      console.error(e);
+      rollback();
+      alert("찜 처리에 실패했어요. 잠시 후 다시 시도해주세요.");
+    } finally {
+      like_inflight.delete(storeId);
+    }
+
+    function rollback() {
+      applyLikeUI(btnEl, wasLiked);
+      if (wasLiked) state.likes.add(storeId);
+      else state.likes.delete(storeId);
+      persistLikes();
+    }
+  }
+
+  function applyLikeUI(btnEl, liked) {
+    const img = btnEl?.querySelector("img");
+    if (img) img.src = liked ? "../images/like_red.svg" : "../images/like.svg";
+  }
+
+  function persistLikes() {
     localStorage.setItem(
       "likes_store",
       JSON.stringify(Array.from(state.likes.values()))
     );
-
-    const img = btnEl.querySelector("img");
-    if (img) {
-      img.src = state.likes.has(storeId)
-        ? "../images/like_red.svg"
-        : "../images/like.svg";
-    }
   }
 
   function escapeHtml(str) {

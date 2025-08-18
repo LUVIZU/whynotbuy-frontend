@@ -23,7 +23,7 @@ document.addEventListener("DOMContentLoaded", () => {
     return;
   }
   const target = JSON.parse(targetRaw);
-  // target: { order_id, store_name, items:[{name,qty}], old_price, sale_pct, now_price, order_date_label, order_code }
+  // target: { order_id, store_name, items:[{name,qty}] | ["문자열"], old_price, sale_pct, now_price, order_date_label, order_code }
 
   // ===== UI 채우기
   $orderDate.textContent = target.order_date_label || "";
@@ -33,7 +33,6 @@ document.addEventListener("DOMContentLoaded", () => {
   $orderCode.href = "#";
   $storeName.textContent = target.store_name || "";
 
-  // 아이템 리스트
   // 아이템 리스트 (문자열/객체 모두 대응)
   $orderItems.innerHTML = "";
   (target.items || []).forEach((it) => {
@@ -88,8 +87,6 @@ document.addEventListener("DOMContentLoaded", () => {
         }),
       });
 
-      const data = await res.json().catch(() => ({}));
-
       if (!res.ok) {
         // 401 등 인증 실패 시 로그인으로
         if (res.status === 401 || res.status === 403) {
@@ -101,11 +98,25 @@ document.addEventListener("DOMContentLoaded", () => {
       }
 
       if (data?.isSuccess) {
+        // 🔴 방금 리뷰 쓴 주문ID를 기록 → 구매내역에서 곧바로 '내 리뷰'로 보이도록 (낙관적 표시)
+        const reviewedIds = new Set(
+          JSON.parse(sessionStorage.getItem("reviewed_order_ids") || "[]").map(
+            String
+          )
+        );
+        reviewedIds.add(String(target.order_id));
+        sessionStorage.setItem(
+          "reviewed_order_ids",
+          JSON.stringify([...reviewedIds])
+        );
+
         alert("리뷰가 등록되었습니다.");
-        // 사용한 세션 데이터 정리
+
+        // 🔴 사용한 세션 데이터 정리
         sessionStorage.removeItem("review_target");
-        // 구매내역으로 복귀
-        window.location.href = "../pages/purchase_log.html";
+
+        // 🔴 구매내역으로 복귀 (BFCache 이슈 방지 위해 replace + updated=1 쿼리)
+        window.location.replace("../pages/purchase_log.html?updated=1");
       } else {
         throw new Error(data?.message || "리뷰 등록에 실패했습니다.");
       }
