@@ -1,4 +1,4 @@
-// 가게 상세 페이지 JavaScript - 로딩 애니메이션 적용 버전
+// 가게 상세 페이지 JavaScript - 로딩 애니메이션 적용 버전 + 찜 기능
 document.addEventListener("DOMContentLoaded", () => {
   
   // 기본 설정
@@ -25,7 +25,8 @@ document.addEventListener("DOMContentLoaded", () => {
     cursor: null,
     hasMoreMenus: true,
     loading: false,
-    cartData: null
+    cartData: null,
+    favoriteMenuIds: new Set() // 찜한 메뉴 ID들을 저장
   };
 
   // 로딩 애니메이션 HTML 생성 함수
@@ -60,9 +61,10 @@ document.addEventListener("DOMContentLoaded", () => {
     // 가게 정보 먼저 로드 (가게명 표시용)
     await loadStoreData();
     
-    // 병렬 처리: 리뷰, 메뉴, 장바구니를 동시에 로드
+    // 병렬 처리: 리뷰, 메뉴, 장바구니, 찜 목록을 동시에 로드
     Promise.all([
       loadReviewSummary(),  // 리뷰는 실패해도 상관없음
+      loadFavoriteMenus(),  // 찜 목록 먼저 로드
       loadMenus(),          // 메뉴 로드 (우선순위 높음)
       handleCartState()     // 장바구니 상태 처리
     ]).then(() => {
@@ -302,6 +304,94 @@ document.addEventListener("DOMContentLoaded", () => {
     updateDisplay();
   }
 
+  // 찜한 메뉴 목록 로드
+  async function loadFavoriteMenus() {
+    try {
+      console.log("찜한 메뉴 목록 로딩 시작...");
+      
+      let allFavorites = [];
+      let cursor = null;
+      let hasMore = true;
+      
+      // 모든 찜 목록을 가져오기 위해 페이지네이션 처리
+      while (hasMore) {
+        const params = new URLSearchParams();
+        params.set('size', '50'); // 최대 50개씩 가져오기
+        if (cursor !== null) {
+          params.set('cursor', cursor.toString());
+        }
+        
+        const response = await fetch(`${API_BASE}/api/v1/favorites/menus?${params.toString()}`, {
+          method: 'GET',
+          credentials: 'include'
+        });
+        
+        if (!response.ok) {
+          if (response.status === 401) {
+            console.log("로그인이 필요합니다. 찜 목록을 건너뜁니다.");
+            return;
+          }
+          throw new Error(`찜 목록 로드 실패: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        const result = data.result || data;
+        const favorites = result.FavoriteMenus || result.favoriteMenus || [];
+        
+        allFavorites = allFavorites.concat(favorites);
+        cursor = result.nextCursor;
+        hasMore = result.hasData === true;
+        
+        console.log(`찜 목록 ${favorites.length}개 로드, 다음 커서: ${cursor}, 더 있음: ${hasMore}`);
+      }
+      
+      // 찜한 메뉴 ID들을 Set에 저장
+      appState.favoriteMenuIds = new Set(allFavorites.map(fav => fav.menuId));
+      
+      console.log(`찜한 메뉴 총 ${allFavorites.length}개 로딩 완료:`, Array.from(appState.favoriteMenuIds));
+      
+      // 이미 로드된 메뉴들의 찜 상태 업데이트
+      updateFavoriteIcons();
+      
+    } catch (error) {
+      console.error("찜한 메뉴 목록 로딩 실패:", error);
+      // 찜 로딩 실패해도 계속 진행
+    }
+  }
+
+  // 찜 아이콘 업데이트
+  function updateFavoriteIcons() {
+    const $menuItems = document.querySelectorAll('.menu_item');
+    
+    $menuItems.forEach($item => {
+      const $likeBtn = $item.querySelector('.menu_like');
+      if ($likeBtn && $likeBtn.dataset.menuId) {
+        const menuId = parseInt($likeBtn.dataset.menuId);
+        const isFavorited = appState.favoriteMenuIds.has(menuId);
+        updateLikeButtonState($likeBtn, isFavorited);
+      }
+    });
+    
+    console.log("찜 아이콘 업데이트 완료");
+  }
+
+  // 찜 버튼 상태 업데이트
+  function updateLikeButtonState($likeBtn, isFavorited) {
+    const $likeIcon = $likeBtn.querySelector('.like_icon');
+    
+    if (isFavorited) {
+      // 빨간 하트로 변경
+      $likeIcon.src = '../images/like_red.svg';
+      $likeBtn.setAttribute('aria-pressed', 'true');
+      $likeBtn.style.opacity = '1';
+    } else {
+      // 기본 하트로 변경
+      $likeIcon.src = '../images/like.svg';
+      $likeBtn.setAttribute('aria-pressed', 'false');
+      $likeBtn.style.opacity = '0.7';
+    }
+  }
+
   async function loadMenus() {
     if (appState.loading || !appState.hasMoreMenus) {
       return;
@@ -430,9 +520,14 @@ document.addEventListener("DOMContentLoaded", () => {
       const $likeBtn = menuItem.querySelector('.menu_like');
       if ($likeBtn) {
         $likeBtn.dataset.menuId = menu.menuId;
+        
+        // 찜 상태에 따라 아이콘 설정
+        const isFavorited = appState.favoriteMenuIds.has(menu.menuId);
+        updateLikeButtonState($likeBtn, isFavorited);
+        
         $likeBtn.addEventListener('click', (e) => {
           e.stopPropagation();
-          handleMenuLike(menu.menuId);
+          handleMenuLike(menu.menuId, $likeBtn);
         });
       }
       
@@ -684,8 +779,89 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  function handleMenuLike(menuId) {
+  // 메뉴 찜하기/해제 처리
+  async function handleMenuLike(menuId, $likeBtn) {
     console.log('메뉴 찜하기 클릭:', menuId);
-    alert('메뉴 찜하기 기능은 준비 중입니다.');
+    
+    const isFavorited = appState.favoriteMenuIds.has(menuId);
+    
+    // 버튼 비활성화 (중복 클릭 방지)
+    $likeBtn.disabled = true;
+    $likeBtn.style.opacity = '0.5';
+    
+    try {
+      if (isFavorited) {
+        // 찜 해제
+        await removeFavorite(menuId);
+        appState.favoriteMenuIds.delete(menuId);
+        updateLikeButtonState($likeBtn, false);
+        console.log(`메뉴 ${menuId} 찜 해제 완료`);
+      } else {
+        // 찜 추가
+        await addFavorite(menuId);
+        appState.favoriteMenuIds.add(menuId);
+        updateLikeButtonState($likeBtn, true);
+        console.log(`메뉴 ${menuId} 찜 추가 완료`);
+      }
+    } catch (error) {
+      console.error('찜 처리 실패:', error);
+      alert('찜 처리에 실패했습니다. 다시 시도해주세요.');
+      
+      // 실패 시 원래 상태로 복원
+      updateLikeButtonState($likeBtn, isFavorited);
+    } finally {
+      // 버튼 활성화
+      $likeBtn.disabled = false;
+      $likeBtn.style.opacity = '';
+    }
   }
+
+  // 찜 추가 API 호출
+  async function addFavorite(menuId) {
+    const response = await fetch(`${API_BASE}/api/v1/menus/${menuId}/favorite`, {
+      method: 'POST',
+      credentials: 'include',
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    });
+    
+    if (!response.ok) {
+      if (response.status === 401) {
+        alert('로그인이 필요합니다.');
+        // 필요시 로그인 페이지로 리다이렉트
+        // window.location.href = '/login';
+        return;
+      }
+      throw new Error(`찜 추가 실패: ${response.status}`);
+    }
+    
+    const data = await response.json();
+    console.log('찜 추가 응답:', data);
+    
+    return data;
+  }
+
+  // 찜 해제 API 호출
+  async function removeFavorite(menuId) {
+
+    const response = await fetch(`${API_BASE}/api/v1/favorites/menus/${menuId}`, {
+      method: 'DELETE',
+      credentials: 'include'
+    });
+    
+    if (!response.ok) {
+      if (response.status === 401) {
+        alert('로그인이 필요합니다.');
+        return;
+      }
+      throw new Error(`찜 해제 실패: ${response.status}`);
+    }
+    
+    const data = await response.json();
+    console.log('찜 해제 응답:', data);
+    
+    return data;
+  }
+
 });
