@@ -1,4 +1,4 @@
-// 가게 상세 페이지 JavaScript - 병렬 로딩 버전
+// 가게 상세 페이지 JavaScript - 로딩 애니메이션 적용 버전
 document.addEventListener("DOMContentLoaded", () => {
   
   // 기본 설정
@@ -13,6 +13,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const $reviewText = document.querySelector(".review_text");
   const $reviewMore = document.querySelector(".review_more");
   const $menuList = document.querySelector("#menuList");
+  const $menuLoading = document.querySelector("#menuLoading");
   const $menuTemplate = document.querySelector("#menuItemTpl");
   const $floatingCart = document.querySelector("#floatingCart");
 
@@ -26,6 +27,17 @@ document.addEventListener("DOMContentLoaded", () => {
     loading: false,
     cartData: null
   };
+
+  // 로딩 애니메이션 HTML 생성 함수
+  function createLoadingDots() {
+    return `
+      <span class="loading-dots">
+        <span class="dot">.</span>
+        <span class="dot">.</span>
+        <span class="dot">.</span>
+      </span>
+    `;
+  }
 
   // 앱 시작
   init();
@@ -131,13 +143,25 @@ document.addEventListener("DOMContentLoaded", () => {
       const data = await response.json();
       appState.storeInfo = data.result || data;
       
-      // 가게 정보 즉시 화면에 표시
+      // 가게 정보 즉시 화면에 표시 (로딩 애니메이션 제거)
       displayStoreInfo();
       
       console.log("가게 정보 로딩 완료:", appState.storeInfo.name);
       
     } catch (error) {
       console.error("가게 정보 로딩 실패:", error);
+      
+      // 에러 발생 시 로딩 애니메이션 제거하고 에러 메시지 표시
+      if ($topTitle) {
+        $topTitle.textContent = "가게 정보 로딩 실패";
+      }
+      if ($businessHours) {
+        $businessHours.textContent = "영업시간을 불러올 수 없습니다.";
+      }
+      if ($address) {
+        $address.textContent = "주소를 불러올 수 없습니다.";
+      }
+      
       alert('가게 정보를 불러오는데 실패했습니다.');
     }
   }
@@ -145,19 +169,19 @@ document.addEventListener("DOMContentLoaded", () => {
   function displayStoreInfo() {
     const store = appState.storeInfo;
     
-    // 가게명
+    // 가게명 (로딩 애니메이션 제거)
     if ($topTitle && store.name) {
       $topTitle.textContent = store.name;
     }
     
-    // 영업시간
+    // 영업시간 (로딩 애니메이션 제거)
     if ($businessHours && store.openingTime && store.closingTime) {
       const openTime = store.openingTime.slice(0, 5);
       const closeTime = store.closingTime.slice(0, 5);
       $businessHours.textContent = `영업시간 ${openTime}~${closeTime}`;
     }
     
-    // 주소
+    // 주소 (로딩 애니메이션 제거)
     if ($address && store.roadAddressName) {
       $address.textContent = store.roadAddressName;
     }
@@ -167,6 +191,11 @@ document.addEventListener("DOMContentLoaded", () => {
     try {
       console.log("리뷰 요약 로딩 시작...");
       
+      // 로딩 애니메이션 표시
+      if ($reviewText) {
+        $reviewText.innerHTML = '로딩중' + createLoadingDots();
+      }
+      
       const response = await fetch(`${API_BASE}/api/v1/reviews/${appState.storeId}/summary`, {
         method: 'GET',
         credentials: 'include'
@@ -174,6 +203,9 @@ document.addEventListener("DOMContentLoaded", () => {
       
       if (!response.ok) {
         console.log("리뷰 요약 로드 실패:", response.status);
+        if ($reviewText) {
+          $reviewText.textContent = "리뷰를 불러올 수 없습니다.";
+        }
         return;
       }
       
@@ -181,7 +213,7 @@ document.addEventListener("DOMContentLoaded", () => {
       const summary = data.result?.summary || data.summary || '';
       
       if ($reviewText && summary) {
-        $reviewText.textContent = summary;
+        $reviewText.textContent = summary; // 로딩 애니메이션 제거하고 실제 내용 표시
         setupReviewToggle(summary);
       }
       
@@ -189,7 +221,9 @@ document.addEventListener("DOMContentLoaded", () => {
       
     } catch (error) {
       console.error("리뷰 요약 로딩 실패:", error);
-      // 리뷰 로딩 실패는 전체 앱에 영향주지 않음
+      if ($reviewText) {
+        $reviewText.textContent = "리뷰를 불러오는 중 오류가 발생했습니다.";
+      }
     }
   }
 
@@ -275,6 +309,17 @@ document.addEventListener("DOMContentLoaded", () => {
     
     appState.loading = true;
     
+    // 첫 번째 로딩이면 로딩 애니메이션 표시
+    if (appState.menus.length === 0) {
+      if ($menuLoading) {
+        $menuLoading.style.display = 'block';
+        $menuLoading.innerHTML = '메뉴 로딩중' + createLoadingDots();
+      }
+      if ($menuList) {
+        $menuList.style.display = 'none';
+      }
+    }
+    
     try {
       console.log("메뉴 목록 로딩 시작... cursor:", appState.cursor);
       
@@ -307,6 +352,16 @@ document.addEventListener("DOMContentLoaded", () => {
       appState.cursor = result.nextCursor;
       appState.hasMoreMenus = result.hasData === true;
       
+      // 첫 번째 로딩 완료 시 로딩 애니메이션 숨기고 메뉴 리스트 표시
+      if (appState.menus.length === newMenus.length) {
+        if ($menuLoading) {
+          $menuLoading.style.display = 'none';
+        }
+        if ($menuList) {
+          $menuList.style.display = 'block';
+        }
+      }
+      
       // 메뉴 즉시 화면에 표시
       displayMenus(newMenus);
       
@@ -319,6 +374,16 @@ document.addEventListener("DOMContentLoaded", () => {
       
     } catch (error) {
       console.error("메뉴 목록 로딩 실패:", error);
+      
+      // 에러 발생 시 로딩 애니메이션 제거하고 에러 메시지 표시
+      if ($menuLoading) {
+        $menuLoading.innerHTML = '메뉴를 불러오는데 실패했습니다.';
+        $menuLoading.style.display = 'block';
+      }
+      if ($menuList) {
+        $menuList.style.display = 'none';
+      }
+      
       alert('메뉴 목록을 불러오는데 실패했습니다.');
     } finally {
       appState.loading = false;
