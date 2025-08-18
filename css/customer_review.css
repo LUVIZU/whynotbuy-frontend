@@ -125,9 +125,8 @@
 
 /* 하단 네비(고정) */
 .bottom_nav {
-  position: fixed;
   left: 50%;
-  transform: translateX(-50%) translateY(-51%);
+  transform: translateX(-50%);
   bottom: 0;
   height: var(--bottom-nav-h);
   width: 100%;
