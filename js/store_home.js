@@ -1,338 +1,104 @@
-// 가게 상세 페이지 JavaScript
+// 가게 상세 페이지 JavaScript - 병렬 로딩 버전
 document.addEventListener("DOMContentLoaded", () => {
   
-  /* ========= 기본 설정 ========= */
+  // 기본 설정
   const API_BASE = "https://api-whynotbuy.store";
-  const PAGE_SIZE = 10; // 한 번에 가져올 메뉴 개수
+  const PAGE_SIZE = 10;
   
-  /* ========= DOM 요소들 선택 ========= */
-  // 상단 가게명 타이틀
+  // DOM 요소들
   const $topTitle = document.querySelector(".top_title");
-  
-  // 가게 정보 영역
   const $businessHours = document.querySelector(".business_hours");
   const $address = document.querySelector(".address");
-  const $copyIcon = document.querySelector(".copy_logo"); // 주소 복사 아이콘
-  
-  // 리뷰 요약 영역
+  const $copyIcon = document.querySelector(".copy_logo");
   const $reviewText = document.querySelector(".review_text");
-  const $reviewMore = document.querySelector(".review_more"); // 리뷰 자세히 보기 링크
-  
-  // 메뉴 리스트 영역
+  const $reviewMore = document.querySelector(".review_more");
   const $menuList = document.querySelector("#menuList");
-  const $menuTemplate = document.querySelector("#menuItemTpl"); // 메뉴 템플릿
-  
-  // 장바구니 버튼
+  const $menuTemplate = document.querySelector("#menuItemTpl");
   const $floatingCart = document.querySelector("#floatingCart");
 
-  /* ========= 🔧 상태 관리 ========= */
-  const state = {
-    storeId: null,        // URL에서 추출한 가게 ID
-    storeInfo: null,      // 가게 정보 객체
-    menus: [],           // 불러온 메뉴 목록
-    cursor: null,        // 다음 페이지를 위한 커서
-    hasMoreMenus: true,  // 더 불러올 메뉴가 있는지
-    loading: false       // API 요청 중인지 확인
+  // 상태 관리
+  const appState = {
+    storeId: null,
+    storeInfo: null,
+    menus: [],
+    cursor: null,
+    hasMoreMenus: true,
+    loading: false,
+    cartData: null
   };
 
-  /* ========= 초기화 함수 ========= */
-  function init() {
-    // URL에서 storeId 추출
-    extractStoreId();
+  // 앱 시작
+  init();
+
+  async function init() {
+    console.log("=== STORE_HOME.JS 초기화 시작 ===");
     
-    // storeId가 없으면 에러 처리
-    if (!state.storeId) {
+    // URL 파라미터 추출
+    extractParams();
+    
+    if (!appState.storeId) {
       alert("가게 정보를 찾을 수 없습니다.");
-      window.history.back(); // 이전 페이지로 돌아가기
+      window.history.back();
       return;
     }
-    
-    // 가게 정보 로드
-    loadStoreInfo();
-    
-    // 리뷰 요약 로드
-    loadReviewSummary();
-    
-    // 메뉴 목록 로드 (첫 페이지)
-    loadMenus();
     
     // 이벤트 리스너 등록
-    setupEventListeners();
-  }
-
-  /* ========= URL에서 storeId 추출 ========= */
-  function extractStoreId() {
-    // 현재 URL의 쿼리 파라미터를 파싱
-    // 예: store_home.html?storeId=1001 → storeId = 1001
-    const urlParams = new URLSearchParams(window.location.search);
-    const storeIdParam = urlParams.get('storeId');
+    setupEvents();
     
-    // 문자열을 숫자로 변환 (parseInt 사용)
-    state.storeId = storeIdParam ? parseInt(storeIdParam, 10) : null;
+    // 가게 정보 먼저 로드 (가게명 표시용)
+    await loadStoreData();
     
-    console.log('추출된 storeId:', state.storeId);
-  }
-
-  /* ========= 가게 정보 API 호출 ========= */
-  async function loadStoreInfo() {
-    try {
-      console.log('가게 정보 로딩 시작...');
-      
-      // API 호출 (fetch 사용)
-      const response = await fetch(`${API_BASE}/api/v1/store/${state.storeId}`, {
-        method: 'GET',
-        credentials: 'include' // 쿠키/인증 정보 포함
-      });
-      
-      // 응답이 성공적이지 않으면 에러 처리
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-      }
-      
-      // JSON 데이터 파싱
-      const data = await response.json();
-      console.log('가게 정보 응답:', data);
-      
-      // 응답 구조 확인 (data.result 또는 data 직접 사용)
-      const storeInfo = data.result || data;
-      state.storeInfo = storeInfo;
-      
-      // UI에 가게 정보 표시
-      renderStoreInfo(storeInfo);
-      
-    } catch (error) {
-      console.error('가게 정보 로딩 실패:', error);
-      alert('가게 정보를 불러오는데 실패했습니다.');
-    }
-  }
-
-  /* ========= 가게 정보 UI 렌더링 ========= */
-  function renderStoreInfo(storeInfo) {
-    // 상단 타이틀에 가게명 표시
-    if ($topTitle && storeInfo.name) {
-      $topTitle.textContent = storeInfo.name;
-    }
-    
-    // 영업시간 표시 (시:분 형식으로 변환)
-    if ($businessHours && storeInfo.openingTime && storeInfo.closingTime) {
-      // "11:00:00" → "11:00" 형식으로 변환
-      const openTime = storeInfo.openingTime.slice(0, 5);
-      const closeTime = storeInfo.closingTime.slice(0, 5);
-      $businessHours.textContent = `영업시간 ${openTime}~${closeTime}`;
-    }
-    
-    // 도로명 주소 표시
-    if ($address && storeInfo.roadAddressName) {
-      $address.textContent = storeInfo.roadAddressName;
-    }
-    
-    console.log('가게 정보 렌더링 완료');
-  }
-
-  /* ========= 리뷰 요약 API 호출 ========= */
-  async function loadReviewSummary() {
-    try {
-      console.log('리뷰 요약 로딩 시작...');
-      
-      const response = await fetch(`${API_BASE}/api/v1/reviews/${state.storeId}/summary`, {
-        method: 'GET',
-        credentials: 'include'
-      });
-      
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-      }
-      
-      const data = await response.json();
-      console.log('리뷰 요약 응답:', data);
-      
-      // 리뷰 요약 텍스트 추출
-      const summary = data.result?.summary || data.summary || '';
-      
-      // UI에 리뷰 요약 표시
-      if ($reviewText && summary) {
-        $reviewText.textContent = summary;
-        
-        // 리뷰 텍스트가 길면 더보기/접기 기능 추가
-        setupReviewToggle(summary);
-      }
-      
-      console.log('리뷰 요약 렌더링 완료');
-      
-    } catch (error) {
-      console.error('리뷰 요약 로딩 실패:', error);
-      // 리뷰 요약은 실패해도 페이지는 정상 동작하도록 함
-    }
-  }
-
-  /* ========= 메뉴 목록 API 호출 ========= */
-  async function loadMenus() {
-    // 이미 로딩 중이거나 더 이상 불러올 메뉴가 없으면 중단
-    if (state.loading || !state.hasMoreMenus) {
-      return;
-    }
-    
-    state.loading = true; // 로딩 상태 설정
-    
-    try {
-      console.log('메뉴 목록 로딩 시작... cursor:', state.cursor);
-      
-      // API URL 구성
-      const url = buildMenusUrl();
-      console.log('요청 URL:', url);
-      
-      const response = await fetch(url, {
-        method: 'GET',
-        credentials: 'include'
-      });
-      
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-      }
-      
-      const data = await response.json();
-      console.log('메뉴 목록 응답:', data);
-      
-      // 응답 데이터 구조 확인
-      const result = data.result || data;
-      const newMenus = result.menus || [];
-      
-      // 기존 메뉴 목록에 새 메뉴들 추가 (무한스크롤용)
-      state.menus = state.menus.concat(newMenus);
-      
-      // 다음 페이지 정보 업데이트
-      state.cursor = result.nextCursor;
-      state.hasMoreMenus = result.hasData === true; // hasData가 true일 때만 더 로드
-      
-      // 새로 받은 메뉴들을 UI에 렌더링
-      renderMenus(newMenus);
-      
-      console.log(`메뉴 ${newMenus.length}개 로딩 완료. 전체: ${state.menus.length}개`);
-      
-    } catch (error) {
-      console.error('메뉴 목록 로딩 실패:', error);
-      alert('메뉴 목록을 불러오는데 실패했습니다.');
-    } finally {
-      state.loading = false; // 로딩 상태 해제
-    }
-  }
-
-  /* ========= 메뉴 API URL 구성 ========= */
-  function buildMenusUrl() {
-    // URLSearchParams로 쿼리 파라미터 구성
-    const params = new URLSearchParams();
-    
-    // 한 번에 가져올 메뉴 개수
-    params.set('size', PAGE_SIZE.toString());
-    
-    // 정렬 기준 (할인율 높은 순)
-    params.set('menuSortType', 'DISCOUNT');
-    
-    // 다음 페이지를 위한 커서 (첫 페이지가 아닐 때만)
-    if (state.cursor !== null) {
-      params.set('cursor', state.cursor.toString());
-    }
-    
-    return `${API_BASE}/api/v1/store/${state.storeId}/menus?${params.toString()}`;
-  }
-
-  /* ========= 메뉴 목록 UI 렌더링 ========= */
-  function renderMenus(menus) {
-    // 템플릿이 없으면 중단
-    if (!$menuTemplate || !$menuList) {
-      console.error('메뉴 템플릿 또는 목록 요소를 찾을 수 없음');
-      return;
-    }
-    
-    // DocumentFragment로 성능 최적화 (DOM 조작 최소화)
-    const fragment = document.createDocumentFragment();
-    
-    // 각 메뉴 아이템 생성
-    menus.forEach(menu => {
-      // 템플릿 복제
-      const menuItem = $menuTemplate.content.cloneNode(true);
-      
-      // 메뉴명
-      const $menuName = menuItem.querySelector('.menu_name');
-      if ($menuName) {
-        $menuName.textContent = menu.name || '메뉴명 없음';
-      }
-      
-      // 가격 정보 계산 및 표시
-      renderMenuPricing(menuItem, menu);
-      
-      // 메뉴 이미지
-      const $menuThumb = menuItem.querySelector('.menu_thumb');
-      if ($menuThumb) {
-        $menuThumb.src = menu.menuImage || '../images/sample_pizza.jpg'; // 기본 이미지
-        $menuThumb.alt = menu.name || '메뉴 이미지';
-      }
-      
-      // 찜하기 버튼 (현재는 이벤트만 등록, API는 나중에)
-      const $likeBtn = menuItem.querySelector('.menu_like');
-      if ($likeBtn) {
-        $likeBtn.dataset.menuId = menu.menuId;
-        $likeBtn.addEventListener('click', () => handleMenuLike(menu.menuId));
-      }
-      
-      fragment.appendChild(menuItem);
+    // 병렬 처리: 리뷰, 메뉴, 장바구니를 동시에 로드
+    Promise.all([
+      loadReviewSummary(),  // 리뷰는 실패해도 상관없음
+      loadMenus(),          // 메뉴 로드 (우선순위 높음)
+      handleCartState()     // 장바구니 상태 처리
+    ]).then(() => {
+      console.log("=== 모든 데이터 로딩 완료 ===");
+    }).catch((error) => {
+      console.error("일부 데이터 로딩 실패:", error);
+      // 메뉴 로딩이 실패하지 않는 한 계속 진행
     });
     
-    // 실제 DOM에 추가 (기존 목록에 이어서)
-    $menuList.appendChild(fragment);
+    console.log("=== STORE_HOME.JS 초기화 완료 ===");
   }
 
-  /* ========= 메뉴 가격 정보 렌더링 ========= */
-  function renderMenuPricing(menuItem, menu) {
-    const originalPrice = menu.price || 0;
-    const discountPercent = menu.discountPercent || 0;
+  function extractParams() {
+    const params = new URLSearchParams(window.location.search);
+    appState.storeId = parseInt(params.get('storeId'));
     
-    // 할인된 가격 계산
-    const discountedPrice = Math.round(originalPrice * (1 - discountPercent / 100));
-    
-    // 정가 (취소선) - 할인이 있을 때만 표시
-    const $priceStrike = menuItem.querySelector('.price_strike');
-    if ($priceStrike) {
-      if (discountPercent > 0) {
-        $priceStrike.textContent = `${originalPrice.toLocaleString()}원`;
-        $priceStrike.style.display = 'block';
-      } else {
-        $priceStrike.style.display = 'none';
+    // order.html에서 전달된 장바구니 데이터 확인
+    const cartDataParam = params.get('cartData');
+    if (cartDataParam) {
+      try {
+        appState.cartData = JSON.parse(decodeURIComponent(cartDataParam));
+        console.log("URL에서 받은 장바구니 데이터:", appState.cartData);
+        
+        // URL 정리
+        const cleanUrl = `${window.location.pathname}?storeId=${appState.storeId}`;
+        window.history.replaceState({}, '', cleanUrl);
+      } catch (error) {
+        console.error("장바구니 데이터 파싱 실패:", error);
       }
     }
     
-    // 할인율 - 할인이 있을 때만 표시
-    const $saleRate = menuItem.querySelector('.price_sale_rate');
-    if ($saleRate) {
-      if (discountPercent > 0) {
-        $saleRate.textContent = `${discountPercent}%`;
-        $saleRate.style.display = 'inline';
-      } else {
-        $saleRate.style.display = 'none';
-      }
-    }
-    
-    // 판매가 (할인가 또는 정가)
-    const $salePrice = menuItem.querySelector('.price_sale');
-    if ($salePrice) {
-      const finalPrice = discountPercent > 0 ? discountedPrice : originalPrice;
-      $salePrice.textContent = `${finalPrice.toLocaleString()}원`;
-    }
+    console.log("URL 파라미터:", {
+      storeId: appState.storeId,
+      hasCartData: !!appState.cartData
+    });
   }
 
-  /* ========= 이벤트 리스너 등록 ========= */
-  function setupEventListeners() {
-    // 주소 복사 기능
+  function setupEvents() {
+    // 주소 복사
     if ($copyIcon) {
-      $copyIcon.addEventListener('click', copyAddress);
+      $copyIcon.addEventListener('click', copyStoreAddress);
     }
     
     // 리뷰 자세히 보기
     if ($reviewMore) {
       $reviewMore.addEventListener('click', (e) => {
         e.preventDefault();
-        // customer_review.html로 이동 (storeId 전달)
-        window.location.href = `customer_review.html?storeId=${state.storeId}`;
+        window.location.href = `customer_review.html?storeId=${appState.storeId}`;
       });
     }
     
@@ -343,77 +109,101 @@ document.addEventListener("DOMContentLoaded", () => {
       });
     }
     
-    // 무한 스크롤 (스크롤 이벤트)
+    // 무한 스크롤
     window.addEventListener('scroll', handleScroll);
     
-    console.log('이벤트 리스너 등록 완료');
+    console.log("이벤트 리스너 등록 완료");
   }
 
-  /* ========= 주소 복사 함수 ========= */
-  async function copyAddress() {
-    if (!state.storeInfo?.roadAddressName) {
-      alert('복사할 주소가 없습니다.');
-      return;
-    }
-    
+  async function loadStoreData() {
     try {
-      // 클립보드에 주소 복사
-      await navigator.clipboard.writeText(state.storeInfo.roadAddressName);
-      alert('주소가 복사되었습니다!');
-      console.log('주소 복사 완료:', state.storeInfo.roadAddressName);
+      console.log("가게 정보 로딩 시작...");
+      
+      const response = await fetch(`${API_BASE}/api/v1/store/${appState.storeId}`, {
+        method: 'GET',
+        credentials: 'include'
+      });
+      
+      if (!response.ok) {
+        throw new Error(`가게 정보 로드 실패: ${response.status}`);
+      }
+      
+      const data = await response.json();
+      appState.storeInfo = data.result || data;
+      
+      // 가게 정보 즉시 화면에 표시
+      displayStoreInfo();
+      
+      console.log("가게 정보 로딩 완료:", appState.storeInfo.name);
+      
     } catch (error) {
-      console.error('주소 복사 실패:', error);
-      // 구형 브라우저 대안
-      fallbackCopyAddress();
+      console.error("가게 정보 로딩 실패:", error);
+      alert('가게 정보를 불러오는데 실패했습니다.');
     }
   }
 
-  /* ========= 주소 복사 대안 (구형 브라우저용) ========= */
-  function fallbackCopyAddress() {
-    const textArea = document.createElement('textarea');
-    textArea.value = state.storeInfo.roadAddressName;
-    document.body.appendChild(textArea);
-    textArea.select();
+  function displayStoreInfo() {
+    const store = appState.storeInfo;
     
+    // 가게명
+    if ($topTitle && store.name) {
+      $topTitle.textContent = store.name;
+    }
+    
+    // 영업시간
+    if ($businessHours && store.openingTime && store.closingTime) {
+      const openTime = store.openingTime.slice(0, 5);
+      const closeTime = store.closingTime.slice(0, 5);
+      $businessHours.textContent = `영업시간 ${openTime}~${closeTime}`;
+    }
+    
+    // 주소
+    if ($address && store.roadAddressName) {
+      $address.textContent = store.roadAddressName;
+    }
+  }
+
+  async function loadReviewSummary() {
     try {
-      document.execCommand('copy');
-      alert('주소가 복사되었습니다!');
+      console.log("리뷰 요약 로딩 시작...");
+      
+      const response = await fetch(`${API_BASE}/api/v1/reviews/${appState.storeId}/summary`, {
+        method: 'GET',
+        credentials: 'include'
+      });
+      
+      if (!response.ok) {
+        console.log("리뷰 요약 로드 실패:", response.status);
+        return;
+      }
+      
+      const data = await response.json();
+      const summary = data.result?.summary || data.summary || '';
+      
+      if ($reviewText && summary) {
+        $reviewText.textContent = summary;
+        setupReviewToggle(summary);
+      }
+      
+      console.log("리뷰 요약 로딩 완료");
+      
     } catch (error) {
-      console.error('대안 복사도 실패:', error);
-      alert('주소 복사에 실패했습니다.');
-    } finally {
-      document.body.removeChild(textArea);
+      console.error("리뷰 요약 로딩 실패:", error);
+      // 리뷰 로딩 실패는 전체 앱에 영향주지 않음
     }
   }
 
-  /* ========= 무한 스크롤 처리 ========= */
-  function handleScroll() {
-    // 로딩 중이거나 더 이상 불러올 메뉴가 없으면 중단
-    if (state.loading || !state.hasMoreMenus) {
-      return;
-    }
-    
-    // 스크롤이 거의 바닥에 도달했는지 확인
-    const nearBottom = window.innerHeight + window.scrollY >= document.body.offsetHeight - 200;
-    
-    if (nearBottom) {
-      console.log('📜 스크롤 바닥 근처 도달 - 추가 메뉴 로딩');
-      loadMenus(); // 다음 페이지 메뉴 로드
-    }
-  }
-
-  /* ========= 리뷰 요약 더보기/접기 기능 ========= */
   function setupReviewToggle(fullText) {
-    if (!$reviewText || !fullText) return;
+    if (!$reviewText || !fullText || fullText.length <= 100) {
+      return;
+    }
     
-    // 부모 div의 높이를 자동으로 조정할 수 있도록 CSS 설정
     const $reviewSummary = document.querySelector('.review_summary');
     if ($reviewSummary) {
       $reviewSummary.style.height = 'auto';
       $reviewSummary.style.minHeight = 'auto';
     }
     
-    // 리뷰 텍스트 영역 CSS 조정
     $reviewText.style.height = 'auto';
     $reviewText.style.maxHeight = 'none';
     $reviewText.style.overflow = 'visible';
@@ -421,19 +211,11 @@ document.addEventListener("DOMContentLoaded", () => {
     $reviewText.style.wordWrap = 'break-word';
     $reviewText.style.lineHeight = '1.5';
     
-    // 텍스트가 짧으면 그대로 표시
-    if (fullText.length <= 100) {
-      $reviewText.textContent = fullText;
-      return;
-    }
-    
-    // 긴 텍스트는 축약해서 표시
     const shortText = fullText.substring(0, 37) + '...';
     let isExpanded = false;
     
     function updateDisplay() {
       if (isExpanded) {
-        // 전체 텍스트 표시 - div가 자동으로 늘어남
         $reviewText.innerHTML = `
           <span style="display: block; margin-bottom: 8px;">${fullText}</span>
           <button class="review-toggle-btn" style="
@@ -447,7 +229,6 @@ document.addEventListener("DOMContentLoaded", () => {
           ">접기</button>
         `;
       } else {
-        // 축약 텍스트 표시 - div가 작게 유지됨
         $reviewText.innerHTML = `
           <span style="display: block; margin-bottom: 8px;">${shortText}</span>
           <button class="review-toggle-btn" style="
@@ -462,17 +243,14 @@ document.addEventListener("DOMContentLoaded", () => {
         `;
       }
       
-      // 버튼 이벤트 재등록
       const $toggleBtn = $reviewText.querySelector('.review-toggle-btn');
       if ($toggleBtn) {
         $toggleBtn.addEventListener('click', (e) => {
-          e.preventDefault(); // 기본 동작 방지
+          e.preventDefault();
           isExpanded = !isExpanded;
           updateDisplay();
           
-          // 📱 스크롤 위치 조정 (선택사항 - 사용자 경험 향상)
           if (isExpanded) {
-            // 펼쳐질 때 약간의 딜레이 후 스크롤 조정
             setTimeout(() => {
               const rect = $reviewSummary.getBoundingClientRect();
               if (rect.bottom > window.innerHeight) {
@@ -490,15 +268,359 @@ document.addEventListener("DOMContentLoaded", () => {
     updateDisplay();
   }
 
-  /* ========= ❤️ 메뉴 찜하기 (API 대기중) ========= */
-  function handleMenuLike(menuId) {
-    console.log('메뉴 찜하기 클릭:', menuId);
-    // TODO: 메뉴 찜하기 API가 나오면 구현
-    alert('메뉴 찜하기 기능은 준비 중입니다.');
+  async function loadMenus() {
+    if (appState.loading || !appState.hasMoreMenus) {
+      return;
+    }
+    
+    appState.loading = true;
+    
+    try {
+      console.log("메뉴 목록 로딩 시작... cursor:", appState.cursor);
+      
+      const params = new URLSearchParams();
+      params.set('size', PAGE_SIZE.toString());
+      params.set('menuSortType', 'DISCOUNT');
+      if (appState.cursor !== null) {
+        params.set('cursor', appState.cursor.toString());
+      }
+      
+      const url = `${API_BASE}/api/v1/store/${appState.storeId}/menus?${params.toString()}`;
+      
+      const response = await fetch(url, {
+        method: 'GET',
+        credentials: 'include'
+      });
+      
+      if (!response.ok) {
+        throw new Error(`메뉴 목록 로드 실패: ${response.status}`);
+      }
+      
+      const data = await response.json();
+      const result = data.result || data;
+      const newMenus = result.menus || [];
+      
+      // 메뉴 목록 추가
+      appState.menus = appState.menus.concat(newMenus);
+      
+      // 페이지네이션 정보 업데이트
+      appState.cursor = result.nextCursor;
+      appState.hasMoreMenus = result.hasData === true;
+      
+      // 메뉴 즉시 화면에 표시
+      displayMenus(newMenus);
+      
+      console.log(`메뉴 ${newMenus.length}개 로딩 완료. 전체: ${appState.menus.length}개`);
+      
+      // 메뉴가 로드된 후 장바구니 표시 업데이트 (가격 계산을 위해)
+      if (appState.cartData) {
+        displayCartFromData(appState.cartData);
+      }
+      
+    } catch (error) {
+      console.error("메뉴 목록 로딩 실패:", error);
+      alert('메뉴 목록을 불러오는데 실패했습니다.');
+    } finally {
+      appState.loading = false;
+    }
   }
 
-  /* ========= 앱 시작 ========= */
-  init();
-  
-  console.log('store_home.js 초기화 완료!');
+  function displayMenus(menus) {
+    if (!$menuTemplate || !$menuList) {
+      console.error("메뉴 템플릿 또는 목록 요소를 찾을 수 없음");
+      return;
+    }
+    
+    const fragment = document.createDocumentFragment();
+    
+    menus.forEach(menu => {
+      const menuItem = $menuTemplate.content.cloneNode(true);
+      
+      // 메뉴 클릭 이벤트
+      const $menuItemElement = menuItem.querySelector('.menu_item');
+      if ($menuItemElement) {
+        $menuItemElement.style.cursor = 'pointer';
+        $menuItemElement.addEventListener('click', () => {
+          window.location.href = `order.html?storeId=${appState.storeId}&menuId=${menu.menuId}`;
+        });
+      }
+      
+      // 메뉴명
+      const $menuName = menuItem.querySelector('.menu_name');
+      if ($menuName) {
+        $menuName.textContent = menu.name || '메뉴명 없음';
+      }
+      
+      // 가격 정보
+      displayMenuPricing(menuItem, menu);
+      
+      // 메뉴 이미지
+      const $menuThumb = menuItem.querySelector('.menu_thumb');
+      if ($menuThumb) {
+        $menuThumb.src = menu.menuImage || '../images/sample_pizza.jpg';
+        $menuThumb.alt = menu.name || '메뉴 이미지';
+      }
+      
+      // 찜하기 버튼
+      const $likeBtn = menuItem.querySelector('.menu_like');
+      if ($likeBtn) {
+        $likeBtn.dataset.menuId = menu.menuId;
+        $likeBtn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          handleMenuLike(menu.menuId);
+        });
+      }
+      
+      fragment.appendChild(menuItem);
+    });
+    
+    $menuList.appendChild(fragment);
+    console.log(`메뉴 ${menus.length}개가 화면에 표시되었습니다.`);
+  }
+
+  function displayMenuPricing(menuItem, menu) {
+    const originalPrice = menu.price || 0;
+    const discountPercent = menu.discountPercent || 0;
+    const discountedPrice = Math.round(originalPrice * (1 - discountPercent / 100));
+    
+    // 정가 (할인이 있을 때만)
+    const $priceStrike = menuItem.querySelector('.price_strike');
+    if ($priceStrike) {
+      if (discountPercent > 0) {
+        $priceStrike.textContent = `${originalPrice.toLocaleString()}원`;
+        $priceStrike.style.display = 'block';
+      } else {
+        $priceStrike.style.display = 'none';
+      }
+    }
+    
+    // 할인율 (할인이 있을 때만)
+    const $saleRate = menuItem.querySelector('.price_sale_rate');
+    if ($saleRate) {
+      if (discountPercent > 0) {
+        $saleRate.textContent = `${discountPercent}%`;
+        $saleRate.style.display = 'inline';
+      } else {
+        $saleRate.style.display = 'none';
+      }
+    }
+    
+    // 판매가
+    const $salePrice = menuItem.querySelector('.price_sale');
+    if ($salePrice) {
+      const finalPrice = discountPercent > 0 ? discountedPrice : originalPrice;
+      $salePrice.textContent = `${finalPrice.toLocaleString()}원`;
+    }
+  }
+
+  async function handleCartState() {
+    console.log("=== 장바구니 상태 처리 시작 ===");
+    
+    if (appState.cartData) {
+      // order.html에서 전달받은 데이터가 있으면 사용
+      console.log("URL에서 받은 장바구니 데이터 사용");
+      // 메뉴가 로드되기를 기다린 후 표시 (가격 계산을 위해)
+      waitForMenusAndDisplayCart();
+    } else {
+      // 데이터가 없으면 서버에서 조회
+      console.log("서버에서 장바구니 조회");
+      await loadCartFromServer();
+    }
+  }
+
+  function waitForMenusAndDisplayCart() {
+    // 메뉴가 로드될 때까지 대기하거나, 이미 로드되었으면 즉시 표시
+    const checkMenus = () => {
+      if (appState.menus.length > 0) {
+        displayCartFromData(appState.cartData);
+      } else {
+        // 100ms 후 다시 확인
+        setTimeout(checkMenus, 100);
+      }
+    };
+    checkMenus();
+  }
+
+  function displayCartFromData(cartData) {
+    console.log("장바구니 데이터로 UI 업데이트:", cartData);
+    
+    if (!$floatingCart) {
+      console.error("장바구니 버튼 요소를 찾을 수 없음");
+      return;
+    }
+    
+    if (!cartData.cartMenuInfoList || cartData.cartMenuInfoList.length === 0) {
+      console.log("장바구니가 비어있음");
+      $floatingCart.hidden = true;
+      return;
+    }
+    
+    // 현재 가게의 아이템만 필터링
+    const currentStoreItems = cartData.cartMenuInfoList.filter(item => {
+      console.log(`아이템 storeId: ${item.storeId}, 현재 storeId: ${appState.storeId}`);
+      return parseInt(item.storeId) === parseInt(appState.storeId);
+    });
+    
+    console.log("현재 가게 아이템들:", currentStoreItems);
+    
+    if (currentStoreItems.length === 0) {
+      console.log("현재 가게의 아이템이 없음");
+      $floatingCart.hidden = true;
+      return;
+    }
+    
+    // 총 수량 계산
+    const totalCount = currentStoreItems.reduce((sum, item) => sum + (item.quantity || 0), 0);
+    
+    // 가격 계산 (메뉴 정보에서 가져오기)
+    let totalOriginalPrice = 0;
+    let totalDiscountedPrice = 0;
+    
+    currentStoreItems.forEach(item => {
+      // 현재 로드된 메뉴 목록에서 해당 메뉴 찾기
+      const menuInfo = appState.menus.find(menu => menu.menuId === item.menuId);
+      
+      if (menuInfo) {
+        const originalPrice = menuInfo.price || 0;
+        const discountPercent = menuInfo.discountPercent || 0;
+        const quantity = item.quantity || 0;
+        
+        const itemOriginalPrice = originalPrice * quantity;
+        const itemDiscountedPrice = Math.round(originalPrice * (1 - discountPercent / 100)) * quantity;
+        
+        totalOriginalPrice += itemOriginalPrice;
+        totalDiscountedPrice += itemDiscountedPrice;
+        
+        console.log(`메뉴 ${item.menuName}: 원가 ${itemOriginalPrice}원, 할인가 ${itemDiscountedPrice}원`);
+      } else {
+        console.warn(`메뉴 정보를 찾을 수 없음: menuId ${item.menuId}`);
+      }
+    });
+    
+    console.log("총 수량:", totalCount);
+    console.log("총 원가:", totalOriginalPrice);
+    console.log("총 할인가:", totalDiscountedPrice);
+    
+    // 장바구니 버튼 표시
+    $floatingCart.hidden = false;
+    
+    // UI 업데이트
+    const $cartCount = $floatingCart.querySelector('.cart_count');
+    const $cartOld = $floatingCart.querySelector('#cartOld');
+    const $cartNow = $floatingCart.querySelector('#cartNow');
+    
+    if ($cartCount) {
+      $cartCount.textContent = totalCount;
+    }
+    
+    if ($cartOld && $cartNow) {
+      if (totalOriginalPrice > 0) {
+        if (totalOriginalPrice !== totalDiscountedPrice) {
+          // 할인이 있는 경우
+          $cartOld.textContent = `${totalOriginalPrice.toLocaleString()}원`;
+          $cartOld.style.display = 'inline';
+          $cartNow.textContent = `${totalDiscountedPrice.toLocaleString()}원`;
+        } else {
+          // 할인이 없는 경우
+          $cartOld.style.display = 'none';
+          $cartNow.textContent = `${totalDiscountedPrice.toLocaleString()}원`;
+        }
+      } else {
+        // 가격 정보가 없는 경우 기본 표시
+        $cartOld.style.display = 'none';
+        $cartNow.textContent = `${totalCount}개 담김`;
+      }
+    }
+    
+    console.log("장바구니 UI 업데이트 완료");
+  }
+
+  async function loadCartFromServer() {
+    try {
+      console.log("서버에서 장바구니 조회 시작...");
+      
+      const response = await fetch(`${API_BASE}/api/v1/carts`, {
+        method: 'GET',
+        credentials: 'include'
+      });
+      
+      if (!response.ok) {
+        if (response.status === 401 || response.status === 404) {
+          console.log("장바구니가 비어있거나 로그인 필요");
+          $floatingCart.hidden = true;
+          return;
+        }
+        throw new Error(`장바구니 조회 실패: ${response.status}`);
+      }
+      
+      const data = await response.json();
+      console.log("서버 장바구니 응답:", data);
+      
+      const cartData = data.result || data;
+      
+      // 메뉴가 로드되기를 기다린 후 표시
+      const checkMenus = () => {
+        if (appState.menus.length > 0) {
+          displayCartFromData(cartData);
+        } else {
+          setTimeout(checkMenus, 100);
+        }
+      };
+      checkMenus();
+      
+      console.log("서버 장바구니 조회 완료");
+      
+    } catch (error) {
+      console.error("서버 장바구니 조회 실패:", error);
+      $floatingCart.hidden = true;
+    }
+  }
+
+  async function copyStoreAddress() {
+    if (!appState.storeInfo?.roadAddressName) {
+      alert('복사할 주소가 없습니다.');
+      return;
+    }
+    
+    try {
+      await navigator.clipboard.writeText(appState.storeInfo.roadAddressName);
+      alert('주소가 복사되었습니다!');
+      console.log('주소 복사 완료:', appState.storeInfo.roadAddressName);
+    } catch (error) {
+      console.error('주소 복사 실패:', error);
+      
+      // 구형 브라우저 대안
+      const textArea = document.createElement('textarea');
+      textArea.value = appState.storeInfo.roadAddressName;
+      document.body.appendChild(textArea);
+      textArea.select();
+      
+      try {
+        document.execCommand('copy');
+        alert('주소가 복사되었습니다!');
+      } catch (err) {
+        alert('주소 복사에 실패했습니다.');
+      } finally {
+        document.body.removeChild(textArea);
+      }
+    }
+  }
+
+  function handleScroll() {
+    if (appState.loading || !appState.hasMoreMenus) {
+      return;
+    }
+    
+    const nearBottom = window.innerHeight + window.scrollY >= document.body.offsetHeight - 200;
+    
+    if (nearBottom) {
+      console.log("스크롤 바닥 근처 도달 - 추가 메뉴 로딩");
+      loadMenus();
+    }
+  }
+
+  function handleMenuLike(menuId) {
+    console.log('메뉴 찜하기 클릭:', menuId);
+    alert('메뉴 찜하기 기능은 준비 중입니다.');
+  }
 });

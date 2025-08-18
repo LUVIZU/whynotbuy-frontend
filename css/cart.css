@@ -1,372 +1,173 @@
-/* ===== 전역 변수: 네비바/버튼 간격 ===== */
-:root {
-  --bottom-nav-h: 112px;                 /* 하단 네비바 높이 */
-  --order-gap: 32px;                    /* 네비바와 주문버튼 사이 간격 */
+/* ========== Cart Page CSS (버튼 fixed + 네비 실측 반영) ========== */
+:root{
+  --bottom-nav-h: 112px;                 /* fallback (JS가 덮어씀 가능) */
+  --btn-h: 56px;                         /* fallback (JS가 덮어씀 가능) */
+  --gap-safe: clamp(8px, 2.5vh, 24px);   /* 화면별 여유 간격 */
+
+  /* 🆕 런타임에서 JS가 덮어쓸 값들 */
+  --btn-bottom: calc(var(--bottom-nav-h) + var(--gap-safe));
+  --content-pad-bottom: calc(var(--bottom-nav-h) + var(--btn-h) + var(--gap-safe));
 }
 
-/* 앱 프레임을 절대배치 기준으로 */
-
-
-  .top_bar {
-    flex: 0 0 auto;             /* 절대 줄어들지 않게 */
-    height: 118px;               /* 디자인 값으로 고정 (48~64 중 택1) */
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: #A82D2F;        /* 너가 쓰는 색으로 */
-    color: #fff;
-    border-bottom: 1px solid rgba(0,0,0,.06);
-    position: sticky;           /* 스크롤해도 상단 고정 원하면 유지, 필요없으면 삭제 */
-    top: 0;
-    z-index: 40;
-    padding-top: env(safe-area-inset-top);
-  }
+/* 프레임 (시뮬 기기용 고정 크기 / 실기기면 100svh로 교체 가능) */
+.app_frame{
+  position: relative;
+  width: 390px;
+  height: 844px;
+  display: flex;
+  flex-direction: column;
+  background: #fff;
+  overflow: hidden;
+}
 
 /* ===== 상단 바 ===== */
-.bar_content {
-    margin: 0;                  /* ← 기존 margin-top:76.5 / margin-left:166 제거 */
-    font-size: 16px;
-    font-weight: 600;
-    line-height: 1;
-    transform: translateY(22.5px);
-  }
-
-/* ===== 컨텐츠 스크롤 컨테이너 ===== */
-.content {
+.top_bar{
+  flex: 0 0 auto;
+  height: 118px;
+  display: flex; align-items: center; justify-content: center;
+  background: #A82D2F; color: #fff;
+  border-bottom: 1px solid rgba(0,0,0,.06);
+  position: sticky; top: 0; z-index: 40;
+  padding-top: env(safe-area-inset-top);
+}
+.bar_content{
   margin: 0;
-  padding: 0;
+  font-size: 16px; font-weight: 600; line-height: 1;
+  transform: translateY(22.5px);
+}
 
-  /* 리스트가 길어져도 이 영역만 스크롤 */
-  flex: 1 1 auto;
+/* ===== 콘텐츠(스크롤 영역) ===== */
+.content{
+  margin: 0; padding: 0;
+  flex: 1 1 auto; min-height: 0;
   overflow-y: auto;
+  /* 버튼/네비와 겹치지 않도록 바닥 여백: JS가 --content-pad-bottom 갱신 */
+  padding-bottom: calc(var(--content-pad-bottom) + env(safe-area-inset-bottom));
 
-  /* 스크롤바 숨김 (브라우저별) */
-  -ms-overflow-style: none;  /* IE 10+ / 오래된 Edge */
-  scrollbar-width: none;     /* Firefox */
-
-  /* 아래에 네비바 + 주문버튼(56px) + 여유 */
-  padding-bottom: calc(
-    var(--bottom-nav-h) + 56px + var(--order-gap) + 24px + env(safe-area-inset-bottom)
-  );
+  -ms-overflow-style: none;  /* IE/old Edge 숨김 */
+  scrollbar-width: none;     /* Firefox 숨김 */
 }
-
-.content::-webkit-scrollbar { /* Chrome/Safari */
-  width: 0;
-  height: 0;
-  display: none;
-}
+.content::-webkit-scrollbar{ width: 0; height: 0; display: none; }
 
 /* ===== 분리 라인 / 가게명 ===== */
-.line1 {
-  height: 8px;
-  background: #FFFBEF;
-}
-
-.store_name_box {
-  height: 40px;
-}
-
-.store_name {
-  color: #000;
-  font-size: 13px;
-  font-style: normal;
-  font-weight: 450;
-  line-height: normal;
-  padding-top: 14px;
-  padding-left: 24px;
+.line1{ height: 8px; background: #FFFBEF; }
+.store_name_box{ height: 40px; }
+.store_name{
+  color: #000; font-size: 13px; font-weight: 450; line-height: normal;
+  padding-top: 14px; padding-left: 24px;
 }
 
 /* ===== 장바구니 아이템 ===== */
-.menu_item {
-  display: block;
-  background: #FFFFFF;
-  height: 120px;
+.menu_item{ display: block; background: #FFFFFF; height: 120px; }
+.menu_item1{ height: 74px; background: #FFFFFF; }
+.menu_item1_meta1{ display: flex; margin-left: 16px; padding-top: 16px; gap: 12px; }
+
+.menu_delete img:hover{ cursor: pointer; }
+.menu_title{
+  color: #000; font-family: "GamtanRoad Dotum";
+  font-size: 16px; font-weight: 550; line-height: normal;
+}
+.regular_price{
+  margin-top: -14.5px; margin-left: 44px;
+  color: #777; font-family: "GamtanRoad Dotum";
+  font-size: 12px; font-weight: 400; text-decoration: line-through;
+}
+.menu_img img{
+  display: block; width: 56px; height: 56px; border-radius: 16px;
+  margin-left: 310px; margin-top: -20px;
 }
 
-.menu_item1 {
-  height: 74px;
-  background: #FFFFFF;
+.menu_item2{
+  display: flex; height: 46px; background: #FFFFFF; border-bottom: 1px solid #D9D9D9;
 }
-
-.menu_item1_meta1 {
-  display: flex;
-  margin-left: 16px;
-  padding-top: 16px;
-  gap: 12px;
-}
-
-.menu_delete img:hover {
-    cursor: pointer;
-}
-
-.menu_title {
-  color: #000;
-  font-family: "GamtanRoad Dotum";
-  font-size: 16px;
-  font-style: normal;
-  font-weight: 550;
-  line-height: normal;
-}
-
-.regular_price {
-  margin-top: -14.5px;
-  margin-left: 44px;
-  color: #777;
-  font-family: "GamtanRoad Dotum";
-  font-size: 12px;
-  font-style: normal;
-  font-weight: 400;
-  line-height: normal;
-  text-decoration-line: line-through;
-}
-
-.menu_img img {
-  display: block;                 /* flex → block 권장 */
-  height: 56px;
-  width: 56px;
-  border-radius: 16px;
-  margin-left: 310px;
-  margin-top: -20px;
-}
-
-.menu_item2 {
-  display: flex;
-  height: 46px;
-  background: #FFFFFF;
-  border-bottom: 1px solid #D9D9D9;
-}
-
-.menu_item2_meta1 {
-  display: flex;
-  margin-top: 8px;
-  margin-left: 44px;
-  gap: 4px;
-}
-
-.sale_percent {
+.menu_item2_meta1{ display: flex; margin-top: 8px; margin-left: 44px; gap: 4px; }
+.sale_percent{
   color: var(--maincolor, #A82D2F);
-  font-family: "GamtanRoad Dotum";
-  font-size: 12px;
-  font-style: normal;
-  font-weight: 400;
-  line-height: normal;
+  font-family: "GamtanRoad Dotum"; font-size: 12px; font-weight: 400;
   transform: translateY(2px);
 }
-
-.sale_price {
-  color: #000;
-  text-align: center;
-  font-family: "GamtanRoad Dotum";
-  font-size: 16px;
-  font-style: normal;
-  font-weight: 400;
-  line-height: normal;
+.sale_price{
+  color: #000; text-align: center; font-family: "GamtanRoad Dotum";
+  font-size: 16px; font-weight: 400;
 }
 
 /* ===== 수량 스테퍼 ===== */
-.quantity_bar {
-  display: flex;
-  gap: 16px;
-  margin-top: 8px;
-  margin-left: 103px;
-  margin-bottom: 16px;
+.quantity_bar{
+  display: flex; gap: 16px; margin-top: 8px; margin-left: 103px; margin-bottom: 16px;
   transform: translateX(25px);
 }
-
-.quantity_bar_left {
-  flex: 1 1 auto;
-  display: flex;
-  justify-content: flex-end;
-  align-items: center;
+.quantity_bar_left{ flex: 1 1 auto; display: flex; justify-content: flex-end; align-items: center; }
+.quantity_value{
+  color: #000; font-family: "GamtanRoad Dotum"; font-size: 12px; font-weight: 530;
 }
-
-.quantity_value {
-  color: #000;
-  font-family: "GamtanRoad Dotum";
-  font-size: 12px;
-  font-style: normal;
-  font-weight: 530;
-  line-height: normal;
+.quantity_bar_right{
+  width: 72px; height: 24px; background: #eeeeee; border-radius: 5.6px;
+  display: flex; align-items: center; justify-content: center; box-sizing: border-box;
 }
-
-.quantity_bar_right {
-  width: 72px;
-  height: 24px;
-  background: #eeeeee;
-  border-radius: 5.6px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-sizing: border-box;
+.quantity_button1{
+  appearance: none; border: 0; background: transparent; font-size: 18px; line-height: 1;
+  padding: 4px 6px; cursor: pointer; transform: translateY(-1px);
 }
-
-.quantity_button1 {
-  appearance: none;
-  border: 0;
-  background: transparent;
-  font-size: 18px;
-  font-weight: 400;
-  line-height: 1;
-  padding: 4px 6px;
-  cursor: pointer;
-  transform: translateY(-1px);
+.quantity_bar_right .quantity_button1:first-of-type{
+  position: relative; color: transparent; font-size: 0; /* '-'는 가상요소로 그림 */
 }
-
-.quantity_bar_right .quantity_button1:first-of-type {
-  position: relative;
-  color: transparent;     /* 텍스트 '-'는 숨기기 */
-  font-size: 0;           /* 접근성은 aria-label로 보완 */
+.quantity_bar_right .quantity_button1:first-of-type::before{
+  content: ""; position: absolute; left: 50%; top: 50%;
+  transform: translate(-50%,-50%) translateY(1px) translateX(1px);
+  width: 10px; height: 1.54px; background: #111; border-radius: 1px;
 }
-.quantity_bar_right .quantity_button1:first-of-type::before {
-  content: "";
-  position: absolute;
-  left: 50%; top: 50%;
-  transform: translate(-50%, -50%) translateY(1px) translateX(1px);
-  width: 10px;           /* 길이 */
-  height: 1.54px;        /* 두께 */
-  background: #111;
-  border-radius: 1px;
+.quantity_button2{
+  appearance: none; border: 0; background: transparent; font-size: 18px; line-height: 1;
+  transform: translateX(4px); padding: 4px 6px; cursor: pointer;
 }
-
-.quantity_button2 {
-  appearance: none;
-  border: 0;
-  background: transparent;
-  font-size: 18px;
-  font-weight: 400;
-  line-height: 1;
-  transform: translateX(4px);
-  padding: 4px 6px;
-  cursor: pointer;
-}
-
-.quantity_divider {
-  width: 1px;
-  height: 20px;
-  background: #cfcfcf;
-  margin: 0 8px;
-  transform: translateX(4px);
-}
+.quantity_divider{ width: 1px; height: 20px; background: #cfcfcf; margin: 0 8px; transform: translateX(4px); }
 
 /* ===== "다른 메뉴 더 담기" & 합계 ===== */
-.add_menu {
-  width: 130px;
-  height: 38px;
-  border-radius: 60px;
-  border: 1px solid #777;
-  background: #FFF;
-  box-shadow: 0 0 10px 0 rgba(0, 0, 0, 0.10);
-
-  /* 리스트 끝에 자연스럽게 오도록 중앙/여백 */
+.add_menu{
+  width: 130px; height: 38px; border-radius: 60px; border: 1px solid #777; background: #FFF;
+  box-shadow: 0 0 10px rgba(0,0,0,.10);
   margin: 16px auto 8px;
 }
-
-.add_menu:hover {
-    width: 130px;
-    height: 38px;
-    border-radius: 60px;
-    border: 1px solid #777;
-    background: #F5F5F5;
-    box-shadow: 0 0 10px 0 rgba(0, 0, 0, 0.10);
-  
-    cursor: pointer;
-    /* 리스트 끝에 자연스럽게 오도록 중앙/여백 */
-    margin: 16px auto 8px;
-  }
-
-.add_menu_text {
-  color: #000;
-  font-family: Pretendard;
-  font-size: 12px;
-  font-style: normal;
-  font-weight: 600;
-  line-height: normal;
+.add_menu:hover{ background: #F5F5F5; cursor: pointer; }
+.add_menu_text{
+  color: #000; font-family: Pretendard; font-size: 12px; font-weight: 600;
   padding: 12px 16px;
 }
-
-.price {
-  /* 아래로 크게 밀던 고정 마진 제거하고 자연스럽게 배치 */
-  margin: 12px 24px 0 24px;
-  height: auto;
+.price{ margin: 12px 24px 0 24px; height: auto; }
+.price_regular{
+  color: #777; text-align: right; font-family: "GamtanRoad Dotum";
+  font-size: 16px; font-weight: 400; text-decoration: line-through;
+}
+.price_sale{
+  margin-top: 4px; color: #007AFF; text-align: right; font-family: "GamtanRoad Dotum";
+  font-size: 20px; font-weight: 400;
 }
 
-.price_regular {
-  color: #777;
-  text-align: right;
-  font-family: "GamtanRoad Dotum";
-  font-size: 16px;
-  font-style: normal;
-  font-weight: 400;
-  line-height: normal;
-  text-decoration-line: line-through;
+/* ===== 하단 네비: 프레임 바닥 고정 ===== */
+.bottom_nav{
+  position: absolute; left: 0; right: 0; bottom: 0;
+  height: var(--bottom-nav-h); z-index: 10;
 }
 
-.price_sale {
-  margin-top: 4px;
-  color: #007AFF;
-  text-align: right;
-  font-family: "GamtanRoad Dotum";
-  font-size: 20px;
-  font-style: normal;
-  font-weight: 400;
-  line-height: normal;
+/* ===== 주문 버튼: 뷰포트 고정(fixed) + 실측 bottom 사용 ===== */
+.order_button{
+  position: fixed;                 /* 스크롤해도 화면에 고정 */
+  left: 50%; transform: translateX(-50%);
+  bottom: calc(var(--btn-bottom) + env(safe-area-inset-bottom));  /* JS가 갱신 */
+  z-index: 50;
+
+  width: 320px; height: var(--btn-h);
+  border-radius: 20px; border: 1px solid var(--sub-color2,#EFBEB5);
+  background: #A82D2F; box-shadow: 2px 2px 10px rgba(0,0,0,.40);
+
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer;
+}
+.order_button:hover{ background: #962022; }
+.order_button_text{
+  color: #FFF; font-family: Roboto; font-size: 16px; font-weight: 600;
+  line-height: 1; margin: 0; padding: 0;
 }
 
-/* ===== 하단 주문 버튼: 네비바 위에 고정 ===== */
-.order_button {
-    position: fixed; /* <- 핵심 */
-    left: 50%;
-    transform: translateX(-50%) translateY(-57px);
-    bottom: calc(var(--bottom-nav-h) + var(--order-gap) + env(safe-area-inset-bottom));
-    z-index: 50;
-  
-    /* 모양은 기존 그대로, 위치를 마진으로 잡던 코드는 제거 */
-    width: 320px;
-    height: 56px;
-    border-radius: 20px;
-    border: 1px solid var(--sub-color2, #EFBEB5);
-    background: #A82D2F;
-    box-shadow: 2px 2px 10px 0 rgba(0, 0, 0, 0.40);
-    margin: 0; /* ← 중요: 기존 margin-top/left/bottom 제거 */
-  }
-
-  .order_button:hover {
-    background: #962022;
-    position: fixed; /* <- 핵심 */
-    left: 50%;
-    transform: translateX(-50%) translateY(-57px);
-    bottom: calc(var(--bottom-nav-h) + var(--order-gap) + env(safe-area-inset-bottom));
-    z-index: 50;
-  
-    /* 모양은 기존 그대로, 위치를 마진으로 잡던 코드는 제거 */
-    cursor: pointer;
-    width: 320px;
-    height: 56px;
-    border-radius: 20px;
-    border: 1px solid var(--sub-color2, #EFBEB5);
-    box-shadow: 2px 2px 10px 0 rgba(0, 0, 0, 0.40);
-    margin: 0; /* ← 중요: 기존 margin-top/left/bottom 제거 */
-}
-
-.order_button_text {
-  color: #FFF;
-  font-family: Roboto;
-  font-size: 16px;
-  font-style: normal;
-  font-weight: 600;
-  line-height: normal;
-  padding: 19px 44.5px;
-}
-
-/* ===== 하단 네비바: 프레임 바닥 고정 ===== */
-.bottom_nav {
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  height: var(--bottom-nav-h);
-  /* 배경/테두리 등은 기존 스타일을 사용 */
-}
-
-/* (권장) 아이템/행에 absolute/float 사용 금지 → 자연스러운 문서 흐름 유지 */
-.menu_item, .menu_item1, .menu_item2 { position: static; float: none; }
+/* 흐름 보존 권장 */
+.menu_item, .menu_item1, .menu_item2{ position: static; float: none; }

@@ -108,5 +108,48 @@
 
   <!-- 페이지 스크립트 -->
   <script src="../js/cart.js"></script>
+  <script>
+    (function () {
+      const root = document.documentElement;
+      const nav = document.querySelector('.bottom_nav');
+      const btn = document.querySelector('.order_button');
+  
+      function updateVars(){
+        // clamp(8px, 2.5vh, 24px) 계산
+        const gap = Math.max(8, Math.min(window.innerHeight * 0.025, 24));
+  
+        // 버튼 실제 높이
+        const btnH = btn ? Math.round(btn.getBoundingClientRect().height) : 56;
+  
+        // "뷰포트 하단 → 네비 상단" 실제 거리(px)
+        let navToBottom = 0;
+        if (nav){
+          const r = nav.getBoundingClientRect();
+          navToBottom = Math.max(0, window.innerHeight - r.top);
+        }
+  
+        // CSS 변수 갱신
+        root.style.setProperty('--btn-h', btnH + 'px');
+        root.style.setProperty('--btn-bottom', (navToBottom + gap) + 'px');
+        root.style.setProperty('--content-pad-bottom', (navToBottom + btnH + gap) + 'px');
+      }
+  
+      // 초기 + 화면 변경 대응
+      window.addEventListener('load', updateVars, { passive: true });
+      window.addEventListener('resize', updateVars, { passive: true });
+      window.addEventListener('orientationchange', updateVars, { passive: true });
+  
+      // 요소 자체 높이 변화 감지 (아이콘/폰트/줌 등)
+      if (window.ResizeObserver){
+        if (nav) new ResizeObserver(updateVars).observe(nav);
+        if (btn) new ResizeObserver(updateVars).observe(btn);
+      }
+  
+      // 모바일 가상 키보드/뷰포트 변화
+      if (window.visualViewport){
+        visualViewport.addEventListener('resize', updateVars, { passive: true });
+      }
+    })();
+  </script>
 </body>
 </html>
