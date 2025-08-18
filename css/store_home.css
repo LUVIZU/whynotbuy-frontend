@@ -1,4 +1,3 @@
-
 /* -------header------ */
 
 .app_frame { position: relative; overflow: hidden; }
@@ -170,6 +169,14 @@
   .menu_heading{
     text-align:center; font-size:20px; font-weight:600; margin:12px 0 33px;
   }
+
+  .menu_loading {
+    text-align: center;
+    padding: 40px 20px;
+    color: #999;
+    font-size: 14px;
+  }
+
   .menu_list{ 
     list-style:none; 
     margin:0; 
@@ -207,7 +214,44 @@
 
   .menu_empty{ padding:24px 0; text-align:center; color:#999; }
   
-  
+/* 로딩 애니메이션 스타일 */
+.loading-dots {
+    display: inline-block;
+    font-size: inherit;
+    color: inherit;
+}
+
+.loading-dots .dot {
+    display: inline-block;
+    animation: bounce 1.4s infinite ease-in-out both;
+    font-weight: bold;
+}
+
+.loading-dots .dot:nth-child(1) { animation-delay: -0.32s; }
+.loading-dots .dot:nth-child(2) { animation-delay: -0.16s; }
+.loading-dots .dot:nth-child(3) { animation-delay: 0s; }
+
+@keyframes bounce {
+    0%, 80%, 100% {
+        transform: scale(0.8) translateY(0);
+        opacity: 0.5;
+    }
+    40% {
+        transform: scale(1) translateY(-8px);
+        opacity: 1;
+    }
+}
+
+/* 헤더 로딩 애니메이션 색상 (흰색) */
+.top_bar .loading-dots {
+    color: white;
+}
+
+/* 메뉴 로딩 중일 때 메뉴 리스트 숨기기 */
+.menu_list.loading {
+    display: none;
+}
+
 /* 플로팅 카트 (네비 높이 변수 사용) */
 
 .floating_cart{
@@ -301,4 +345,3 @@
 }
   
   /* -------nav------ */
-  
