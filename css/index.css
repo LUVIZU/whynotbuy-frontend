@@ -1,0 +1,87 @@
+:root {
+  --max-w: 1920px; /* 디자인 최대 가로 */
+}
+
+* {
+  box-sizing: border-box;
+}
+html,
+body {
+  margin: 0;
+  background: #f7f7fa;
+  font-family: Pretendard, system-ui, -apple-system, Segoe UI, Roboto,
+    sans-serif;
+}
+
+/* 전체 래퍼: 1920 넘어가면 중앙 정렬, 이하는 100%로 축소 */
+.landing_wrap {
+  width: min(100%, var(--max-w));
+  margin-inline: auto;
+}
+
+/* 모든 섹션은 가로 100%에 비율 고정(스크롤은 자연 발생) */
+.section {
+  width: 100%;
+  background-repeat: no-repeat;
+  background-size: cover;
+  background-position: center top;
+}
+
+/* 각 섹션 비율(원본 w:h) */
+.hero {
+  aspect-ratio: 1920 / 1420;
+} /* 1 */
+.bg2 {
+  aspect-ratio: 1920 / 1643;
+} /* 2 */
+.bg3 {
+  aspect-ratio: 1920 / 1531;
+} /* 3 */
+.bg4 {
+  aspect-ratio: 1920 / 1637;
+  position: relative;
+} /* 4 + CTA 배치용 relative */
+
+/* 배경 연결(위에서부터 순서대로 붙음) */
+.bg1 {
+  background-image: url("../images/landing_1.png");
+}
+.bg2 {
+  background-image: url("../images/landing_2.png");
+}
+.bg3 {
+  background-image: url("../images/landing_3.png");
+}
+.bg4 {
+  background-image: url("../images/landing_4.png");
+}
+
+/* CTA 클릭영역 예시: %로 잡아야 반응형에서도 정확 */
+.hotspot {
+  position: absolute;
+  display: block;
+  /* 디버깅 시 보려면 임시로 background: rgba(0,0,0,.2); 넣어 확인 */
+}
+
+/* 예시 좌표 (원본 기준 대략값) — 디자인에 맞게 조정하세요 */
+.hotspot.owner {
+  /* 좌측 카드 박스 영역 */
+  left: 12%; /* x */
+  top: 72%; /* y */
+  width: 28%; /* w */
+  height: 18%; /* h */
+}
+.hotspot.student {
+  /* 우측 카드 박스 영역 */
+  left: 60%;
+  top: 72%;
+  width: 28%;
+  height: 18%;
+}
+
+/* 가로 1920px 이상에서는 더 이상 확대하지 않음(픽셀 퍼펙트) */
+@media (min-width: 1920px) {
+  .landing_wrap {
+    width: 1920px;
+  }
+}

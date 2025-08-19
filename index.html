@@ -1,14 +1,46 @@
 <!DOCTYPE html>
 <html lang="ko">
   <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>My Project</title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>이걸 안사? | Landing</title>
+
+    <!-- (공통) -->
     <link rel="stylesheet" href="./css/style.css" />
+    <!-- Pretendard -->
+    <link
+      href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css"
+      rel="stylesheet"
+    />
+    <!-- 랜딩 전용 -->
+    <link rel="stylesheet" href="./css/index.css" />
   </head>
   <body>
-    <h1>환영합니다!</h1>
-    <p>이것은 기본 HTML 페이지입니다.</p>
-    <script src="../js/main.js"></script>
+    <div class="landing_wrap">
+      <!-- 1 -->
+      <section class="hero section bg1"></section>
+
+      <!-- 2 -->
+      <section class="section bg2"></section>
+
+      <!-- 3 -->
+      <section class="section bg3"></section>
+
+      <!-- 4 (CTA 필요하면 이 안에 링크 배치) -->
+      <section class="section bg4">
+        <!-- 예시: 클릭 영역(원본 1920×1637 기준 % 단위로 잡으면 반응형 유지) -->
+        <!-- 실제 위치/크기는 디자인 좌표 보고 %값만 바꿔주세요 -->
+        <a
+          class="hotspot owner"
+          href="./pages/login.html"
+          aria-label="사장님 시작하기"
+        ></a>
+        <a
+          class="hotspot student"
+          href="./pages/login.html"
+          aria-label="대학생 시작하기"
+        ></a>
+      </section>
+    </div>
   </body>
 </html>
