@@ -136,6 +136,7 @@
     font-style: normal;
     font-weight: 600;
     line-height: normal;
+    white-space: nowrap; /* 강제로 한 줄 유지 */
     padding: 19px 98.5px;
   }
 
