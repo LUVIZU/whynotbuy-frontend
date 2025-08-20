@@ -346,39 +346,118 @@ document.addEventListener("DOMContentLoaded", () => {
     };
   }
 
-  // 타임피커 초기화
+  // 타임피커 초기화 (시간 제약 기능 추가)
   function initTimePicker() {
     let ITEM_HEIGHT = 40;
-  
+
     const hourWheel = document.querySelector('.wheel[data-type="hour"]');
     const minuteWheel = document.querySelector('.wheel[data-type="minute"]');
     const ampmWheel = document.querySelector('.wheel[data-type="ampm"]');
-  
+
     if (!hourWheel || !minuteWheel || !ampmWheel) {
       console.error('타임피커 요소를 찾을 수 없습니다.');
       return;
     }
-  
+
     // 아이템 생성
-    function makeItem(text) {
+    function makeItem(text, disabled = false) {
       const el = document.createElement('div');
-      el.className = 'item';
+      el.className = disabled ? 'item disabled' : 'item';
       el.textContent = text;
       return el;
     }
     
-    // 휠에 아이템 추가
+    // 현재 시간을 30분 단위로 올림하여 최소 선택 가능 시간 계산
+    function getMinSelectableTime() {
+      const now = new Date();
+      const currentMinute = now.getMinutes();
+      
+      // 현재 시간을 30분 단위로 올림
+      let nextSlot;
+      if (currentMinute < 30) {
+        nextSlot = new Date(now.getFullYear(), now.getMonth(), now.getDate(), now.getHours(), 30, 0, 0);
+      } else {
+        nextSlot = new Date(now.getFullYear(), now.getMonth(), now.getDate(), now.getHours() + 1, 0, 0, 0);
+      }
+      
+      console.log(`현재 시간: ${now.getHours()}:${String(now.getMinutes()).padStart(2, '0')}`);
+      console.log(`최소 선택 가능 시간: ${nextSlot.getHours()}:${String(nextSlot.getMinutes()).padStart(2, '0')}`);
+      
+      return nextSlot;
+    }
+
+    // 현재 시간 기반으로 사용 가능한 시간 계산
+    function getAvailableOptions() {
+      const minTime = getMinSelectableTime();
+      const minHour24 = minTime.getHours();
+      const minMinute = minTime.getMinutes();
+      
+      const available = {
+        hours: new Set(),
+        minutes: new Set(['00', '30']),
+        periods: new Set()
+      };
+      
+      // AM/PM 사용 가능 여부
+      const currentHour24 = new Date().getHours();
+      if (currentHour24 < 12) {
+        available.periods.add('AM');
+        available.periods.add('PM');
+      } else {
+        // 오후가 되면 AM 선택 불가
+        available.periods.add('PM');
+      }
+      
+      // 각 시간대별로 사용 가능한 시간 계산
+      for (let period of available.periods) {
+        for (let hour12 = 1; hour12 <= 12; hour12++) {
+          let hour24;
+          if (period === 'AM') {
+            hour24 = hour12 === 12 ? 0 : hour12;
+          } else {
+            hour24 = hour12 === 12 ? 12 : hour12 + 12;
+          }
+          
+          // 각 30분 슬롯별로 확인
+          for (let minute of [0, 30]) {
+            const checkTime = new Date();
+            checkTime.setHours(hour24, minute, 0, 0);
+            
+            if (checkTime >= minTime) {
+              available.hours.add(hour12);
+            }
+          }
+        }
+      }
+      
+      return available;
+    }
+    
+    // 휠에 아이템 추가 (제약 조건 적용)
     function populateWheels() {
+      const available = getAvailableOptions();
+      
+      // 기존 아이템 제거
+      hourWheel.innerHTML = '';
+      minuteWheel.innerHTML = '';
+      ampmWheel.innerHTML = '';
+      
       // 시간 (1-12)
       for (let h = 1; h <= 12; h++) {
-        hourWheel.appendChild(makeItem(String(h)));
+        const disabled = !available.hours.has(h);
+        hourWheel.appendChild(makeItem(String(h), disabled));
       }
       
       // 분 (00, 30)
-      ['00', '30'].forEach(m => minuteWheel.appendChild(makeItem(m)));
+      ['00', '30'].forEach(m => {
+        minuteWheel.appendChild(makeItem(m));
+      });
       
       // AM/PM
-      ['AM', 'PM'].forEach(p => ampmWheel.appendChild(makeItem(p)));
+      ['AM', 'PM'].forEach(p => {
+        const disabled = !available.periods.has(p);
+        ampmWheel.appendChild(makeItem(p, disabled));
+      });
     }
     
     populateWheels();
@@ -408,10 +487,63 @@ document.addEventListener("DOMContentLoaded", () => {
     
     recalculate();
     
-    // 스냅 기능
+    // 유효한 시간인지 확인
+    function isValidTime(hour12, minute, period) {
+      const minTime = getMinSelectableTime();
+      
+      let hour24;
+      if (period === 'AM') {
+        hour24 = hour12 === 12 ? 0 : hour12;
+      } else {
+        hour24 = hour12 === 12 ? 12 : hour12 + 12;
+      }
+      
+      const checkTime = new Date();
+      checkTime.setHours(hour24, minute, 0, 0);
+      
+      return checkTime >= minTime;
+    }
+    
+    // 스냅 기능 (제약 조건 고려)
     function snapToNearest(wheel, smooth = true) {
-      const count = wheel.querySelectorAll('.item').length;
-      const index = Math.max(0, Math.min(count - 1, Math.round(wheel.scrollTop / ITEM_HEIGHT)));
+      const items = wheel.querySelectorAll('.item');
+      const count = items.length;
+      let index = Math.max(0, Math.min(count - 1, Math.round(wheel.scrollTop / ITEM_HEIGHT)));
+      
+      // disabled 아이템인 경우 다음 유효한 아이템으로 이동
+      if (items[index] && items[index].classList.contains('disabled')) {
+        // 아래쪽에서 유효한 아이템 찾기
+        let foundValid = false;
+        for (let i = index + 1; i < count; i++) {
+          if (!items[i].classList.contains('disabled')) {
+            index = i;
+            foundValid = true;
+            break;
+          }
+        }
+        
+        // 아래쪽에 없으면 위쪽에서 찾기
+        if (!foundValid) {
+          for (let i = index - 1; i >= 0; i--) {
+            if (!items[i].classList.contains('disabled')) {
+              index = i;
+              foundValid = true;
+              break;
+            }
+          }
+        }
+        
+        // 그래도 없으면 첫 번째 유효한 아이템으로
+        if (!foundValid) {
+          for (let i = 0; i < count; i++) {
+            if (!items[i].classList.contains('disabled')) {
+              index = i;
+              break;
+            }
+          }
+        }
+      }
+      
       const targetTop = index * ITEM_HEIGHT;
       
       wheel.scrollTo({
@@ -420,10 +552,67 @@ document.addEventListener("DOMContentLoaded", () => {
       });
       
       // 활성 상태 업데이트
-      const items = wheel.querySelectorAll('.item');
       items.forEach((item, i) => {
         item.classList.toggle('active', i === index);
       });
+      
+      // 시간 변경 시 다른 휠들 업데이트
+      if (wheel === hourWheel || wheel === ampmWheel) {
+        updateAvailableOptions();
+      }
+    }
+    
+    // 사용 가능한 옵션 업데이트
+    function updateAvailableOptions() {
+      const currentSelection = getCurrentSelection();
+      if (!currentSelection) return;
+      
+      const { hour12, period } = currentSelection;
+      
+      // 현재 선택된 시간이 유효한지 확인하고 분 옵션 업데이트
+      const minuteItems = minuteWheel.querySelectorAll('.item');
+      const minTime = getMinSelectableTime();
+      
+      let hour24;
+      if (period === 'AM') {
+        hour24 = hour12 === 12 ? 0 : hour12;
+      } else {
+        hour24 = hour12 === 12 ? 12 : hour12 + 12;
+      }
+      
+      minuteItems.forEach((item, index) => {
+        const minute = index === 0 ? 0 : 30;
+        const checkTime = new Date();
+        checkTime.setHours(hour24, minute, 0, 0);
+        
+        const isValid = checkTime >= minTime;
+        item.classList.toggle('disabled', !isValid);
+      });
+      
+      // 현재 선택된 분이 비활성화되었다면 다음 유효한 분으로 이동
+      const currentMinuteIndex = Math.round(minuteWheel.scrollTop / ITEM_HEIGHT);
+      const currentMinuteItem = minuteItems[currentMinuteIndex];
+      if (currentMinuteItem && currentMinuteItem.classList.contains('disabled')) {
+        snapToNearest(minuteWheel, true);
+      }
+    }
+    
+    // 현재 선택 값 가져오기
+    function getCurrentSelection() {
+      const hourIndex = Math.round(hourWheel.scrollTop / ITEM_HEIGHT);
+      const ampmIndex = Math.round(ampmWheel.scrollTop / ITEM_HEIGHT);
+      
+      const hourItems = hourWheel.querySelectorAll('.item');
+      const ampmItems = ampmWheel.querySelectorAll('.item');
+      
+      if (hourIndex >= hourItems.length || ampmIndex >= ampmItems.length) {
+        return null;
+      }
+      
+      const hour12 = parseInt(hourItems[hourIndex].textContent);
+      const period = ampmItems[ampmIndex].textContent;
+      
+      return { hour12, period };
     }
     
     // 스크롤 이벤트
@@ -437,7 +626,7 @@ document.addEventListener("DOMContentLoaded", () => {
       wheel.addEventListener('scroll', onScroll, { passive: true });
     });
     
-    // 탭으로 선택 기능
+    // 탭으로 선택 기능 (disabled 아이템 제외)
     function enableTapToSelect(wheel) {
       let startY = 0;
       let moved = false;
@@ -457,7 +646,7 @@ document.addEventListener("DOMContentLoaded", () => {
         if (moved) return;
         
         const item = e.target.closest('.item');
-        if (!item || !wheel.contains(item)) return;
+        if (!item || !wheel.contains(item) || item.classList.contains('disabled')) return;
         
         const items = Array.from(wheel.querySelectorAll('.item'));
         const index = items.indexOf(item);
@@ -474,16 +663,17 @@ document.addEventListener("DOMContentLoaded", () => {
     
     [hourWheel, minuteWheel, ampmWheel].forEach(enableTapToSelect);
     
-    // 초기 시간 설정 (현재 시간 + 1시간)
+    // 초기 시간 설정 (현재 시간의 다음 30분 슬롯, 제약 조건 고려)
     function setInitialTime() {
-      const now = new Date();
-      const futureTime = new Date(now.getTime() + 60 * 60 * 1000); // 1시간 후
+      const minTime = getMinSelectableTime();
       
-      let hour12 = futureTime.getHours() % 12;
+      let hour12 = minTime.getHours() % 12;
       if (hour12 === 0) hour12 = 12;
       
-      const minute = futureTime.getMinutes() < 30 ? 0 : 30;
-      const period = futureTime.getHours() >= 12 ? 'PM' : 'AM';
+      const minute = minTime.getMinutes();
+      const period = minTime.getHours() >= 12 ? 'PM' : 'AM';
+      
+      console.log(`초기 설정 시간: ${hour12}:${String(minute).padStart(2, '0')} ${period}`);
       
       // 휠 위치 설정
       const hourIndex = hour12 - 1;
@@ -499,6 +689,7 @@ document.addEventListener("DOMContentLoaded", () => {
         snapToNearest(hourWheel, false);
         snapToNearest(minuteWheel, false);
         snapToNearest(ampmWheel, false);
+        updateAvailableOptions();
       }, 100);
     }
     
@@ -513,9 +704,14 @@ document.addEventListener("DOMContentLoaded", () => {
     // 타임피커 준비 완료
     timePicker = {
       recalculate,
-      getSelectedTime
+      getSelectedTime: () => getSelectedTime(),
+      refresh: () => {
+        populateWheels();
+        recalculate();
+        setInitialTime();
+      }
     };
     
-    console.log('타임피커 초기화 완료');
+    console.log('타임피커 초기화 완료 (시간 제약 적용)');
   }
 });
