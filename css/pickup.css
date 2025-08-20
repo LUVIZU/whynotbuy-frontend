@@ -233,9 +233,9 @@
   .item.active { color: #111; font-weight: 700; }
 
 .pickup_button {
-    position: fixed; /* <- 핵심 */
+    
     left: 50%;
-    transform: translateX(-50%);
+    transform: translateX(10%);
     bottom: calc(var(--bottom-nav-h) + var(--order-gap) + env(safe-area-inset-bottom));
     z-index: 50;
   
@@ -251,9 +251,9 @@
 
   .pickup_button:hover {
     background: #962022;
-    position: fixed; /* <- 핵심 */
+    
     left: 50%;
-    transform: translateX(-50%);
+    transform: translateX(10%);
     bottom: calc(var(--bottom-nav-h) + var(--order-gap) + env(safe-area-inset-bottom));
     z-index: 50;
   
@@ -279,7 +279,6 @@
 
   /* 하단 네비를 ‘진짜’ 고정 */
 .bottom_nav{
-    position: fixed;
     left: 50%;
     transform: translateX(-50%);
     bottom: 0;
