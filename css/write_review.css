@@ -1,0 +1,179 @@
+/* 링크 기본 */
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+/* 프레임: 상/하단 고정, 가운데만 스크롤 */
+.app_frame {
+  width: 390px;
+  height: 844px;
+  background: #fff;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+.top_bar {
+  height: 120px;
+  flex-shrink: 0;
+}
+.top_bar_inner {
+  height: 100%;
+  display: flex;
+  position: relative;
+  align-items: center;
+  text-align: center;
+  margin-top: 30px;
+  justify-content: center;
+  color: white;
+  font-size: 20px;
+  font-weight: 600;
+}
+.bottom_nav {
+  height: 112px;
+  flex-shrink: 0;
+}
+
+.content {
+  flex: 1 1 auto;
+  padding: 18px;
+  overflow-y: auto;
+
+  background: linear-gradient(to bottom, #fff3c7, #fff3c7);
+}
+
+/* ===== 헤더: 좌측 화살표, 타이틀 정확히 중앙 ===== */
+.top_bar_inner {
+  position: relative;
+  height: 100%;
+  display: flex;
+  align-items: center;
+}
+.back_icon {
+  position: absolute;
+  left: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 22px;
+  cursor: pointer;
+}
+.top_title {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 20px;
+  font-weight: 700;
+  color: #fff;
+}
+
+/* ===== 주문 카드 ===== */
+.order_card {
+  background: #fff;
+  border-radius: 22px;
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.12);
+  margin: 10px 6px 16px;
+  overflow: hidden;
+}
+.order_header {
+  padding: 14px 16px 10px;
+}
+.order_date {
+  color: #666;
+  font-size: 14px;
+  margin-bottom: 6px;
+}
+.order_id {
+  color: #1a73e8;
+  font-weight: 600;
+}
+.divider {
+  height: 1px;
+  background: #e9e9e9;
+}
+.order_body {
+  padding: 14px 16px 12px;
+}
+.store_name {
+  font-size: 18px;
+  font-weight: 800;
+  margin: 4px 0 10px;
+  cursor: pointer;
+}
+.order_items {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 14px;
+  color: #222;
+}
+.order_items li {
+  margin: 6px 0;
+}
+.price_row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  justify-content: flex-end;
+}
+.old_price {
+  color: #b3b3b3;
+  text-decoration: line-through;
+}
+.sale_pct {
+  color: #d33;
+  font-weight: 700;
+}
+.now_price {
+  font-weight: 800;
+}
+
+/* ===== 리뷰 입력 박스 ===== */
+.review_box {
+  padding: 6px 6px 0;
+}
+.review_textarea {
+  width: 100%;
+  min-height: 260px;
+  border: 1px solid #dedede; /* 테두리만 연하게 */
+  border-radius: 20px;
+  padding: 16px;
+  font-size: 16px;
+  line-height: 1.5;
+  resize: vertical;
+  background: linear-gradient(#ffffff, #ffffff), #ffffff;
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.08) inset,
+    0 4px 10px rgba(0, 0, 0, 0.06);
+}
+.review_textarea::placeholder {
+  color: #b3b3b3;
+}
+
+/* ===== 제출 버튼 (흰 테두리 제거) ===== */
+.submit_wrap {
+  padding: 20px 6px 0;
+}
+.submit_btn {
+  width: 100%;
+  height: 48px;
+  border: none; /* ⬅ 흰색 테두리 제거 */
+  outline: none;
+  border-radius: 20px;
+  background: #a82d2f;
+  color: #fff;
+  font-size: 18px;
+  font-weight: 700;
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+  cursor: pointer;
+}
+
+/* 접근성 숨김 텍스트 */
+.sr_only {
+  position: absolute !important;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}

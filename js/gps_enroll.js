@@ -1,16 +1,20 @@
 // ../js/gps_enroll.js
-// 위치 등록/수정/삭제 (실서버 전용, 쿠키 인증)
-// HTML: .input_field(별칭/주소 순서), .search_icon, .delete_button, .submit_button
+// 위치 등록/수정/삭제 (쿠키 인증)
+// 검색 아이콘: 입력값 있으면 카카오 키워드 검색 → 결과 선택
+//             입력값 없으면 현재 위치 → 역지오로 주소 채움
 
 document.addEventListener("DOMContentLoaded", () => {
   const API_BASE = "https://api-whynotbuy.store";
-  const qs = new URLSearchParams(location.search);
-  const edit_id = qs.get("edit_id"); // 있으면 수정 모드
+  const KAKAO_JS_KEY =
+    window.RUNTIME_CONFIG?.KAKAO_JS_KEY || "YOUR_KAKAO_JS_KEY"; // 도메인 제한 필수!
 
-  // ===== 요소 캐시 =====
+  const qs = new URLSearchParams(location.search);
+  const edit_id = qs.get("edit_id");
+
+  // ===== 요소 =====
   const inputs = Array.from(document.querySelectorAll(".input_field"));
-  const alias_input = inputs[0]; // 별칭(name)
-  const addr_input = inputs[1]; // 주소(표시용 텍스트)
+  const alias_input = inputs[0]; // 별칭
+  const addr_input = inputs[1]; // 도로명
   const search_icon = document.querySelector(".search_icon");
   const btn_delete = document.querySelector(".delete_button");
   const btn_submit = document.querySelector(".submit_button");
@@ -21,84 +25,123 @@ document.addEventListener("DOMContentLoaded", () => {
     return;
   }
 
-  // 좌표는 내부 상태로 관리(숨김 input 없어도 가능)
+  // 내부 좌표 상태
   let current_lat = null;
   let current_lng = null;
 
-  // ===== 초기 상태 =====
+  // Kakao SDK 준비
+  let kakaoReady = loadKakao();
+
+  // ===== 초기 =====
   const is_edit = !!edit_id;
   if (is_edit) {
-    btn_delete?.classList.remove("hidden");
-    if (btn_delete?.style) btn_delete.style.display = "";
+    show(btn_delete, true);
     btn_submit.textContent = "수정하기";
-    if (title_el) title_el.textContent = "위치 수정";
-
+    title_el && (title_el.textContent = "위치 수정");
     load_for_edit(edit_id).catch((e) => {
       console.error(e);
       alert("위치 정보를 불러오지 못했습니다.");
     });
   } else {
-    btn_delete?.classList.add("hidden");
-    if (btn_delete?.style) btn_delete.style.display = "none";
+    show(btn_delete, false);
     btn_submit.textContent = "등록하기";
-    if (title_el) title_el.textContent = "위치 등록";
+    title_el && (title_el.textContent = "위치 등록");
   }
 
   // ===== 이벤트 =====
-  // 검색 아이콘: 브라우저 현재 위치 사용(간단 버전)
-  search_icon?.addEventListener("click", () => {
-    if (!navigator.geolocation)
-      return alert("이 브라우저는 위치 접근을 지원하지 않습니다.");
-    navigator.geolocation.getCurrentPosition(
-      (pos) => {
-        current_lat = pos.coords.latitude;
-        current_lng = pos.coords.longitude;
-        // 주소 입력칸에는 좌표를 표시(지오코딩이 없다면 이렇게라도 보여주자)
-        addr_input.value = `(${current_lat.toFixed(5)}, ${current_lng.toFixed(
-          5
-        )})`;
-        if (!alias_input.value.trim()) alias_input.value = "내 위치";
-      },
-      (err) => {
-        console.warn("geolocation error", err);
-        alert("현재 위치를 가져오지 못했습니다. 위치 권한을 확인해 주세요.");
-      },
-      { enableHighAccuracy: true, timeout: 8000 }
-    );
+  // 돋보기: 입력값 있으면 키워드 검색, 없으면 현재위치→역지오
+  search_icon?.addEventListener("click", async () => {
+    const q = addr_input.value.trim();
+
+    await kakaoReady.catch(() => {
+      alert("카카오 SDK 로드 실패");
+    });
+
+    if (q) {
+      // 키워드 검색 → 결과 선택 UI
+      const results = await kakaoSearchKeyword(q).catch(() => []);
+      if (!results.length) return alert("검색 결과가 없습니다.");
+
+      openResultPanel(results, (doc) => {
+        setFromKakaoDoc(doc);
+      });
+    } else {
+      if (!navigator.geolocation) {
+        return alert("이 브라우저는 위치 접근을 지원하지 않습니다.");
+      }
+      navigator.geolocation.getCurrentPosition(
+        async (pos) => {
+          current_lat = pos.coords.latitude;
+          current_lng = pos.coords.longitude;
+          const road = await kakaoReverse(current_lat, current_lng).catch(
+            () => ""
+          );
+          if (road) addr_input.value = road;
+          if (!alias_input.value.trim()) alias_input.value = "내 위치";
+        },
+        (err) => {
+          console.warn("geolocation error", err);
+          alert("현재 위치를 가져올 수 없습니다. 위치 권한을 확인해 주세요.");
+        },
+        { enableHighAccuracy: true, timeout: 8000 }
+      );
+    }
   });
 
-  // 등록/수정 제출
-  btn_submit.addEventListener("click", async (e) => {
-    e.preventDefault();
-
-    const name = alias_input.value.trim();
-
-    // 1) 주소칸에서 좌표 패턴을 우선 파싱
+  // 좌표 텍스트 붙여넣으면 → 도로명으로 치환
+  addr_input?.addEventListener("input", async () => {
     const parsed = parse_latlng_from_text(addr_input.value);
     if (parsed) {
       current_lat = parsed.lat;
       current_lng = parsed.lng;
+      const road = await kakaoReverse(current_lat, current_lng).catch(() => "");
+      if (road) addr_input.value = road;
+    }
+  });
+
+  // 저장 (등록/수정)
+  btn_submit.addEventListener("click", async (e) => {
+    e.preventDefault();
+
+    const name = alias_input.value.trim();
+    let road = addr_input.value.trim();
+
+    // (lat,lng) 텍스트로 들어온 경우 역지오
+    const parsed = parse_latlng_from_text(road);
+    if (parsed) {
+      current_lat = parsed.lat;
+      current_lng = parsed.lng;
+      const r = await kakaoReverse(current_lat, current_lng).catch(() => "");
+      if (r) road = r;
+    }
+
+    // 좌표 없고 도로명만 있으면 지오코딩
+    if ((!is_finite_num(current_lat) || !is_finite_num(current_lng)) && road) {
+      const g = await kakaoGeocodeRoad(road).catch(() => null);
+      if (g) {
+        current_lat = g.lat;
+        current_lng = g.lng;
+      }
     }
 
     if (!name) return alert("주소지 별칭을 입력해 주세요.");
-    if (!is_finite_num(current_lat) || !is_finite_num(current_lng)) {
-      return alert(
-        "좌표가 없습니다. 검색 아이콘을 눌러 현재 위치를 가져오거나, (lat, lng) 형식으로 입력해 주세요."
-      );
-    }
+    if (!is_edit && !road) return alert("도로명 주소를 입력해 주세요.");
 
     try {
       lock(btn_submit, true);
 
-      const body = {
-        name,
-        latitude: Number(current_lat),
-        longitude: Number(current_lng),
-      };
+      // POST에는 roadAddressName 포함, PATCH에는 기본 제외
+      let body = is_edit
+        ? { name, roadAddressName: road } // ← 수정에도 도로명 포함
+        : { name, roadAddressName: road };
+      if (is_finite_num(current_lat)) body.latitude = Number(current_lat);
+      if (is_finite_num(current_lng)) body.longitude = Number(current_lng);
+      // 만약 백엔드가 PATCH에서도 roadAddressName 허용하면 ↓ 주석 해제
+      // if (is_edit) body.roadAddressName = road;
 
       if (is_edit) {
         await api(`/api/v1/users/locations/${encodeURIComponent(edit_id)}`, {
-          method: "PATCH", // 서버가 PUT이라면 PUT으로 교체
+          method: "PATCH",
           body,
         });
         alert("수정되었습니다.");
@@ -110,11 +153,10 @@ document.addEventListener("DOMContentLoaded", () => {
         alert("등록되었습니다.");
       }
 
-      // 성공 → 목록으로
       window.location.href = "gps_set.html";
     } catch (err) {
       console.error(err);
-      alert("저장에 실패했습니다. 로그인/권한을 확인해 주세요.");
+      alert("저장에 실패했습니다. 네트워크 상태를 확인해 주세요.");
     } finally {
       lock(btn_submit, false);
     }
@@ -135,32 +177,124 @@ document.addEventListener("DOMContentLoaded", () => {
       window.location.href = "gps_set.html";
     } catch (err) {
       console.error(err);
-      alert("삭제에 실패했습니다. 로그인/권한을 확인해 주세요.");
+      alert("삭제에 실패했습니다.");
     } finally {
       lock(btn_delete, false);
     }
   });
 
-  // ===== 함수들 =====
-  async function load_for_edit(id) {
-    // 단건 조회가 명세에 없어서 목록에서 찾아 채움
-    const list_json = await api("/api/v1/users/locations", { method: "GET" });
-    const list = unwrap(list_json); // {isSuccess,result:{locationInfoList}} 대응
+  /* ===== 함수들 ===== */
 
-    const item = Array.isArray(list)
-      ? list.find((x) => String(x.locationId ?? x.id) === String(id))
-      : null;
-
-    if (!item) throw new Error("NOT_FOUND");
-
-    alias_input.value = item.locationName || item.name || "";
-    current_lat = item.latitude;
-    current_lng = item.longitude;
-    addr_input.value = `(${Number(current_lat).toFixed(5)}, ${Number(
-      current_lng
-    ).toFixed(5)})`;
+  // Kakao SDK 로더
+  function loadKakao() {
+    if (window.kakao?.maps?.services) return Promise.resolve();
+    return new Promise((resolve, reject) => {
+      const s = document.createElement("script");
+      s.src = `https://dapi.kakao.com/v2/maps/sdk.js?autoload=false&appkey=${encodeURIComponent(
+        KAKAO_JS_KEY
+      )}&libraries=services`;
+      s.onload = () => window.kakao.maps.load(resolve);
+      s.onerror = reject;
+      document.head.appendChild(s);
+    });
   }
 
+  // Kakao: 키워드 검색
+  function kakaoSearchKeyword(query) {
+    return new Promise((resolve, reject) => {
+      const places = new kakao.maps.services.Places();
+      places.keywordSearch(query, (docs, status) => {
+        if (status === kakao.maps.services.Status.OK) resolve(docs || []);
+        else if (status === kakao.maps.services.Status.ZERO_RESULT) resolve([]);
+        else reject(new Error("kakao search failed"));
+      });
+    });
+  }
+
+  // Kakao: 도로명 → 좌표
+  function kakaoGeocodeRoad(road) {
+    return new Promise((resolve) => {
+      const g = new kakao.maps.services.Geocoder();
+      g.addressSearch(road, (r, status) => {
+        if (status !== kakao.maps.services.Status.OK || !r?.length)
+          return resolve(null);
+        resolve({ lat: Number(r[0].y), lng: Number(r[0].x) });
+      });
+    });
+  }
+
+  // Kakao: 좌표 → 도로명
+  function kakaoReverse(lat, lng) {
+    return new Promise((resolve) => {
+      const g = new kakao.maps.services.Geocoder();
+      // coord2Address(x, y) 이므로 x=lng, y=lat
+      g.coord2Address(Number(lng), Number(lat), (r, status) => {
+        if (status !== kakao.maps.services.Status.OK || !r?.length)
+          return resolve("");
+        resolve(
+          r[0].road_address?.address_name || r[0].address?.address_name || ""
+        );
+      });
+    });
+  }
+
+  function setFromKakaoDoc(doc) {
+    addr_input.value =
+      doc.road_address_name || doc.address_name || doc.place_name || "";
+    current_lat = Number(doc.y); // y=lat
+    current_lng = Number(doc.x); // x=lng
+    if (!alias_input.value.trim())
+      alias_input.value = doc.place_name || "내 위치";
+  }
+
+  // 간단한 결과 패널
+  function openResultPanel(results, onPick) {
+    const overlay = document.createElement("div");
+    overlay.style.cssText =
+      "position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.35);display:flex;justify-content:center;align-items:flex-start;padding-top:80px;";
+    const panel = document.createElement("div");
+    panel.style.cssText =
+      "width:min(560px,92%);max-height:70vh;overflow:auto;background:#fff;border-radius:12px;box-shadow:0 10px 30px rgba(0,0,0,.2);";
+    panel.innerHTML = `
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 16px;border-bottom:1px solid #eee;">
+        <strong>주소 선택</strong>
+        <button id="kakao_close_btn" style="border:0;background:transparent;font-size:18px;cursor:pointer;">✕</button>
+      </div>
+      <ul id="kakao_list" style="list-style:none;margin:0;padding:0;">
+        ${results
+          .map((r) => {
+            const title = escape_html(
+              r.place_name || r.road_address_name || r.address_name || "-"
+            );
+            const road = escape_html(
+              r.road_address_name || r.address_name || ""
+            );
+            return `<li class="kakao_item" style="padding:12px 16px;border-bottom:1px solid #f2f2f2;cursor:pointer;">
+              <div style="font-weight:700">${title}</div>
+              <div style="color:#666;font-size:13px;margin-top:4px">${road}</div>
+            </li>`;
+          })
+          .join("")}
+      </ul>
+    `;
+    overlay.appendChild(panel);
+    document.body.appendChild(overlay);
+
+    overlay.addEventListener("click", (e) => {
+      if (e.target.id === "kakao_close_btn" || e.target === overlay) {
+        document.body.removeChild(overlay);
+      }
+    });
+
+    panel.querySelectorAll(".kakao_item").forEach((li, idx) => {
+      li.addEventListener("click", () => {
+        onPick?.(results[idx]);
+        document.body.removeChild(overlay);
+      });
+    });
+  }
+
+  // ========== 공용 유틸 ==========
   async function api(path, opt = {}) {
     const res = await fetch(API_BASE + path, {
       method: opt.method || "GET",
@@ -168,32 +302,18 @@ document.addEventListener("DOMContentLoaded", () => {
       headers: { "Content-Type": "application/json" },
       body: opt.body ? JSON.stringify(opt.body) : undefined,
     });
-
     if (res.status === 401) throw new Error("UNAUTHORIZED");
-
     if (!res.ok) {
       const text = await res.text().catch(() => "");
       throw new Error(`API ${path} 실패(${res.status}): ${text}`);
     }
-
     const ct = res.headers.get("content-type") || "";
     return ct.includes("application/json") ? res.json() : null;
   }
 
-  // {isSuccess, result:{locationInfoList:[...]}} 형태/단순 배열 모두 대응
-  function unwrap(data) {
-    if (!data) return null;
-    if (Array.isArray(data)) return data;
-    if (data.result?.locationInfoList) return data.result.locationInfoList;
-    return data.result ?? data;
-  }
-
-  function parse_latlng_from_text(text) {
-    if (!text) return null;
-    // 지원 패턴 예: "37.123,127.456" / "(37.123, 127.456)" / "37.123 127.456"
-    const m = String(text).match(
-      /(-?\d+(?:\.\d+)?)\s*[, ]\s*(-?\d+(?:\.\d+)?)/
-    );
+  function parse_latlng_from_text(t) {
+    if (!t) return null;
+    const m = String(t).match(/(-?\d+(?:\.\d+)?)\s*[, ]\s*(-?\d+(?:\.\d+)?)/);
     if (!m) return null;
     const lat = Number(m[1]);
     const lng = Number(m[2]);
@@ -202,7 +322,14 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function is_finite_num(n) {
-    return typeof n === "number" && isFinite(n);
+    const v = Number(n);
+    return Number.isFinite(v);
+  }
+
+  function show(el, visible) {
+    if (!el) return;
+    el.classList.toggle("hidden", !visible);
+    el.style.display = visible ? "" : "none";
   }
 
   function lock(el, on) {
@@ -210,6 +337,53 @@ document.addEventListener("DOMContentLoaded", () => {
     if (el?.style) {
       el.style.pointerEvents = on ? "none" : "";
       el.style.opacity = on ? "0.7" : "";
+    }
+  }
+
+  function escape_html(str) {
+    return String(str)
+      .replaceAll("&", "&amp;")
+      .replaceAll("<", "&lt;")
+      .replaceAll(">", "&gt;")
+      .replaceAll('"', "&quot;")
+      .replaceAll("'", "&#39;");
+  }
+
+  async function load_for_edit(id) {
+    const list_json = await api("/api/v1/users/locations", { method: "GET" });
+    const list = Array.isArray(list_json?.result?.locationInfoList)
+      ? list_json.result.locationInfoList
+      : Array.isArray(list_json)
+      ? list_json
+      : list_json?.result || [];
+
+    const item = Array.isArray(list)
+      ? list.find((x) => String(x.locationId ?? x.id) === String(id))
+      : null;
+
+    if (!item) throw new Error("NOT_FOUND");
+
+    alias_input.value = item.locationName || item.name || "";
+
+    const road =
+      item.roadAddressName ||
+      item.addressRoad ||
+      item.roadAddr ||
+      item.addressName ||
+      "";
+
+    current_lat = Number(item.latitude);
+    current_lng = Number(item.longitude);
+    if (!Number.isFinite(current_lat)) current_lat = null;
+    if (!Number.isFinite(current_lng)) current_lng = null;
+
+    if (road) {
+      addr_input.value = road;
+    } else if (is_finite_num(current_lat) && is_finite_num(current_lng)) {
+      const r = await kakaoReverse(current_lat, current_lng).catch(() => "");
+      addr_input.value = r || "";
+    } else {
+      addr_input.value = "";
     }
   }
 });

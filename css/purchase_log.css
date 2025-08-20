@@ -1,0 +1,162 @@
+a {
+  color: inherit; /* 부모 색상 상속 */
+  text-decoration: none; /* 밑줄 제거 */
+}
+
+/* ===== 상단/전체 프레임 ===== */
+.top_bar_inner {
+  height: 100%;
+  display: flex;
+  position: relative;
+  align-items: center;
+  text-align: center;
+  margin-top: 30px;
+  justify-content: center;
+  color: white;
+  font-size: 20px;
+  font-weight: 600;
+}
+
+.app_frame {
+  width: 390px;
+  height: 844px;
+  background: #ffffff;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  /* overflow: hidden; <= 제거해서 스크롤 가능 */
+}
+
+.top_bar {
+  height: 120px; /* 고정 */
+  flex-shrink: 0;
+}
+
+.bottom_nav {
+  height: 112px; /* 고정 */
+  flex-shrink: 0;
+}
+
+.content {
+  padding: 16px;
+  flex: 1 1 auto;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch; /* iOS 부드러운 스크롤 */
+  overscroll-behavior: contain; /* 상/하단 끌림 방지 */
+}
+.content::-webkit-scrollbar {
+  width: 6px;
+}
+.content::-webkit-scrollbar-thumb {
+  border-radius: 3px;
+  background: rgba(0, 0, 0, 0.15);
+}
+.content::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+/* ===== 카드 공통 ===== */
+.order_card {
+  background: #fff;
+  border-radius: 22px; /* 전체 라운드 */
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.12);
+  margin: 14px 8px;
+  overflow: hidden; /* 하단 영역과 라운드 자연스럽게 */
+}
+
+/* 헤더 */
+.order_header {
+  padding: 14px 16px 10px;
+}
+.order_date {
+  color: #666;
+  font-size: 14px;
+  margin-bottom: 6px;
+}
+.order_id {
+  color: #1a73e8;
+  font-weight: 600;
+}
+
+/* 구분선 */
+.divider {
+  height: 1px;
+  background: #e9e9e9;
+}
+
+/* 본문 */
+.order_body {
+  padding: 14px 16px 12px;
+}
+.store_name {
+  font-size: 18px;
+  font-weight: 800;
+  margin: 4px 0 10px;
+  cursor: pointer; /* 클릭 가능 표시 */
+}
+.order_items {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 14px;
+  color: #222;
+}
+.order_items li {
+  margin: 6px 0;
+}
+.price_row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  justify-content: flex-end;
+}
+.old_price {
+  color: #b3b3b3;
+  text-decoration: line-through;
+}
+.sale_pct {
+  color: #d33;
+  font-weight: 700;
+}
+.now_price {
+  font-weight: 800;
+}
+
+/* 푸터 (하단만 R값) */
+.order_footer {
+  padding: 12px 16px;
+  border-radius: 0 0 22px 22px; /* 하단만 라운드 */
+}
+
+/* 상태 A: 리뷰 남기기 CTA */
+.order_footer--cta {
+  background: #111;
+  color: #fff;
+}
+.review_btn {
+  width: 100%;
+  height: 20px;
+  border: 0;
+  border-radius: 12px;
+  background: transparent;
+  color: #fff;
+  font-weight: 700;
+  cursor: pointer; /* 버튼도 포인터 */
+}
+
+/* 상태 B: 내 리뷰 */
+.order_footer--mine {
+  background: #f1f1f1;
+  color: #111;
+  border-radius: 0 0 22px 22px;
+  padding: 12px 16px; /* CTA와 균형 */
+}
+
+.my_review_title {
+  font-weight: 700;
+  margin-bottom: 6px;
+  color: #444;
+}
+.my_review_txt {
+  margin: 0;
+  color: #222;
+}

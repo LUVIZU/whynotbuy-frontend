@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+    />
+    <title>write_review</title>
+
+    <!-- Pretendard -->
+    <link
+      href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css"
+      rel="stylesheet"
+    />
+
+    <!-- 공통/개별 CSS -->
+    <link rel="stylesheet" href="../css/style.css" />
+    <link rel="stylesheet" href="../css/write_review.css" />
+  </head>
+
+  <body>
+    <div class="app_frame">
+      <!-- 상단 바 -->
+      <div class="top_bar">
+        <div class="top_bar_inner">
+          <a href="purchase_log.html" class="back_link" aria-label="뒤로가기">
+            <img
+              src="../images/arrow_left.svg"
+              alt="뒤로가기"
+              class="back_icon"
+              id="back_arrow"
+            />
+          </a>
+          <span class="top_title">리뷰 작성</span>
+        </div>
+      </div>
+
+      <!-- ====== 내용 시작 ====== -->
+      <div class="content">
+        <!-- 주문 카드 -->
+        <article class="order_card">
+          <header class="order_header">
+            <div class="order_date" id="order_date">7월 24일 (목)</div>
+            <a
+              class="order_id"
+              id="order_code"
+              href="#"
+              aria-label="주문번호 상세"
+              >주문번호&nbsp;htm3k</a
+            >
+          </header>
+
+          <div class="divider"></div>
+
+          <section class="order_body">
+            <h3 class="store_name" id="store_name">Lanespan Pizza & Pub</h3>
+            <ul class="order_items" id="order_items">
+              <li>버섯 피자&nbsp;&nbsp;1개</li>
+              <li>다른 피자&nbsp;&nbsp;1개</li>
+            </ul>
+
+            <div class="price_row">
+              <span class="old_price" id="old_price">15,000 원</span>
+              <span class="sale_pct" id="sale_pct">14%</span>
+              <span class="now_price" id="now_price">13,000 원</span>
+            </div>
+          </section>
+        </article>
+
+        <!-- 리뷰 입력 -->
+        <section class="review_box">
+          <label for="review_text" class="sr_only">리뷰 내용</label>
+          <textarea
+            id="review_text"
+            class="review_textarea"
+            placeholder="리뷰를 작성해주세요"
+            maxlength="1000"
+          ></textarea>
+        </section>
+
+        <!-- 제출 버튼 -->
+        <section class="submit_wrap">
+          <button class="submit_btn" type="button" id="upload_review">
+            리뷰 올리기
+          </button>
+        </section>
+
+        <!-- 바텀 네비에 가리지 않도록 여백 -->
+        <div class="bottom_safe_space" aria-hidden="true"></div>
+      </div>
+      <!-- ====== 내용 끝 ====== -->
+
+      <!-- 하단 네비 -->
+      <div class="bottom_nav">
+        <div class="bottom_nav_item">
+          <a href="home_store.html"
+            ><img src="../images/home.svg" alt="홈"
+          /></a>
+        </div>
+        <div class="bottom_nav_item">
+          <a href="like_store.html"
+            ><img src="../images/heart.svg" alt="찜"
+          /></a>
+        </div>
+        <div class="bottom_nav_item">
+          <a href="purchase_log.html"
+            ><img src="../images/shoplist_red.svg" alt="구매내역"
+          /></a>
+        </div>
+        <div class="bottom_nav_item">
+          <a href="customer_mypage.html"
+            ><img src="../images/my.svg" alt="MY"
+          /></a>
+        </div>
+      </div>
+    </div>
+
+    <!-- 전용 JS -->
+    <script src="../js/write_review.js"></script>
+  </body>
+</html>

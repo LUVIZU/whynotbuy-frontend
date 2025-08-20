@@ -1,14 +1,37 @@
 <!DOCTYPE html>
 <html lang="ko">
   <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>My Project</title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>이걸 안사? | Landing</title>
+
+    <!-- (공통) -->
     <link rel="stylesheet" href="./css/style.css" />
+    <!-- Pretendard -->
+    <link
+      href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css"
+      rel="stylesheet"
+    />
+    <!-- 랜딩 전용 -->
+    <link rel="stylesheet" href="./css/index.css" />
   </head>
   <body>
-    <h1>환영합니다!</h1>
-    <p>이것은 기본 HTML 페이지입니다.</p>
-    <script src="../js/main.js"></script>
+    <div class="landing_wrap">
+      <!-- 1 -->
+      <section class="hero section bg1"></section>
+
+      <!-- 2 -->
+      <section class="section bg2"></section>
+
+      <!-- 3 -->
+      <section class="section bg3"></section>
+
+      <!-- 4 (CTA 버튼 있는 부분) -->
+      <section class="section bg4">
+        <div class="cta_wrap">
+          <a href="./pages/login.html" class="cta_btn">이걸안사? 시작하기</a>
+        </div>
+      </section>
+    </div>
   </body>
 </html>

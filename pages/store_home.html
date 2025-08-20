@@ -23,7 +23,14 @@
                 id="back_arrow"
                 />
             </a>
-            <span class="top_title">Lanespan Pizza & Pub</span>
+            <span class="top_title">
+                로딩중
+                <span class="loading-dots">
+                    <span class="dot">.</span>
+                    <span class="dot">.</span>
+                    <span class="dot">.</span>
+                </span>
+            </span>
             </div>
         </div>
         <main class="content">
@@ -31,9 +38,23 @@
             <div class="store_info">
                 <div class="store_info_inner">
                     <p class="info_title">가게 정보 <img class="info_logo" src="../images/info.svg" alt="정보"></p>
-                    <p class="business_hours">영업시간 09:30~22:00</p>   
+                    <p class="business_hours">
+                        영업시간 로딩중
+                        <span class="loading-dots">
+                            <span class="dot">.</span>
+                            <span class="dot">.</span>
+                            <span class="dot">.</span>
+                        </span>
+                    </p>   
                     <p class="location_label">위치 <img class="copy_logo" src="../images/group.svg" alt="위치복사"></p>
-                    <p class="address">서울 관악구 신림로 59길 14 (2층 209호, 올레순대)</p>
+                    <p class="address">
+                        주소 로딩중
+                        <span class="loading-dots">
+                            <span class="dot">.</span>
+                            <span class="dot">.</span>
+                            <span class="dot">.</span>
+                        </span>
+                    </p>
                 </div>
             </div>
             <div class="line2"></div>
@@ -42,7 +63,12 @@
                 <img class="review_summary_logo" src="../images/ai_black.svg" alt="">
                 
                 <p class="review_text">
-                    버섯 피자가 유명하고, 피자를 다시 구워주셔서 따뜻하게 먹을 수 있다는…
+                    로딩중
+                    <span class="loading-dots">
+                        <span class="dot">.</span>
+                        <span class="dot">.</span>
+                        <span class="dot">.</span>
+                    </span>
                 </p>
                 
                 <a class="review_more" href="#">
@@ -52,6 +78,14 @@
             </div>
             <section class="menu_panel">
                 <h2 class="menu_heading">메뉴</h2>
+                <div class="menu_loading" id="menuLoading">
+                    메뉴 로딩중
+                    <span class="loading-dots">
+                        <span class="dot">.</span>
+                        <span class="dot">.</span>
+                        <span class="dot">.</span>
+                    </span>
+                </div>
                 <ul class="menu_list" id="menuList" aria-live="polite"></ul>
 
                 <template id="menuItemTpl">
@@ -110,5 +144,6 @@
         </nav>
     </div>
     <script src="../js/store_home.js"></script>
+    
 </body>
 </html>
