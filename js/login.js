@@ -7,6 +7,24 @@ document.addEventListener("DOMContentLoaded", () => {
     customerBtn.addEventListener("click", () => handleLogin("customer"));
   if (ownerBtn) ownerBtn.addEventListener("click", () => handleLogin("owner"));
 
+  // JWT payload 디코딩 함수
+  function decodeJwt(token) {
+    try {
+      const base64Url = token.split(".")[1];
+      const base64 = base64Url.replace(/-/g, "+").replace(/_/g, "/");
+      const jsonPayload = decodeURIComponent(
+        atob(base64)
+          .split("")
+          .map((c) => "%" + ("00" + c.charCodeAt(0).toString(16)).slice(-2))
+          .join("")
+      );
+      return JSON.parse(jsonPayload);
+    } catch (e) {
+      console.error("JWT decode 실패", e);
+      return null;
+    }
+  }
+
   async function handleLogin(type) {
     const endpoint =
       type === "customer"
@@ -16,11 +34,9 @@ document.addEventListener("DOMContentLoaded", () => {
     try {
       const res = await fetch(endpoint, {
         method: "POST",
-        credentials: "include", // JWT 쿠키 주고받기
-        // body: JSON.stringify({ loginId, password }) // 필요 시 여기에 폼 데이터 넣기
+        credentials: "include",
       });
 
-      // 네트워크/서버 에러 대비
       if (!res.ok) {
         const txt = await res.text().catch(() => "");
         throw new Error(`HTTP ${res.status} ${res.statusText} ${txt}`);
@@ -29,13 +45,24 @@ document.addEventListener("DOMContentLoaded", () => {
       const data = await res.json();
 
       if (data.isSuccess) {
-        // 팀 규칙: { isSuccess, result:{ role } }
-        const role = data.result?.role || "CUSTOMER";
+        const { accessToken, refreshToken } = data.result;
 
-        if (role === "CUSTOMER") {
+        // ✅ 쿠키 저장
+        if (accessToken) {
+          document.cookie = `accessToken=${accessToken}; Path=/; SameSite=Lax; Secure`;
+        }
+        if (refreshToken) {
+          document.cookie = `refreshToken=${refreshToken}; Path=/; SameSite=Lax; Secure`;
+        }
+
+        // ✅ JWT에서 role 추출
+        const payload = decodeJwt(accessToken);
+        const role = payload?.role || "CUSTOMER";
+
+        if (role.includes("CUSTOMER")) {
           window.location.href = "home_store.html";
-        } else if (role === "OWNER") {
-          window.location.href = "사장님페이지.html"; //사장님페이지 링크 적어줘야함
+        } else if (role.includes("OWNER")) {
+          window.location.href = "store_enroll.html";
         } else {
           alert("알 수 없는 사용자 역할입니다.");
         }

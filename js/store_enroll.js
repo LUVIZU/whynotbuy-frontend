@@ -220,3 +220,72 @@
     });
   });
 })();
+(function loadKakaoSDK() {
+  const key = window.RUNTIME_CONFIG?.KAKAO_JS_KEY;
+  if (!key) {
+    console.error("❌ KAKAO_JS_KEY가 config.js에 정의되지 않았습니다.");
+    return;
+  }
+
+  const script = document.createElement("script");
+  script.src = `https://dapi.kakao.com/v2/maps/sdk.js?appkey=${key}&libraries=services&autoload=false`;
+  script.onload = () => {
+    kakao.maps.load(() => {
+      console.log("✅ Kakao SDK 초기화 완료");
+      initStoreForm(); // SDK 준비된 뒤 폼 로직 실행
+    });
+  };
+  document.head.appendChild(script);
+})();
+
+function initStoreForm() {
+  const form = document.querySelector(".enroll-form");
+  if (!form) return;
+
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+
+    const storeName = document.getElementById("store-name").value.trim();
+    const address = document.getElementById("store-location").value.trim();
+    const openTime = document.getElementById("open-time").value.trim();
+    const closeTime = document.getElementById("close-time").value.trim();
+
+    const geocoder = new kakao.maps.services.Geocoder();
+    geocoder.addressSearch(address, async (result, status) => {
+      if (status === kakao.maps.services.Status.OK) {
+        const lat = result[0].y;
+        const lng = result[0].x;
+
+        try {
+          const response = await fetch(
+            `${window.RUNTIME_CONFIG.API_BASE}/api/v1/store`,
+            {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                name: storeName,
+                roadAddressName: address,
+                latitude: lat,
+                longitude: lng,
+                openTime,
+                closeTime,
+              }),
+            }
+          );
+
+          const data = await response.json();
+          if (response.ok && data.isSuccess) {
+            alert("가게 등록 성공!");
+          } else {
+            alert("등록 실패: " + data.message);
+          }
+        } catch (err) {
+          console.error(err);
+          alert("서버 요청 중 오류 발생");
+        }
+      } else {
+        alert("주소 변환 실패: 올바른 주소인지 확인해주세요.");
+      }
+    });
+  });
+}
