@@ -2,7 +2,9 @@
 // 규칙: JWT 쿠키 인증(credentials: 'include')
 
 document.addEventListener("DOMContentLoaded", () => {
-  const API_BASE = "https://api-whynotbuy.store"; // 배포 API 고정
+  const API_BASE = "https://api-whynotbuy.store";
+  const ORDERS_PAGE_SIZE = 20; // 소유권 검증 시 한 번에 가져올 주문 수
+  const ORDERS_LOOKUP_MAX_PAGES = 5; // 최대 5페이지까지만 훑어서 검증
 
   // ===== 엘리먼트
   const $orderDate = document.getElementById("order_date");
@@ -39,10 +41,8 @@ document.addEventListener("DOMContentLoaded", () => {
     const li = document.createElement("li");
 
     if (typeof it === "string") {
-      // 예: "버섯 피자 1개"
       li.textContent = it;
     } else if (it && typeof it === "object") {
-      // 예: { name: '버섯 피자', qty: 1 } 혹은 {menuName, quantity}
       const name = it.name ?? it.menuName ?? "";
       const qty = it.qty ?? it.quantity ?? "";
       li.textContent = `${name}  ${qty ? qty + "개" : ""}`.trim();
@@ -59,6 +59,53 @@ document.addEventListener("DOMContentLoaded", () => {
   if (typeof target.sale_pct === "number")
     $salePct.textContent = `${target.sale_pct}%`;
   if (target.now_price) $nowPrice.textContent = fmt(target.now_price);
+
+  /* ===== 현재 로그인/역할 확인 ===== */
+  async function getMe() {
+    try {
+      const res = await fetch(`${API_BASE}/api/v1/users`, {
+        method: "GET",
+        credentials: "include",
+        cache: "no-store",
+      });
+      if (!res.ok) return null;
+      const data = await res.json().catch(() => null);
+      // 예상 응답: { isSuccess, result: { userId, nickname, role } }
+      return data?.isSuccess ? data.result : null;
+    } catch {
+      return null;
+    }
+  }
+
+  /* ===== 소유권 검증: 이 주문이 '내 주문'이 맞는가 ===== */
+  async function assertOrderOwnership(orderId) {
+    let cursor = null;
+    for (let i = 0; i < ORDERS_LOOKUP_MAX_PAGES; i++) {
+      const q = new URLSearchParams();
+      if (cursor) q.set("cursor", cursor);
+      q.set("size", String(ORDERS_PAGE_SIZE));
+
+      const res = await fetch(`${API_BASE}/api/v1/orders?${q}`, {
+        method: "GET",
+        credentials: "include",
+        cache: "no-store",
+        headers: {
+          "Cache-Control": "no-cache",
+          Pragma: "no-cache",
+        },
+      });
+
+      if (!res.ok) return false;
+      const data = await res.json().catch(() => null);
+      const list = data?.result?.orderList || [];
+      if (list.some((o) => Number(o.orderId) === Number(orderId))) return true;
+
+      const next = data?.result?.nextCursor ?? 0;
+      if (!next) return false;
+      cursor = next;
+    }
+    return false;
+  }
 
   // ===== 전송
   let sending = false;
@@ -77,6 +124,30 @@ document.addEventListener("DOMContentLoaded", () => {
     $submit.textContent = "업로드 중...";
 
     try {
+      // 1) 로그인/역할 확인
+      const me = await getMe();
+      if (!me) {
+        alert("로그인이 필요합니다. 다시 로그인해 주세요.");
+        window.location.href = "../pages/login.html";
+        return;
+      }
+      if ((me.role || "").toUpperCase() !== "CUSTOMER") {
+        alert("고객 계정으로만 리뷰 작성이 가능합니다.");
+        return;
+      }
+
+      // 2) 소유권 검증 (세션 꼬임 방지)
+      const isMine = await assertOrderOwnership(target.order_id);
+      if (!isMine) {
+        sessionStorage.removeItem("review_target");
+        alert(
+          "이 주문은 현재 로그인한 사용자에게 속하지 않습니다. 구매내역에서 다시 시도해 주세요."
+        );
+        window.location.replace("../pages/purchase_log.html?updated=1");
+        return;
+      }
+
+      // 3) 실제 등록
       const res = await fetch(`${API_BASE}/api/v1/reviews`, {
         method: "POST",
         credentials: "include", // ⬅ JWT 쿠키
@@ -87,18 +158,19 @@ document.addEventListener("DOMContentLoaded", () => {
         }),
       });
 
-      if (!res.ok) {
-        // 401 등 인증 실패 시 로그인으로
-        if (res.status === 401 || res.status === 403) {
-          alert("로그인이 필요합니다. 다시 로그인 해주세요.");
-          window.location.href = "../pages/login.html";
-          return;
-        }
-        throw new Error(data?.message || `서버 오류(${res.status})`);
+      if (res.status === 401 || res.status === 403) {
+        const msg =
+          res.status === 403
+            ? "해당 주문의 생성자만 리뷰를 작성할 수 있습니다."
+            : "로그인이 필요합니다.";
+        alert(msg);
+        return;
       }
 
-      if (data?.isSuccess) {
-        // 🔴 방금 리뷰 쓴 주문ID를 기록 → 구매내역에서 곧바로 '내 리뷰'로 보이도록 (낙관적 표시)
+      const data = await res.json().catch(() => null);
+
+      if (res.ok && data?.isSuccess) {
+        // 방금 리뷰 쓴 주문ID를 기록 → 구매내역에서 곧바로 '내 리뷰'로 보이도록
         const reviewedIds = new Set(
           JSON.parse(sessionStorage.getItem("reviewed_order_ids") || "[]").map(
             String
@@ -110,15 +182,26 @@ document.addEventListener("DOMContentLoaded", () => {
           JSON.stringify([...reviewedIds])
         );
 
+        // 방금 쓴 리뷰 내용 로컬 저장(즉시 표시용)
+        const localMap = JSON.parse(
+          sessionStorage.getItem("my_reviews_local") || "{}"
+        );
+        localMap[String(target.order_id)] = {
+          content,
+          dateISO: new Date().toISOString(),
+        };
+        sessionStorage.setItem("my_reviews_local", JSON.stringify(localMap));
+
         alert("리뷰가 등록되었습니다.");
 
-        // 🔴 사용한 세션 데이터 정리
+        // 사용한 세션 데이터 정리
         sessionStorage.removeItem("review_target");
 
-        // 🔴 구매내역으로 복귀 (BFCache 이슈 방지 위해 replace + updated=1 쿼리)
+        // 구매내역으로 복귀 (BFCache 방지 위해 replace + updated=1 쿼리)
         window.location.replace("../pages/purchase_log.html?updated=1");
       } else {
-        throw new Error(data?.message || "리뷰 등록에 실패했습니다.");
+        const msg = data?.message || "리뷰 등록에 실패했습니다.";
+        alert(msg);
       }
     } catch (err) {
       console.error(err);
