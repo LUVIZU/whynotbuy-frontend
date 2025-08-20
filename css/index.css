@@ -85,3 +85,49 @@ body {
     width: 1920px;
   }
 }
+
+/* ============================== */
+/* ADD: 보이는 CTA 버튼 스타일    */
+/* ============================== */
+
+/* CTA 버튼을 4번째 섹션 하단 중앙에 고정 */
+/* CTA 버튼: landing_4 이미지 위에 겹쳐서 하단에 배치 */
+/* 기존 cta_wrap 정의가 있다면 지우고 이걸로 교체 */
+.cta_wrap {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  /* === 하단에 '겹쳐서' 배치 === */
+  bottom: 80px; /* 하단에서 떨어진 비율 (원본 1920x1637 기준) */
+  z-index: 10; /* 배경 위로 */
+  width: 100%;
+  height: 136px;
+  display: flex;
+  justify-content: center;
+  pointer-events: auto;
+}
+
+/* 버튼 폭/모양 */
+.cta_btn {
+  display: block;
+  width: min(72%, 984px); /* 원본 대비 폭 비율 + 최대폭 제한 */
+  text-align: center;
+  text-decoration: none;
+  padding-top: 40px;
+  border-radius: 30px;
+  background: #7c3aed;
+  color: #fff;
+  font-weight: 700;
+  font-size: 40px;
+  box-shadow: 0 12px 30px rgba(124, 58, 237, 0.35),
+    0 2px 0 rgba(0, 0, 0, 0.05) inset;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  transition: transform 0.08s ease, filter 0.2s ease;
+}
+
+.cta_btn:hover {
+  filter: brightness(1.03);
+}
+.cta_btn:active {
+  transform: translateY(1px) scale(0.995);
+}

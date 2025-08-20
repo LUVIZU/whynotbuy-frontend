@@ -1,25 +1,28 @@
 // ../js/home_menu.js
-// 규칙: JWT 쿠키 인증(credentials:'include')
+// 규칙: 모든 요청은 credentials:'include' (JWT 쿠키)
+// 스웨거 기준(/api/v1/menus): menuId, name, price, discountPercent, menuImage, favorited, storeId, storeName
 
 document.addEventListener("DOMContentLoaded", () => {
   /* ===== 설정 ===== */
   const API_BASE = "https://api-whynotbuy.store";
   const PAGE_SIZE = 10;
+  const STORE_PAGE = "store_home.html"; // 필요 시 파일명 변경
 
   const $addr = document.querySelector(".loc_text");
   const $list = document.querySelector(".menu_list");
   const $sortBtn = document.querySelector(".near_btn");
   const $search = document.querySelector(".search_bar input");
 
+  const PLACEHOLDER_IMG = "../images/store_placeholder.png";
+
   /* ===== 상태 ===== */
   const state = {
     sortType: "DISCOUNT", // DISCOUNT | PRICE_ASC | PRICE_DESC
-    cursor: null,
+    cursor: null, // 스웨거의 nextCursor를 그대로 전달
     hasMore: true,
     loading: false,
     menus: [],
     likes: new Set(JSON.parse(localStorage.getItem("likes_menu") || "[]")), // menuId set
-    searchActive: false,
   };
 
   /* ===== 찜(메뉴) 엔드포인트 ===== */
@@ -32,9 +35,10 @@ document.addEventListener("DOMContentLoaded", () => {
   const like_inflight = new Set(); // 클릭 연타 방지
 
   /* ===== 초기화 ===== */
-  const hadAlias = applySelectedLocationAlias(); // 세션/캐시 우선 반영
-  if (!hadAlias && $addr) $addr.textContent = "주소 설정";
+  const had_alias = applySelectedLocationAlias(); // 세션/캐시 우선 반영
+  if (!had_alias && $addr) $addr.textContent = "주소 설정";
   fetchActiveAndApply(); // 서버 활성 위치로 최종 덮어쓰기
+
   if ($sortBtn) $sortBtn.textContent = sortLabel(state.sortType);
   fetchAndRender();
 
@@ -59,74 +63,13 @@ document.addEventListener("DOMContentLoaded", () => {
   // 무한 스크롤
   window.addEventListener("scroll", () => {
     if (state.loading || !state.hasMore) return;
+    const doc = document.documentElement;
     const nearBottom =
-      window.innerHeight + window.scrollY >= document.body.offsetHeight - 200;
+      window.innerHeight + window.scrollY >= doc.scrollHeight - 200;
     if (nearBottom) fetchAndRender();
   });
 
   /* ===== 유틸 ===== */
-  // 메뉴ID -> 스토어ID 캐시
-  const menuToStoreCache = new Map();
-
-  async function fetchStoreIdByMenu(menuId) {
-    try {
-      const res = await fetch(`${API_BASE}/api/v1/menus/${menuId}`, {
-        method: "GET",
-        credentials: "include",
-      });
-      if (!res.ok) throw new Error(`menu detail ${res.status}`);
-      const data = await res.json().catch(() => null);
-      const m = data?.result ?? data;
-      // 네가 이미 가진 getStoreId(m) 재사용 + 후보 키 보강
-      const cand = [
-        getStoreId(m),
-        m?.storeId,
-        m?.store_id,
-        m?.store?.id,
-        m?.store?.storeId,
-        m?.store?.store_id,
-      ];
-      for (const v of cand) if (v !== undefined && v !== null) return v;
-    } catch (e) {
-      console.warn("storeId resolve failed for menu:", menuId, e);
-    }
-    return null;
-  }
-
-  async function resolveStoreId(menuId) {
-    if (menuToStoreCache.has(menuId)) return menuToStoreCache.get(menuId);
-    const sid = await fetchStoreIdByMenu(menuId);
-    if (sid) menuToStoreCache.set(menuId, sid);
-    return sid;
-  }
-
-  const PLACEHOLDER_IMG = "../images/store_placeholder.png"; // 프로젝트에 준비 권장
-
-  // 백엔드 필드명 호환: menuImage | imageUrl | storeImageUrl | store.imageUrl
-  function getImageUrl(m) {
-    return (
-      m?.menuImage ||
-      m?.imageUrl ||
-      m?.storeImageUrl ||
-      m?.store?.imageUrl ||
-      PLACEHOLDER_IMG
-    );
-  }
-
-  // 링크에 넣을 storeId 추출 (응답 편차 흡수)
-  function getStoreId(m) {
-    const cand = [
-      m?.storeId,
-      m?.store_id,
-      m?.store?.id,
-      m?.store?.storeId,
-      m?.store?.store_id,
-      m?.store?.store?.id,
-    ];
-    for (const v of cand) if (v !== undefined && v !== null) return v;
-    return null;
-  }
-
   function sortLabel(t) {
     return t === "DISCOUNT"
       ? "할인순"
@@ -164,51 +107,42 @@ document.addEventListener("DOMContentLoaded", () => {
     return `${API_BASE}/api/v1/menus?${q.toString()}`;
   }
 
-  /* ===== 데이터 ===== */
-  async function fetchAndRender() {
-    if (state.loading || !state.hasMore) return;
-    state.loading = true;
-
-    try {
-      const res = await fetch(buildUrl(), {
-        method: "GET",
-        credentials: "include",
-      });
-      const data = await res.json();
-
-      // 스웨거 예시: { isSuccess, result:{ menus:[], hasData:true, nextCursor:0 } }
-      const payload = data?.result?.menus ? data.result : data;
-      const batch = Array.isArray(payload?.menus) ? payload.menus : [];
-
-      state.menus = state.menus.concat(batch);
-      state.cursor =
-        payload?.nextCursor !== undefined
-          ? payload.nextCursor
-          : getLastMenuId(batch);
-      state.hasMore =
-        typeof payload?.hasData === "boolean"
-          ? payload.hasData
-          : batch.length === PAGE_SIZE;
-
-      renderList(filterMenus($search?.value || ""));
-    } catch (e) {
-      console.error("메뉴 목록 조회 실패:", e);
-    } finally {
-      state.loading = false;
-    }
+  function formatWon(n) {
+    return Number(n || 0).toLocaleString("ko-KR");
+  }
+  function escapeHtml(str) {
+    return String(str ?? "")
+      .replaceAll("&", "&amp;")
+      .replaceAll("<", "&lt;")
+      .replaceAll(">", "&gt;")
+      .replaceAll('"', "&quot;")
+      .replaceAll("'", "&#039;");
   }
 
-  function getLastMenuId(list) {
-    if (!list?.length) return state.cursor ?? null;
-    const last = list[list.length - 1];
-    return last?.menuId ?? last?.id ?? state.cursor ?? null;
+  // 스웨거 우선 키 매핑
+  function getStoreId(m) {
+    const cand = [m?.storeId, m?.store_id, m?.store?.id, m?.store?.storeId];
+    for (const v of cand) if (v !== undefined && v !== null) return v;
+    return null;
+  }
+  function getStoreName(m) {
+    return m?.storeName ?? m?.store?.name ?? "";
+  }
+  function getImageUrl(m) {
+    return (
+      m?.menuImage ||
+      m?.imageUrl ||
+      m?.storeImageUrl ||
+      m?.store?.imageUrl ||
+      PLACEHOLDER_IMG
+    );
   }
 
   function resetAndReload() {
     state.cursor = null;
     state.hasMore = true;
     state.menus = [];
-    $list.innerHTML = "";
+    $list && ($list.innerHTML = "");
     fetchAndRender();
   }
 
@@ -222,15 +156,59 @@ document.addEventListener("DOMContentLoaded", () => {
     );
   }
 
+  /* ===== 데이터 ===== */
+  async function fetchAndRender() {
+    if (state.loading || !state.hasMore) return;
+    state.loading = true;
+
+    try {
+      const res = await fetch(buildUrl(), {
+        method: "GET",
+        credentials: "include",
+      });
+      if (!res.ok) throw new Error(`menus ${res.status}`);
+      const json = await res.json();
+
+      // 스웨거 구조: { isSuccess, result:{ menus:[], hasData:true, nextCursor:0 } }
+      const result = json?.result ?? json;
+      const batch = Array.isArray(result?.menus) ? result.menus : [];
+
+      // 서버 favorited 반영 → 초깃값부터 하트 일치
+      batch.forEach((m) => {
+        const id = m.menuId ?? m.id;
+        if (m.favorited && id != null) state.likes.add(id);
+      });
+
+      state.menus = state.menus.concat(batch);
+      state.cursor = result?.nextCursor ?? state.cursor;
+      state.hasMore =
+        typeof result?.hasData === "boolean"
+          ? result.hasData
+          : batch.length === PAGE_SIZE;
+
+      renderList(filterMenus($search?.value || ""));
+
+      // 반영된 likes 저장
+      localStorage.setItem(
+        "likes_menu",
+        JSON.stringify(Array.from(state.likes.values()))
+      );
+    } catch (e) {
+      console.error("메뉴 목록 조회 실패:", e);
+    } finally {
+      state.loading = false;
+    }
+  }
+
   /* ===== 렌더 ===== */
   function renderList(menus) {
     if (!$list) return;
 
     if (!menus?.length) {
       $list.innerHTML = `
-      <li class="menu_empty_card" aria-live="polite">
-        <p class="menu_empty_msg">표시할 메뉴가 없습니다</p>
-      </li>`;
+        <li class="menu_empty_card" aria-live="polite">
+          <p class="menu_empty_msg">표시할 메뉴가 없습니다</p>
+        </li>`;
       return;
     }
 
@@ -242,62 +220,70 @@ document.addEventListener("DOMContentLoaded", () => {
 
       const menuId = m.menuId ?? m.id;
       const menuName = m.name ?? m.menuName ?? "메뉴";
-      const liked = state.likes.has(menuId);
 
       const price = Number(m.price ?? m.originalPrice) || 0;
-      const discount = Number(m.discountPercent ?? m.discount_rate) || 0;
-      const hasDiscount = discount > 0;
-      const salePrice =
-        "discountPrice" in m
-          ? Number(m.discountPrice) || Math.round(price * (1 - discount / 100))
-          : hasDiscount
-          ? Math.round(price * (1 - discount / 100))
-          : price;
+      const discountPct = Number(m.discountPercent ?? m.discount_rate) || 0;
+      const hasDiscount = discountPct > 0;
+      const salePrice = hasDiscount
+        ? Math.max(0, Math.round(price * (1 - discountPct / 100)))
+        : price;
 
-      const storeIdFromList = getStoreId(m);
+      const storeId = getStoreId(m);
+      const storeName = getStoreName(m);
 
-      // ⚠️ 상세 조회 없이 바로 이동: storeId 없으면 menuId만 전달
-      const href = storeIdFromList
-        ? `order.html?storeId=${encodeURIComponent(
-            storeIdFromList
+      // 상세 페이지 링크(스토어가 있으면 같이 전달)
+      const href = storeId
+        ? `${STORE_PAGE}?storeId=${encodeURIComponent(
+            storeId
           )}&menuId=${encodeURIComponent(menuId)}`
-        : `order.html?menuId=${encodeURIComponent(menuId)}`;
+        : `${STORE_PAGE}?menuId=${encodeURIComponent(menuId)}`;
+
+      const liked = state.likes.has(menuId);
 
       li.innerHTML = `
-      <button class="like_btn" aria-label="찜" data-menu-id="${menuId}">
-        <img src="${
-          liked ? "../images/like_red.svg" : "../images/like.svg"
-        }" alt="찜" />
-      </button>
-      <a href="${href}" class="menu_link" data-store-id="${
-        storeIdFromList ?? ""
-      }">
-        <div class="menu_top">
-          <div class="menu_left">
-            <p class="menu_name">${escapeHtml(menuName)}</p>
-            <div class="price_block">
-              ${
-                hasDiscount
-                  ? `<span class="old_price">${formatWon(price)} 원</span>
-                     <div class="now_row">
-                       <span class="sale_pct">${Math.round(discount)}%</span>
-                       <span class="now_price">${formatWon(salePrice)} 원</span>
-                     </div>`
-                  : `<div class="now_row">
-                       <span class="now_price">${formatWon(price)} 원</span>
-                     </div>`
-              }
+        <button class="like_btn" aria-label="찜" data-menu-id="${menuId}">
+          <img src="${
+            liked ? "../images/like_red.svg" : "../images/like.svg"
+          }" alt="찜" />
+        </button>
+        <a href="${href}" class="menu_link" data-store-id="${storeId ?? ""}">
+          <div class="menu_top">
+            <div class="menu_left">
+              <p class="menu_name">${escapeHtml(menuName)}</p>
+              <div class="price_block">
+                ${
+                  hasDiscount
+                    ? `<span class="old_price">${formatWon(price)} 원</span>
+                       <div class="now_row">
+                         <span class="sale_pct">${Math.round(
+                           discountPct
+                         )}%</span>
+                         <span class="now_price">${formatWon(
+                           salePrice
+                         )} 원</span>
+                       </div>`
+                    : `<div class="now_row">
+                         <span class="now_price">${formatWon(price)} 원</span>
+                       </div>`
+                }
+              </div>
+            </div>
+            <div class="menu_right">
+              <img class="menu_thumb"
+                   src="${getImageUrl(m)}"
+                   alt="${escapeHtml(menuName)}"
+                   onerror="this.onerror=null;this.src='${PLACEHOLDER_IMG}'">
             </div>
           </div>
-          <div class="menu_right">
-            <img class="menu_thumb"
-                 src="${getImageUrl(m)}"
-                 alt="${escapeHtml(menuName)}"
-                 onerror="this.onerror=null;this.src='${PLACEHOLDER_IMG}'">
+          <div class="menu_bottom">
+            <div class="store_line">
+              <span class="store_name">${escapeHtml(
+                storeName || "가게명 없음"
+              )}</span>
+            </div>
           </div>
-        </div>
-      </a>
-    `;
+        </a>
+      `;
 
       frag.appendChild(li);
     });
@@ -343,7 +329,7 @@ document.addEventListener("DOMContentLoaded", () => {
       if (!res.ok)
         throw new Error(`menu like api ${method} failed: ${res.status}`);
 
-      // (선택) 응답 favoritedStatus 동기화
+      // 응답에 favoritedStatus 같은 값이 오면 동기화
       const data = await res.json().catch(() => null);
       const status =
         data?.result?.favoritedStatus ?? data?.favoritedStatus ?? nowLiked;
@@ -382,18 +368,7 @@ document.addEventListener("DOMContentLoaded", () => {
     );
   }
 
-  function formatWon(n) {
-    return Number(n).toLocaleString("ko-KR");
-  }
-  function escapeHtml(str) {
-    return String(str)
-      .replaceAll("&", "&amp;")
-      .replaceAll("<", "&lt;")
-      .replaceAll(">", "&gt;")
-      .replaceAll('"', "&quot;")
-      .replaceAll("'", "&#039;");
-  }
-
+  /* ===== 활성 위치 표시 ===== */
   // 별칭(label) 우선, 없으면 도로명(roadAddressName) → 마지막에만 locationName 등 fallback
   async function fetchActiveAndApply() {
     try {
