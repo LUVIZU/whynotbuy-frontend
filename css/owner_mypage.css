@@ -26,7 +26,7 @@ body > main {
   display: flex;
   align-items: center;
   justify-content: space-between; /* 아이콘 – 텍스트 양끝 배치 */
-  width: 220px; /* Figma: Fill(280) */
+  width: 280px; /* Figma: Fill(280) */
   height: 80px; /* Fixed(80) */
   margin: 0 auto;
   padding: 0px 20px; /* 좌우 여백 */
@@ -93,4 +93,13 @@ body > main {
 .owner-home .chip-btn:focus-visible {
   outline: 2px solid #a82d2f;
   outline-offset: 2px;
+}
+.top_bar__title {
+  margin: 0;
+  line-height: 118px;
+  text-align: center;
+  font-size: 20px;
+  font-weight: 600;
+  color: #fff;
+  padding-top: 20px;
 }

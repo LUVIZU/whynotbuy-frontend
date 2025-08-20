@@ -4,16 +4,15 @@
     <meta charset="utf-8" />
     <title>가게 등록</title>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <link rel="stylesheet" href="../css/styles.css" />
+    <link rel="stylesheet" href="../css/style.css" />
     <link rel="stylesheet" href="../css/store_enroll.css" />
-    <script src="../js/store_enroll.js" defer></script>
+    <script src="../js/config.js"></script>
+    <script src="../js/store_enroll.js"></script>
   </head>
   <body>
-    <main id="app" aria-live="polite">
+    <main class="app_frame" aria-live="polite">
       <!-- Topbar -->
-      <header class="topbar">
-        <h1 class="topbar__title">가게 등록</h1>
-      </header>
+      <header class="top_bar"><h1 class="top_bar__title">가게 등록</h1></header>
 
       <form action="#" method="post" autocomplete="off" class="enroll-form">
         <!-- 상호명 -->
@@ -25,17 +24,15 @@
           autocomplete="organization"
           required
         />
-
         <!-- 위치 -->
-        <label for="store-address">위치</label>
+        <label for="store-location">위치</label>
         <input
-          id="store-address"
-          name="address"
+          id="store-location"
+          name="location"
           type="text"
           autocomplete="street-address"
           required
         />
-
         <!-- 영업시간 -->
         <p class="time-label">영업시간</p>
         <div class="time-row">
@@ -59,10 +56,8 @@
             required
           />
         </div>
-
         <button type="submit">위치 등록하기</button>
       </form>
-
       <!-- 휠 피커 -->
       <div class="time-wheel" id="time-wheel" hidden>
         <div class="center-bar" aria-hidden="true"></div>

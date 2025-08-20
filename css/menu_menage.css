@@ -1,8 +1,13 @@
+/* =========================
+   주문 관리 전용 스타일
+   ========================= */
+
+/* ===== 하단 상태 버튼 (플로팅) ===== */
 .bottom-status {
   position: absolute;
   left: 50%;
   transform: translateX(-50%);
-  bottom: 142px;
+  bottom: 142px; /* 하단 네비 + 여백 고려 */
   width: 320px;
   height: 48px;
   border-radius: 20px;
@@ -20,32 +25,52 @@
   z-index: 10;
 }
 
-.tabbar {
-  position: absolute;
-  left: 0;
-  bottom: 0;
-  width: 100%;
-  height: 112px;
-  background: #fff;
-  display: flex;
-  align-items: center;
-  justify-content: space-around;
-  border-top: 1px solid rgba(0, 0, 0, 0.1);
-}
-
-img {
+/* ===== 하단 네비 아이템 (이미지 위치 보정) ===== */
+.bottom_nav_item img {
+  width: 94px;
+  height: 40px;
+  margin-bottom: 30px; /* 아이콘 위로 띄우기 */
   display: block;
 }
 
-button {
-  font-family: inherit;
+/* =========================
+   주문 리스트 & 스크롤 컨테이너
+   ========================= */
+.order-section {
+  /* .content(공통)의 배경/레이아웃을 유지하면서 내부 스크롤만 적용 */
+  flex: 1;
+  overflow-y: auto; /* 세로 스크롤 */
+  overflow-x: hidden; /* 가로 스크롤 숨김 */
+  padding: 16px;
+  padding-bottom: 180px; /* 하단 플로팅 버튼 + 네비 여유공간 */
+  box-sizing: border-box;
+  background: none; /* content의 배경 그라데이션 유지 */
+  -ms-overflow-style: none; /* IE, Edge 스크롤바 숨김 */
+  scrollbar-width: none; /* Firefox 스크롤바 숨김 */
+}
+.order-section::-webkit-scrollbar {
+  display: none; /* Chrome, Safari, Opera 스크롤바 숨김 */
 }
 
-.tabbar__item img {
-  margin-bottom: 45px;
+/* 리스트 기본값 정리 */
+ul,
+li {
+  list-style: none;
+  padding: 0;
+  margin: 0;
 }
 
-/* ===== 주문 카드 ===== */
+/* 리스트 레이아웃 (카드 세로 스택) */
+.order-list {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px; /* 카드 간격 */
+}
+
+/* =========================
+   주문 카드
+   ========================= */
 .order-card {
   width: 320px;
   min-height: 207px;
@@ -56,7 +81,7 @@ button {
   box-sizing: border-box;
 }
 
-/* ===== 카드 상단 영역 ===== */
+/* 카드 상단: 주문번호 + 남은 시간 */
 .order-card__head {
   display: flex;
   justify-content: space-between;
@@ -86,7 +111,7 @@ button {
   color: #007aff;
 }
 
-/* ===== 남은 시간 배지 ===== */
+/* 남은 시간 배지 */
 .order-card__remain {
   background: #dcedff;
   border-radius: 8px;
@@ -96,7 +121,7 @@ button {
   color: #007aff;
 }
 
-/* ===== 주문 품목 ===== */
+/* 주문 품목 */
 .order-card__items {
   margin: 8px 0;
 }
@@ -112,7 +137,7 @@ button {
   line-height: 24px;
 }
 
-/* ===== 픽업 예약 시간 ===== */
+/* 픽업 예약 시간 */
 .order-card__pickup {
   margin: 8px 0;
 }
@@ -130,7 +155,7 @@ button {
   line-height: 24px;
 }
 
-/* ===== 가격 영역 ===== */
+/* 가격 영역 */
 .order-card__price {
   display: flex;
   align-items: center;
@@ -163,44 +188,25 @@ button {
   line-height: 100%;
   color: #000000;
 }
-
-/* ===== 리스트 기본값 정리 ===== */
-ul,
-li {
-  list-style: none;
-  padding: 0;
+.top_bar__title {
   margin: 0;
+  line-height: 118px;
+  text-align: center;
+  font-size: 20px;
+  font-weight: 600;
+  color: #fff;
+  padding-top: 20px;
 }
 
-/* 세로 스택 + 간격 */
-.order-list {
-  display: flex;
-  flex-direction: column; /* 세로 정렬 */
-  align-items: center; /* 중앙 정렬 */
-  gap: 8px; /* 카드 간 간격 */
-}
-
-/* 메인 전체를 세로 레이아웃 + 스크롤 */
-.order-section {
-  flex: 1;
-  overflow-y: auto; /* 세로 스크롤 */
-  overflow-x: hidden; /* 가로 스크롤 숨김 */
-  padding: 16px;
-  padding-bottom: 180px; /* 하단 버튼 + 탭바 높이 확보 */
-  box-sizing: border-box;
-  background: none; /* 배경 제거 */
-
-  /* 스크롤바 숨기기 */
-  -ms-overflow-style: none; /* IE, Edge */
-  scrollbar-width: none; /* Firefox */
-}
-.order-section::-webkit-scrollbar {
-  display: none; /* Chrome, Safari, Opera */
-}
-
-main {
-  display: flex;
-  flex-direction: column;
-  overflow: hidden; /* 전체 스크롤 방지 */
-  background: none; /* 배경 제거 */
+/* 우측 아이콘 버튼 */
+.top_bar__action {
+  position: absolute;
+  right: 16px;
+  top: 67%;
+  transform: translateY(-50%);
+  background: none;
+  border: 0;
+  font-size: 18px;
+  color: #fff;
+  cursor: pointer;
 }

@@ -84,9 +84,9 @@ body {
   padding: 16px;
   /*상단에서 하단으로 그라데이션 효과*/
   /*사용자 페이지용 배경색*/
-  background: linear-gradient(to bottom, #fff1c5, #fff1c5);
+  /*background: linear-gradient(to bottom, #fff1c5, #fff1c5);*/
   /* 사장님 페이지용 배경색  */
-  /* background: linear-gradient(to bottom, #eeeeee, #ffffff); */
+  background: linear-gradient(to bottom, #eeeeee, #ffffff);
   /* 사용자 주문 페이지용 배경색  */
   /* background: linear-gradient(to bottom, #fff1c5, #ffffff); */
 

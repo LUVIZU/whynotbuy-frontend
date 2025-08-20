@@ -4,17 +4,17 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>메뉴관리(삭제)</title>
-    <link rel="stylesheet" href="../css/styles.css" />
+    <link rel="stylesheet" href="../css/style.css" />
     <link rel="stylesheet" href="../css/menu_delete.css" />
   </head>
   <body>
-    <main id="app" aria-live="polite">
-      <!-- Topbar -->
-      <header class="topbar">
-        <h1 class="topbar__title">메뉴 관리</h1>
-        <button
-          class="topbar__action"
-          id="go-mypage"
+    <main class="app_frame" id="app" aria-live="polite">
+      <!-- 상단 바 -->
+      <header class="top_bar">
+        <h1 class="top_bar__title">메뉴 관리</h1>
+        <a
+          href="owner_mypage.html"
+          class="top_bar__action"
           aria-label="마이페이지로 이동"
         >
           <img
@@ -22,120 +22,127 @@
             alt="마이페이지"
             class="icon-settings"
           />
-        </button>
+        </a>
       </header>
 
-      <!-- 상태 배너(필요 시 노출) -->
-      <section
-        class="order-state"
-        id="order-state"
-        data-order-enabled="false"
-        hidden
-      >
-        <p class="order-state__text" id="order-state-text"></p>
-      </section>
+      <!-- 콘텐츠 영역 -->
+      <section class="content">
+        <!-- 상태 배너(필요 시 노출) -->
+        <section
+          class="order-state"
+          id="order-state"
+          data-order-enabled="false"
+          hidden
+        >
+          <p class="order-state__text" id="order-state-text"></p>
+        </section>
 
-      <!-- 리스트 -->
-      <section class="menu-section">
-        <ul id="menu-list" class="menu-list" aria-label="메뉴 목록">
-          <!-- 샘플 카드 -->
-          <li class="menu-card" data-id="demo-1">
-            <button class="menu-card__delete" aria-label="삭제">x</button>
+        <!-- 리스트 -->
+        <section class="menu-section">
+          <ul id="menu-list" class="menu-list" aria-label="메뉴 목록">
+            <!-- 샘플 카드 -->
+            <li class="menu-card" data-id="demo-1">
+              <button class="menu-card__delete" aria-label="삭제">x</button>
 
-            <div class="menu-card__head">
-              <h2 class="menu-card__name"><span data-name>버섯 피자</span></h2>
-              <button class="menu-card__edit" type="button">수정하기</button>
-            </div>
+              <div class="menu-card__head">
+                <h2 class="menu-card__name">
+                  <span data-name>버섯 피자</span>
+                </h2>
+                <button class="menu-card__edit" type="button">수정하기</button>
+              </div>
 
-            <div class="menu-card__body">
-              <div class="menu-card__text">
-                <!-- 원가 -->
-                <p class="menu-card__sub">
-                  <span data-origin-price>15,000원</span>
-                </p>
-
-                <!-- 가격 + 재고 한 줄 -->
-                <div class="menu-card__meta">
-                  <p class="menu-card__price">
-                    <span class="menu-card__discount" data-discount>14%</span>
-                    <span class="menu-card__sale-price" data-sale-price
-                      >13,000원</span
-                    >
+              <div class="menu-card__body">
+                <div class="menu-card__text">
+                  <p class="menu-card__sub">
+                    <span data-origin-price>15,000원</span>
                   </p>
 
-                  <div class="menu-card__stock" role="group" aria-label="재고">
-                    <span class="menu-card__stock-label">재고</span>
-                    <span class="menu-card__stock-count" data-stock>0</span>
+                  <div class="menu-card__meta">
+                    <p class="menu-card__price">
+                      <span class="menu-card__discount" data-discount>14%</span>
+                      <span class="menu-card__sale-price" data-sale-price
+                        >13,000원</span
+                      >
+                    </p>
+
                     <div
-                      class="menu-card__stock-ctrl"
+                      class="menu-card__stock"
                       role="group"
-                      aria-label="재고 조정"
+                      aria-label="재고"
                     >
-                      <button
-                        class="stock-btn"
-                        type="button"
-                        data-action="decrement"
-                        aria-label="재고 감소"
+                      <span class="menu-card__stock-label">재고</span>
+                      <span class="menu-card__stock-count" data-stock>0</span>
+                      <div
+                        class="menu-card__stock-ctrl"
+                        role="group"
+                        aria-label="재고 조정"
                       >
-                        −
-                      </button>
-                      <button
-                        class="stock-btn"
-                        type="button"
-                        data-action="increment"
-                        aria-label="재고 증가"
-                      >
-                        ＋
-                      </button>
+                        <button
+                          class="stock-btn"
+                          type="button"
+                          data-action="decrement"
+                          aria-label="재고 감소"
+                        >
+                          −
+                        </button>
+                        <button
+                          class="stock-btn"
+                          type="button"
+                          data-action="increment"
+                          aria-label="재고 증가"
+                        >
+                          ＋
+                        </button>
+                      </div>
                     </div>
+                  </div>
+
+                  <!-- 할인 스텝퍼 -->
+                  <div
+                    class="menu-card__discount-ctrl"
+                    role="group"
+                    aria-label="할인 비율 조정"
+                  >
+                    <button
+                      type="button"
+                      data-action="discount-dec"
+                      aria-label="할인 감소"
+                    >
+                      −
+                    </button>
+                    <output data-discount class="discount-output">14%</output>
+                    <button
+                      type="button"
+                      data-action="discount-inc"
+                      aria-label="할인 증가"
+                    >
+                      ＋
+                    </button>
                   </div>
                 </div>
 
-                <!-- 할인 스텝퍼: 할인 가격 '아래' -->
-                <div
-                  class="menu-card__discount-ctrl"
-                  role="group"
-                  aria-label="할인 비율 조정"
-                >
-                  <button
-                    type="button"
-                    data-action="discount-dec"
-                    aria-label="할인 감소"
-                  >
-                    −
-                  </button>
-                  <output data-discount class="discount-output">14%</output>
-                  <button
-                    type="button"
-                    data-action="discount-inc"
-                    aria-label="할인 증가"
-                  >
-                    ＋
-                  </button>
-                </div>
+                <figure class="menu-card__thumb">
+                  <img
+                    data-thumb
+                    src="https://via.placeholder.com/108x97.png?text=%ED%94%BC%EC%9E%90"
+                    alt="버섯 피자"
+                    loading="lazy"
+                  />
+                </figure>
               </div>
+            </li>
+          </ul>
 
-              <figure class="menu-card__thumb">
-                <img
-                  data-thumb
-                  src="https://via.placeholder.com/108x97.png?text=%ED%94%BC%EC%9E%90"
-                  alt="버섯 피자"
-                  loading="lazy"
-                />
-              </figure>
-            </div>
-          </li>
-        </ul>
-
-        <!-- 하단 버튼 -->
-        <button
-          class="fab-add"
-          id="add-menu"
-          type="button"
-          aria-label="메뉴 추가"
-        >
-          + 다른 메뉴 추가하기
-        </button>
+          <!-- 하단 버튼 -->
+          <button
+            class="fab-add"
+            id="add-menu"
+            type="button"
+            aria-label="메뉴 추가"
+          >
+            + 다른 메뉴 추가하기
+          </button>
+        </section>
       </section>
 
       <!-- 하단 상태 배지 -->
@@ -148,16 +155,16 @@
         주문 마감하기
       </div>
 
-      <!-- 탭바 -->
-      <nav class="tabbar" aria-label="하단 메뉴">
-        <a href="#" class="tabbar__item is-active">
+      <!-- 하단 네비게이션 -->
+      <nav class="bottom_nav" aria-label="하단 메뉴">
+        <a href="menu_delete.html" class="bottom_nav_item is-active">
           <img
             src="../images/menu_act.png"
             alt="메뉴관리"
             class="tabbar-icon"
           />
         </a>
-        <a href="#" class="tabbar__item">
+        <a href="menu_menage.html" class="bottom_nav_item">
           <img
             src="../images/order_deact.png"
             alt="주문관리"
@@ -165,93 +172,9 @@
           />
         </a>
       </nav>
-
-      <!-- 템플릿 -->
-      <template id="menu-item-template">
-        <li class="menu-card" data-id="">
-          <button class="menu-card__delete" aria-label="삭제">×</button>
-
-          <div class="menu-card__head">
-            <h2 class="menu-card__name" data-name>메뉴명</h2>
-            <button class="menu-card__edit" type="button">수정하기</button>
-          </div>
-
-          <div class="menu-card__body">
-            <div class="menu-card__text">
-              <p class="menu-card__sub" data-origin-price>0원</p>
-
-              <div class="menu-card__meta">
-                <p class="menu-card__price">
-                  <span class="menu-card__discount" data-discount>0%</span>
-                  <span class="menu-card__sale-price" data-sale-price>0원</span>
-                </p>
-
-                <div class="menu-card__stock" role="group" aria-label="재고">
-                  <span class="menu-card__stock-label">재고</span>
-                  <span class="menu-card__stock-count" data-stock>0</span>
-                  <div
-                    class="menu-card__stock-ctrl"
-                    role="group"
-                    aria-label="재고 조정"
-                  >
-                    <button
-                      class="stock-btn"
-                      type="button"
-                      data-action="decrement"
-                      aria-label="재고 감소"
-                    >
-                      −
-                    </button>
-                    <button
-                      class="stock-btn"
-                      type="button"
-                      data-action="increment"
-                      aria-label="재고 증가"
-                    >
-                      ＋
-                    </button>
-                  </div>
-                </div>
-              </div>
-
-              <!-- 가격 아래 스텝퍼(템플릿) -->
-              <div
-                class="menu-card__discount-ctrl"
-                role="group"
-                aria-label="할인 비율 조정"
-              >
-                <button
-                  type="button"
-                  data-action="discount-dec"
-                  aria-label="할인 감소"
-                >
-                  −
-                </button>
-                <output data-discount class="discount-output">0%</output>
-                <button
-                  type="button"
-                  data-action="discount-inc"
-                  aria-label="할인 증가"
-                >
-                  ＋
-                </button>
-              </div>
-            </div>
-
-            <figure class="menu-card__thumb">
-              <img
-                src="https://via.placeholder.com/80x80.png?text=IMG"
-                alt=""
-                data-thumb
-                loading="lazy"
-              />
-            </figure>
-          </div>
-        </li>
-      </template>
     </main>
 
-    <!-- 열 때 hidden 제거 -->
+    <!-- 삭제 팝업 모달 -->
     <div
       class="modal"
       id="delete-modal"
@@ -259,6 +182,7 @@
       aria-modal="true"
       aria-labelledby="delete-modal-title"
       aria-describedby="delete-modal-desc"
+      hidden
     >
       <div class="modal__overlay" data-role="close"></div>
 
@@ -286,5 +210,8 @@
         </footer>
       </div>
     </div>
+
+    <!-- 외부 JS -->
+    <script src="../js/menu_delete.js"></script>
   </body>
 </html>
