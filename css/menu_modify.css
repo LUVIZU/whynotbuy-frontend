@@ -1,4 +1,11 @@
-/* ===== 하단 상태 배지 ===== */
+.app_frame {
+  position: relative; /* 전체 높이 */
+  background: linear-gradient(to bottom, #eeeeee, #ffffff); /* ✅ 그라데이션 */
+}
+
+.content {
+  background: transparent; /* ✅ 덮어쓰지 않도록 */
+}
 .bottom-status {
   position: absolute;
   left: 50%;

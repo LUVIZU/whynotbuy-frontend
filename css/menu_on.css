@@ -1,3 +1,11 @@
+.app_frame {
+  position: relative; /* 전체 높이 */
+  background: linear-gradient(to bottom, #eeeeee, #ffffff); /* ✅ 그라데이션 */
+}
+
+.content {
+  background: transparent; /* ✅ 덮어쓰지 않도록 */
+}
 /* ====== Global Reset ====== */
 #app {
   background: #cfcfcf;
@@ -291,9 +299,6 @@ button {
 
 /* 탭바 */
 
-.bottom_nav_item img {
-  margin-bottom: 45px;
-}
 .top_bar__title {
   margin: 0;
   line-height: 118px;
@@ -315,4 +320,97 @@ button {
   font-size: 18px;
   color: #fff;
   cursor: pointer;
+}
+.modal[hidden] {
+  display: none !important;
+}
+
+.modal {
+  position: fixed;
+  inset: 0;
+  display: flex !important;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+}
+
+.modal__overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.35);
+}
+
+.modal__panel {
+  position: relative;
+  width: 316px;
+  min-height: 229px;
+  background: #fff;
+  border-radius: 20px;
+  display: flex;
+  flex-direction: column;
+  padding: 0 20px 16px;
+}
+
+.modal__header {
+  padding: 32px 0 8px;
+}
+.modal__title {
+  margin: 0;
+  text-align: center;
+  font-size: 20px;
+  line-height: 23px;
+  font-weight: 600;
+  color: #000;
+}
+
+.modal__body {
+  padding: 0;
+}
+.modal__desc {
+  margin-top: 20px;
+  text-align: center;
+  width: 100%;
+  font-size: 16px;
+  line-height: 1.4;
+  color: #000;
+}
+
+.modal__footer {
+  margin-top: 16px;
+  display: flex;
+  gap: 40px;
+  justify-content: center;
+  align-items: center;
+  padding-top: 8px;
+}
+
+.btn {
+  height: 40px;
+  min-width: 88px;
+  padding: 10px 16px;
+  border-radius: 50px;
+  border: 1px solid transparent;
+  font-size: 14px;
+  font-weight: 500;
+  background: #eeeeee;
+  cursor: pointer;
+}
+.btn:active {
+  transform: translateY(1px);
+}
+
+.btn--ghost {
+  background: #eeeeee;
+}
+
+.btn--gray {
+  background: #eeeeee;
+  border-color: #eeeeee;
+  color: var(--main-color, #a51315);
+}
+
+@media (max-width: 360px) {
+  .modal__panel {
+    width: calc(100% - 32px);
+  }
 }

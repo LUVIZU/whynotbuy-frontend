@@ -7,6 +7,19 @@
     <link rel="stylesheet" href="../css/style.css" />
     <link rel="stylesheet" href="../css/menu_off.css" />
     <script src="../js/menu_off.js"></script>
+    <script>
+      document.addEventListener("DOMContentLoaded", () => {
+        const params = new URLSearchParams(window.location.search);
+        const storeId = params.get("storeId");
+
+        if (storeId) {
+          const mypageLink = document.querySelector(".top_bar__action");
+          if (mypageLink) {
+            mypageLink.href = `owner_mypage.html?storeId=${storeId}`;
+          }
+        }
+      });
+    </script>
   </head>
   <body>
     <main class="app_frame" aria-live="polite">
@@ -120,21 +133,25 @@
         role="status"
         aria-live="polite"
       >
-        주문 가능 시간까지&nbsp;<span data-hours>0시간</span>&nbsp;남았습니다
+        주문 받기
       </div>
 
       <!-- 하단 탭 -->
       <nav class="bottom_nav" aria-label="하단 메뉴">
         <a href="menu_off.html" class="bottom_nav_item is-active">
           <img
-            src="../images/menu_act.png"
+            src="../images/menu_act.svg"
             alt="메뉴관리"
             class="tabbar-icon"
           />
         </a>
-        <a href="menu_menage.html" class="bottom_nav_item">
+        <a
+          href="menu_menage.html"
+          class="bottom_nav_item"
+          id="order-manage-link"
+        >
           <img
-            src="../images/order_deact.png"
+            src="../images/order_deact.svg"
             alt="주문관리"
             class="tabbar-icon"
           />
@@ -148,7 +165,7 @@
 
           <div class="menu-card__head">
             <h2 class="menu-card__name" data-name>메뉴명</h2>
-            <a href="menu_add.html" class="menu-card__edit">수정하기</a>
+            <a href="menu_modify.html" class="menu-card__edit">수정하기</a>
           </div>
 
           <div class="menu-card__body">
@@ -241,5 +258,6 @@
         </div>
       </div>
     </main>
+    <script src="../js/bottom_nav.js"></script>
   </body>
 </html>

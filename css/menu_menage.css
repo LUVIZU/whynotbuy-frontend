@@ -1,7 +1,11 @@
-/* =========================
-   주문 관리 전용 스타일
-   ========================= */
+.app_frame {
+  position: relative; /* 전체 높이 */
+  background: linear-gradient(to bottom, #eeeeee, #ffffff); /* ✅ 그라데이션 */
+}
 
+.content {
+  background: transparent; /* ✅ 덮어쓰지 않도록 */
+}
 /* ===== 하단 상태 버튼 (플로팅) ===== */
 .bottom-status {
   position: absolute;
@@ -11,7 +15,7 @@
   width: 320px;
   height: 48px;
   border-radius: 20px;
-  background: var(--maincolor, #a82d2f);
+  background: #777777;
   color: #fff;
   border: 1px solid white;
   display: flex;
