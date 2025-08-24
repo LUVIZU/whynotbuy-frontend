@@ -7,6 +7,26 @@
     <link rel="stylesheet" href="../css/style.css" />
     <link rel="stylesheet" href="../css/owner_review.css" />
     <script src="../js/owner_review.js" defer></script>
+    <script>
+      document.addEventListener("DOMContentLoaded", () => {
+        const backBtn = document.querySelector(".top_bar__back");
+
+        // ✅ 현재 storeId 가져오기
+        const params = new URLSearchParams(window.location.search);
+        const storeId = params.get("storeId");
+
+        if (backBtn) {
+          backBtn.addEventListener("click", () => {
+            if (storeId) {
+              window.location.href = `owner_mypage.html?storeId=${storeId}`;
+            } else {
+              // storeId 없으면 그냥 기본 이동
+              window.location.href = "owner_mypage.html";
+            }
+          });
+        }
+      });
+    </script>
   </head>
   <body>
     <main class="app_frame review-container">
@@ -24,58 +44,13 @@
           리뷰 요약
           <img src="../images/ai_blue.png" alt="AI 아이콘" class="ai-icon" />
         </h2>
-        <p class="summary-text">
-          버섯 피자가 유명하고, 피자를 다시 구워주셔서 따뜻하게 먹을 수
-          있다는... 버섯 피자가 유명하고, 피자를 다시 구워주셔서 따뜻하게 먹을
-          수 있다는게 정말 좋아요.
-        </p>
+        <p class="summary-text">(AI 요약 내용은 여기에 표시됩니다.)</p>
       </section>
 
-      <!-- 리뷰 목록 -->
-      <section class="review-list">
-        <div class="review-card">
-          <div class="review-date">7월 24일 (목)</div>
-          <div class="review-text">
-            버섯 피자 하나랑 다른 피자 하나를 먹었는데 어쩌구 저쩌구 사장님이
-            다시 구워 주셔서 따뜻하게 먹을 수 있었어요, 최고최고
-          </div>
-          <div class="review-items">
-            버섯 피자 1개<br />
-            다른 피자 1개
-          </div>
-        </div>
+      <!-- 리뷰 목록 (JS에서 API로 채움) -->
+      <section class="review-list"></section>
 
-        <div class="review-card">
-          <div class="review-date">7월 24일 (목)</div>
-          <div class="review-text">버섯 피자 최고</div>
-          <div class="review-items">버섯 피자 1개</div>
-        </div>
-
-        <div class="review-card">
-          <div class="review-date">7월 24일 (목)</div>
-          <div class="review-text">
-            버섯 피자 하나랑 다른 피자 하나를 먹었는데 어쩌구 저쩌구 사장님이
-            다시 구워 주셔서 따뜻하게 먹을 수 있었어요, 최고최고
-          </div>
-          <div class="review-items">
-            버섯 피자 1개<br />
-            다른 피자 1개
-          </div>
-        </div>
-
-        <div class="review-card">
-          <div class="review-date">7월 24일 (목)</div>
-          <div class="review-text">버섯 피자 최고</div>
-          <div class="review-items">버섯 피자 1개</div>
-        </div>
-        <div class="review-card">
-          <div class="review-date">7월 24일 (목)</div>
-          <div class="review-text">버섯 피자 최고</div>
-          <div class="review-items">버섯 피자 1개</div>
-        </div>
-      </section>
-
-      <!-- 템플릿 (나중에 JS에서 사용) -->
+      <!-- 템플릿 (JS에서 복제해서 사용) -->
       <template id="review-card-template">
         <div class="review-card">
           <div class="review-date"></div>
