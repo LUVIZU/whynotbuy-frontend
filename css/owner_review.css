@@ -19,10 +19,9 @@ body > main {
   border-radius: 40px;
   padding: 10px 24px;
   width: 325px;
-  height: auto;
-  min-height: 115px;
   box-sizing: border-box;
-  margin: 20px auto; /* ⬅️ 위아래 여백 + 좌우 자동으로 중앙 정렬 */
+  margin: 20px auto; /* 위아래 여백 + 좌우 중앙 정렬 */
+  height: auto; /* ✅ 글자 길이에 따라 높이 자동 조정 */
 }
 
 .summary-title {
@@ -43,6 +42,7 @@ body > main {
   display: flex;
   flex-direction: column;
   gap: 9px;
+  align-items: center;
 }
 
 /* ===== 리뷰 카드 ===== */
@@ -87,16 +87,20 @@ body > main {
   width: calc(100% + 48px); /* 좌우 패딩 합 만큼 늘림 */
   box-sizing: border-box;
 }
-
-/* 리뷰 컨테이너: 세로 스크롤 가능하지만 스크롤바 UI 숨김 */
-.review-container {
-  overflow-y: auto;
-  -ms-overflow-style: none; /* IE/Edge */
-  scrollbar-width: none; /* Firefox */
+.top_bar {
+  position: sticky; /* 화면 상단에 붙여두기 */
+  top: 0; /* 최상단 고정 */
+  height: 120px;
+  background-color: #a82d2f;
+  z-index: 10; /* 리뷰 카드보다 위에 오도록 */
 }
-
+.review-container {
+  overflow-y: auto; /* ✅ 스크롤은 여기만 */
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
 .review-container::-webkit-scrollbar {
-  display: none; /* Chrome, Safari, Opera */
+  display: none;
 }
 .top_bar__title {
   margin: 0;

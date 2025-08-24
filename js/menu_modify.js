@@ -5,9 +5,6 @@ document.addEventListener("DOMContentLoaded", () => {
   const params = new URLSearchParams(window.location.search);
   const storeId = params.get("storeId");
   const menuId = params.get("menuId");
-  const name = params.get("name") || "";
-  const price = parseInt(params.get("price") || 0, 10);
-  let menuImage = params.get("menuImage") || "";
 
   // 요소 선택
   const nameInput = document.querySelector("#menu-name");
@@ -18,32 +15,9 @@ document.addEventListener("DOMContentLoaded", () => {
   const discountIncBtn = document.querySelector('[data-action="discount-inc"]');
   const photoInput = document.getElementById("photo-input");
   const photoTrigger = document.getElementById("photo-trigger");
+  const descTextarea = document.querySelector("#menu-desc");
 
-  // 값 채워넣기
-  if (nameInput) nameInput.value = name;
-  if (priceInput) priceInput.value = price;
-  if (discountDisplay) discountDisplay.textContent = "0%";
-
-  // 기존 이미지 표시
-  if (menuImage) {
-    // 절대경로가 아니면 API_BASE 붙이기
-    if (!menuImage.startsWith("http")) {
-      menuImage = `${API_BASE}${menuImage}`;
-    }
-
-    photoTrigger.innerHTML = `
-    <img src="${menuImage}" 
-         alt="메뉴 사진"
-         style="width:100%;height:100%;object-fit:cover;border-radius:8px;" />
-  `;
-  } else {
-    // 기본 placeholder
-    photoTrigger.innerHTML = `
-    <img src="../images/placeholder.png"
-         alt="기본 이미지"
-         style="width:100%;height:100%;object-fit:cover;border-radius:8px;" />
-  `;
-  }
+  let uploadedFile = null;
 
   // 숫자 포맷팅
   function formatCurrency(num) {
@@ -59,13 +33,108 @@ document.addEventListener("DOMContentLoaded", () => {
       finalPriceOutput.textContent = formatCurrency(discounted);
     }
   }
-  updateFinalPrice();
+
+  // ✅ 메뉴 상세 불러오기
+  async function loadMenuDetail() {
+    try {
+      const token = getCookie("accessToken");
+      const res = await fetch(
+        `${API_BASE}/api/v1/store/${storeId}/menus/${menuId}`,
+        {
+          method: "GET",
+          headers: { Authorization: `Bearer ${token}` },
+          credentials: "include",
+        }
+      );
+
+      const data = await res.json();
+      if (res.ok && data.isSuccess) {
+        const menu = data.result;
+
+        if (nameInput) nameInput.value = menu.name || "";
+        if (priceInput) priceInput.value = menu.price || 0;
+        if (discountDisplay)
+          discountDisplay.textContent = (menu.discountPercent || 0) + "%";
+        if (descTextarea) descTextarea.value = menu.description || "";
+
+        if (menu.menuImage) {
+          let imgUrl = menu.menuImage;
+          if (!imgUrl.startsWith("http")) {
+            imgUrl = `${API_BASE}${imgUrl}`;
+          }
+          photoTrigger.innerHTML = `
+            <img src="${imgUrl}" 
+                 alt="메뉴 사진"
+                 style="width:100%;height:100%;object-fit:cover;border-radius:8px;" />
+          `;
+        } else {
+          photoTrigger.innerHTML = `
+            <img src="../images/placeholder.png"
+                 alt="기본 이미지"
+                 style="width:100%;height:100%;object-fit:cover;border-radius:8px;" />
+          `;
+        }
+
+        updateFinalPrice();
+      } else {
+        alert("메뉴 정보를 불러오지 못했습니다.");
+      }
+    } catch (err) {
+      console.error("🚨 메뉴 상세 불러오기 실패:", err);
+    }
+  }
+
+  loadMenuDetail(); // ✅ 실행
 
   if (priceInput) {
     priceInput.addEventListener("input", updateFinalPrice);
   }
 
-  // 사진 업로드 (미리보기)
+  // ✅ AI 설명 자동 생성 함수
+  async function generateAiDescription() {
+    const menuName = nameInput.value.trim();
+    if (!menuName || !uploadedFile) return;
+
+    const formData = new FormData();
+    formData.append(
+      "request",
+      new Blob([JSON.stringify({ name: menuName })], {
+        type: "application/json",
+      })
+    );
+    formData.append("menuImage", uploadedFile);
+
+    try {
+      const res = await fetch(`${API_BASE}/api/v1/menus/description`, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${getCookie("accessToken")}` },
+        body: formData,
+        credentials: "include",
+      });
+
+      const raw = await res.text();
+      console.log("📥 AI 응답 RAW:", raw);
+
+      let data;
+      try {
+        data = JSON.parse(raw);
+      } catch {
+        console.error("⚠️ JSON 파싱 실패");
+        return;
+      }
+
+      if (res.ok && data.isSuccess) {
+        descTextarea.value = data.result; // ✅ 무조건 덮어쓰기
+        console.log("✅ AI 설명 생성 완료:", data.result);
+      } else {
+        console.warn("❌ 설명 생성 실패:", data.message);
+      }
+    } catch (err) {
+      console.error("🚨 AI 설명 생성 오류", err);
+    }
+  }
+
+  // 사진 업로드 (미리보기 + AI)
   photoTrigger.addEventListener("click", () => photoInput.click());
   photoInput.addEventListener("change", () => {
     const file = photoInput.files[0];
@@ -75,6 +144,9 @@ document.addEventListener("DOMContentLoaded", () => {
       photoInput.value = "";
       return;
     }
+
+    uploadedFile = file;
+
     const reader = new FileReader();
     reader.onload = (e) => {
       photoTrigger.innerHTML = `
@@ -84,6 +156,15 @@ document.addEventListener("DOMContentLoaded", () => {
       `;
     };
     reader.readAsDataURL(file);
+
+    if (nameInput.value.trim()) generateAiDescription();
+  });
+
+  // 메뉴명 입력 시에도 AI 실행
+  nameInput.addEventListener("input", () => {
+    if (uploadedFile && nameInput.value.trim()) {
+      generateAiDescription();
+    }
   });
 
   // 할인율 스텝퍼
@@ -104,72 +185,6 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // ✅ 메뉴 수정 제출
-  const form = document.querySelector("#menu-form");
-  if (form) {
-    form.addEventListener("submit", async (e) => {
-      e.preventDefault();
-
-      const currentDiscount = parseInt(
-        discountDisplay.textContent.replace("%", ""),
-        10
-      );
-
-      const token = getCookie("accessToken");
-      if (!token) {
-        alert("로그인이 필요합니다.");
-        return;
-      }
-
-      // JSON payload
-      const payload = {
-        name: nameInput.value,
-        price: Number(priceInput.value),
-        discountPercent: currentDiscount,
-      };
-
-      // FormData 구성
-      const formData = new FormData();
-      formData.append(
-        "update",
-        new Blob([JSON.stringify(payload)], { type: "application/json" })
-      );
-
-      // 새로 업로드한 이미지가 있으면 파일만 append
-      if (photoInput.files[0]) {
-        formData.append("menuImage", photoInput.files[0]);
-      }
-
-      try {
-        const res = await fetch(
-          `${API_BASE}/api/v1/store/${storeId}/menus/${menuId}`,
-          {
-            method: "PATCH",
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-            body: formData,
-            credentials: "include",
-          }
-        );
-
-        const data = await res.json();
-        console.log("📌 응답 상태:", res.status);
-        console.log("📌 응답 본문:", data);
-        if (res.ok && data.isSuccess) {
-          alert("메뉴가 수정되었습니다.");
-          // 수정 완료 후 → 기본은 menu_off로 이동
-          window.location.href = `menu_off.html?storeId=${storeId}`;
-        } else {
-          alert("수정 실패: " + data.message);
-        }
-      } catch (err) {
-        console.error("메뉴 수정 에러:", err);
-        alert("에러가 발생했습니다.");
-      }
-    });
-  }
-
   // ✅ 영업 여부 판별 함수
   function isStoreOpen(store) {
     if (!store.openingTime || !store.closingTime) return false;
@@ -184,14 +199,101 @@ document.addEventListener("DOMContentLoaded", () => {
     const close = new Date();
     close.setHours(closeH, closeM, closeS, 0);
 
-    // 자정을 넘기는 경우 처리
     if (close <= open) {
       return now >= open || now <= close;
     }
     return now >= open && now <= close;
   }
 
-  // ✅ 뒤로가기 버튼 → 영업 상태에 따라 이동
+  // ✅ 메뉴 수정 제출
+  const form = document.querySelector("#menu-form");
+  if (form) {
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+
+      const currentDiscount = parseInt(
+        discountDisplay.textContent.replace("%", ""),
+        10
+      );
+      const token = getCookie("accessToken");
+      if (!token) {
+        alert("로그인이 필요합니다.");
+        return;
+      }
+
+      const payload = {
+        name: nameInput.value,
+        price: Number(priceInput.value),
+        discountPercent: currentDiscount,
+        description: descTextarea.value,
+      };
+
+      const formData = new FormData();
+      formData.append(
+        "update",
+        new Blob([JSON.stringify(payload)], { type: "application/json" })
+      );
+
+      if (photoInput.files[0]) {
+        formData.append("menuImage", photoInput.files[0]);
+      }
+
+      try {
+        const res = await fetch(
+          `${API_BASE}/api/v1/store/${storeId}/menus/${menuId}`,
+          {
+            method: "PATCH",
+            headers: { Authorization: `Bearer ${token}` },
+            body: formData,
+            credentials: "include",
+          }
+        );
+
+        const data = await res.json();
+        console.log("📌 응답 상태:", res.status);
+        console.log("📌 응답 본문:", data);
+
+        if (res.ok && data.isSuccess) {
+          alert("메뉴가 수정되었습니다.");
+
+          // ✅ 가게 상태 조회 후 영업중/영업종료 분기
+          try {
+            const storeRes = await fetch(
+              `${API_BASE}/api/v1/store/${storeId}`,
+              {
+                headers: {
+                  Authorization: `Bearer ${getCookie("accessToken")}`,
+                },
+                credentials: "include",
+              }
+            );
+            const storeData = await storeRes.json();
+
+            if (storeRes.ok && storeData.isSuccess) {
+              const store = storeData.result;
+              if (isStoreOpen(store)) {
+                window.location.href = `menu_on.html?storeId=${storeId}`;
+              } else {
+                window.location.href = `menu_off.html?storeId=${storeId}`;
+              }
+            } else {
+              window.location.href = `menu_off.html?storeId=${storeId}`;
+            }
+          } catch (err) {
+            console.error("가게 상태 조회 오류", err);
+            window.location.href = `menu_off.html?storeId=${storeId}`;
+          }
+        } else {
+          alert("수정 실패: " + data.message);
+        }
+      } catch (err) {
+        console.error("메뉴 수정 에러:", err);
+        alert("에러가 발생했습니다.");
+      }
+    });
+  }
+
+  // ✅ 뒤로가기 버튼
   const backBtn = document.querySelector(".top_bar__back");
   if (backBtn) {
     backBtn.addEventListener("click", async (e) => {
@@ -219,7 +321,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // 쿠키 읽기
+  // ✅ 쿠키 가져오기
   function getCookie(name) {
     const value = `; ${document.cookie}`;
     const parts = value.split(`; ${name}=`);

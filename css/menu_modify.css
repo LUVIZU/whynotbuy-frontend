@@ -184,7 +184,7 @@ button {
   width: 100%;
   max-width: 321px;
   min-height: 60px;
-  resize: vertical;
+  max-height: 200px; /* ✅ 너무 커지지 않도록 제한 */
   border: 0;
   outline: 0;
   border-radius: 8px;
@@ -193,8 +193,10 @@ button {
 
   line-height: 18px;
   font-size: 12px;
-  resize: none;
-  overflow: hidden;
+
+  resize: vertical; /* 사용자가 직접 크기 조절 가능 */
+  overflow-y: auto; /* ✅ 세로 스크롤 가능 */
+  overflow-x: hidden; /* 가로 스크롤은 숨김 */
 }
 
 /* ===== 추가하기 버튼 영역 ===== */

@@ -211,7 +211,13 @@
   script.onload = () => {
     kakao.maps.load(() => {
       console.log("✅ Kakao SDK 초기화 완료");
+
       initStoreForm();
+
+      // ✅ SDK 로드된 뒤에만 가게 정보 불러오기
+      const params = new URLSearchParams(window.location.search);
+      const storeId = params.get("storeId");
+      if (storeId) loadStoreInfo(storeId);
     });
   };
   document.head.appendChild(script);
@@ -278,14 +284,6 @@ function decodeJwt(token) {
 }
 
 /* ===== 가게 등록 폼 처리 ===== */
-document.addEventListener("DOMContentLoaded", () => {
-  // ✅ URL 파라미터에서 storeId 확인
-  const params = new URLSearchParams(window.location.search);
-  const storeId = params.get("storeId");
-  if (storeId) {
-    loadStoreInfo(storeId); // 기존 가게 정보 불러오기
-  }
-});
 
 // =====================
 // 📌 폼 초기화 & 이벤트
@@ -463,7 +461,19 @@ function initStoreForm() {
         }
 
         alert(storeId ? "✅ 가게 정보 수정 성공!" : "✅ 가게 등록 성공!");
-        window.location.href = `menu_off.html?storeId=${id}`;
+
+        // ✅ 영업시간 체크 후 menu_on / menu_off 분기
+        const open = openInput.value.trim() || "00:00";
+        const close = closeInput.value.trim() || "23:59";
+
+        const now = new Date();
+        const nowStr = now.toTimeString().slice(0, 5); // "HH:MM"
+
+        if (isWithinBusinessHours(nowStr, open, close)) {
+          window.location.href = `menu_on.html?storeId=${id}`;
+        } else {
+          window.location.href = `menu_off.html?storeId=${id}`;
+        }
       } else {
         // 🚩 이미 가게 보유 (409 Conflict)
         if (res.status === 409 || data.code === "STORE409_1") {
@@ -507,6 +517,28 @@ function initStoreForm() {
     }
   });
 }
+function isWithinBusinessHours(current, open, close) {
+  const [ch, cm] = current.split(":").map(Number);
+  const [oh, om] = open.split(":").map(Number);
+  const [xh, xm] = close.split(":").map(Number);
+
+  if ([ch, cm, oh, om, xh, xm].some(isNaN)) {
+    console.warn("🚨 시간 파싱 오류", { current, open, close });
+    return false;
+  }
+
+  const curMin = ch * 60 + cm;
+  const openMin = oh * 60 + om;
+  const closeMin = xh * 60 + xm;
+
+  if (openMin <= closeMin) {
+    // 같은 날 안에서 열고 닫음
+    return curMin >= openMin && curMin < closeMin;
+  } else {
+    // 자정을 넘기는 경우
+    return curMin >= openMin || curMin < closeMin;
+  }
+}
 
 // ======================
 // 📌 기존 가게 정보 불러오기
@@ -536,6 +568,7 @@ async function loadStoreInfo(storeId) {
       const store = data.result;
       console.log("📌 불러온 가게 정보:", store);
 
+      // ✅ 기본 필드 채우기
       document.getElementById("store-name").value = store.name || "";
       document.getElementById("open-time").value =
         store.openingTime?.slice(0, 5) || "";
@@ -549,32 +582,43 @@ async function loadStoreInfo(storeId) {
       let addr =
         store.roadAddressName || store.addressName || store.address || "";
 
-      // 주소가 없으면 reverse geocoding 실행
-      if (!addr && store.latitude && store.longitude) {
-        try {
-          addr = await kakaoReverse(store.latitude, store.longitude);
-          console.log("📌 reverse geocoding으로 채운 주소:", addr);
-        } catch (e) {
-          console.warn("주소 변환 실패:", e);
+      // 주소가 없으면 placeholder 먼저 표시
+      const addrInput = document.getElementById("store-location");
+      if (!addr || addr.trim() === "") {
+        addrInput.value = "주소 로딩중...";
+
+        if (store.latitude && store.longitude) {
+          try {
+            const kakaoAddr = await kakaoReverse(
+              store.latitude,
+              store.longitude
+            );
+            if (kakaoAddr) {
+              addr = kakaoAddr;
+            }
+          } catch (e) {
+            console.warn("주소 변환 실패:", e);
+          }
         }
       }
 
-      document.getElementById("store-location").value = addr || "";
+      // 최종 주소 반영
+      addrInput.value = addr || "주소 정보 없음";
 
+      // ✅ 이미지 세팅
       if (store.imageUrl) {
         const photoTrigger = document.getElementById("photo-trigger");
         if (photoTrigger) {
-          // ✅ 절대 경로 보정
           let imageUrl = store.imageUrl;
           if (!imageUrl.startsWith("http")) {
             imageUrl = `https://api-whynotbuy.store${imageUrl}`;
           }
 
           photoTrigger.innerHTML = `
-      <img src="${imageUrl}" 
-           alt="가게 사진" 
-           style="width:100%;height:100%;object-fit:cover;border-radius:8px;" />
-    `;
+            <img src="${imageUrl}" 
+                 alt="가게 사진" 
+                 style="width:100%;height:100%;object-fit:cover;border-radius:8px;" />
+          `;
         }
       }
     }
@@ -583,7 +627,6 @@ async function loadStoreInfo(storeId) {
     alert("가게 정보를 불러오는데 실패했습니다.");
   }
 }
-
 // ======================
 // 📌 쿠키에서 토큰 가져오기
 // ======================

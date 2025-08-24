@@ -1,240 +1,125 @@
-// owner_review.js
-(() => {
-  // ========================
-  // 설정 / 상태
-  // ========================
+document.addEventListener("DOMContentLoaded", () => {
   const API_BASE = "https://api-whynotbuy.store";
-  const listEl = document.querySelector(".review-list");
-  const tmpl = document.getElementById("review-card-template");
-  const backBtn = document.querySelector(".top_bar__back");
-
-  // 요약 영역
+  const reviewListEl = document.querySelector(".review-list");
+  const reviewTemplate = document.getElementById("review-card-template");
   const summaryEl = document.querySelector(".summary-text");
 
-  // URL 쿼리 파싱
-  const params = new URLSearchParams(location.search);
-  let targetType = (params.get("targetType") || "STORE").toUpperCase();
-  let targetId = Number(params.get("targetId") || "1");
-  let pageSize = Number(params.get("offset") || "10");
-
-  // 커서 페이징 상태
-  let cursor = params.get("cursor") ? Number(params.get("cursor")) : null;
+  let cursor = null;
   let hasNext = true;
   let isLoading = false;
 
-  // sentinel (무한스크롤 감시용)
-  const sentinel = document.createElement("div");
-  sentinel.setAttribute("data-sentinel", "true");
-  sentinel.style.height = "1px";
-  sentinel.style.marginTop = "8px";
-  listEl.appendChild(sentinel);
+  // ✅ JWT 토큰 가져오기
+  function getCookie(name) {
+    const match = document.cookie.match(
+      new RegExp("(^| )" + name + "=([^;]+)")
+    );
+    return match ? decodeURIComponent(match[2]) : null;
+  }
+  const token = getCookie("accessToken");
 
-  // ========================
-  // 이벤트
-  // ========================
-  if (backBtn) {
-    backBtn.addEventListener("click", () => history.back());
+  // ✅ storeId 가져오기
+  const params = new URLSearchParams(window.location.search);
+  const storeId = params.get("storeId");
+  if (!storeId) {
+    alert("storeId가 없습니다.");
+    return;
   }
 
-  const io = new IntersectionObserver(
-    async (entries) => {
-      const entry = entries[0];
-      if (!entry.isIntersecting) return;
-      if (isLoading || !hasNext) return;
-      await loadMore();
-    },
-    { rootMargin: "400px 0px" }
-  );
-  io.observe(sentinel);
+  // ✅ 리뷰 카드 렌더링
+  function renderReviewCard(review) {
+    const node = reviewTemplate.content.cloneNode(true);
+    const card = node.querySelector(".review-card");
 
-  // ========================
-  // API 호출
-  // ========================
-  async function fetchReviews({ targetType, targetId, cursor, offset }) {
-    const usp = new URLSearchParams({
-      targetType,
-      targetId: String(targetId),
-      offset: String(offset),
-    });
-    if (typeof cursor === "number" && !Number.isNaN(cursor)) {
-      usp.set("cursor", String(cursor));
+    // 날짜 포맷 (2025-08-24 → "8월 24일 (일)")
+    const date = new Date(review.reviewDate);
+    const options = { month: "numeric", day: "numeric", weekday: "short" };
+    const formatted = date.toLocaleDateString("ko-KR", options);
+
+    card.querySelector(".review-date").textContent = formatted;
+    card.querySelector(".review-text").textContent =
+      review.reviewContent || "리뷰 내용 없음";
+
+    // 주문 메뉴 목록
+    const itemsEl = card.querySelector(".review-items");
+    if (review.orders?.menus?.length) {
+      itemsEl.innerHTML = review.orders.menus
+        .map((m) => `${m.name} ${m.quantity}개`)
+        .join("<br/>");
+    } else {
+      itemsEl.textContent = "주문 내역 없음";
     }
 
-    const url = `${API_BASE}/api/v1/reviews?${usp.toString()}`;
-    const res = await fetch(url, {
-      method: "GET",
-      headers: { Accept: "*/*" },
-    });
-
-    if (!res.ok) throw new Error(`리뷰 불러오기 실패 (${res.status})`);
-
-    const data = await res.json();
-    if (!data?.isSuccess) {
-      throw new Error(data?.message || "리뷰 불러오기 실패");
-    }
-    return data.result ?? { reviews: [], hasNext: false, cursor: null };
+    reviewListEl.appendChild(node);
   }
 
-  async function fetchReviewSummary(storeId) {
-    const url = `${API_BASE}/api/v1/reviews/${storeId}/summary`;
-    const res = await fetch(url, { headers: { Accept: "*/*" } });
-    if (!res.ok) throw new Error(`요약 불러오기 실패 (${res.status})`);
+  // ✅ 리뷰 불러오기 (커서 기반 페이징)
+  async function loadReviews() {
+    if (!hasNext || isLoading) return;
+    isLoading = true;
 
-    const data = await res.json();
-    if (!data?.isSuccess) {
-      throw new Error(data?.message || "요약 불러오기 실패");
-    }
-    return data.result?.summary ?? "요약 없음";
-  }
+    try {
+      let url = `${API_BASE}/api/v1/reviews?targetType=STORE&targetId=${storeId}&offset=10`;
+      if (cursor) url += `&cursor=${cursor}`;
 
-  // ========================
-  // 렌더링
-  // ========================
-  function renderReviews(reviews) {
-    for (const r of reviews) {
-      const node = tmpl.content.cloneNode(true);
-      const dateEl = node.querySelector(".review-date");
-      const textEl = node.querySelector(".review-text");
-      const itemsEl = node.querySelector(".review-items");
+      const res = await fetch(url, {
+        headers: { Authorization: `Bearer ${token}`, Accept: "*/*" },
+        credentials: "include",
+      });
 
-      dateEl.textContent = formatKoreanDate(r.reviewDate);
-      textEl.textContent = r.reviewContent ?? "";
+      const data = await res.json();
+      if (res.ok && data.isSuccess) {
+        const { reviews, hasNext: next, cursor: nextCursor } = data.result;
 
-      const menus = r.orders?.menus ?? [];
-      if (menus.length > 0) {
-        itemsEl.innerHTML = menus
-          .map((m) => `${m.name ?? "-"} ${Number(m.quantity ?? 0)}개`)
-          .join("<br/>");
+        if (reviews.length === 0 && !cursor) {
+          reviewListEl.innerHTML = "<p>아직 리뷰가 없습니다.</p>";
+        } else {
+          reviews.forEach(renderReviewCard);
+        }
+
+        hasNext = next;
+        cursor = nextCursor;
       } else {
-        itemsEl.textContent = "-";
+        alert("❌ 리뷰 불러오기 실패: " + (data.message || "알 수 없는 오류"));
       }
-      listEl.insertBefore(node, sentinel);
-    }
-  }
-
-  function renderSummary(text) {
-    if (!summaryEl) return;
-    summaryEl.textContent = text;
-  }
-
-  // ========================
-  // 유틸
-  // ========================
-  function formatKoreanDate(isoString) {
-    const d = new Date(isoString);
-    const weekday = ["일", "월", "화", "수", "목", "금", "토"][d.getDay()];
-    const opts = { timeZone: "Asia/Seoul" };
-    const m = new Intl.DateTimeFormat("ko-KR", {
-      month: "numeric",
-      ...opts,
-    }).format(d);
-    const day = new Intl.DateTimeFormat("ko-KR", {
-      day: "numeric",
-      ...opts,
-    }).format(d);
-    return `${m}월 ${day}일 (${weekday})`;
-  }
-
-  function lastEpochMsFrom(reviews) {
-    if (!reviews?.length) return null;
-    const last = reviews[reviews.length - 1];
-    const t = Date.parse(last.reviewDate);
-    return Number.isFinite(t) ? t : null;
-  }
-
-  function wipeStaticCards() {
-    const children = Array.from(listEl.children);
-    for (const c of children) {
-      if (c.matches('[data-sentinel="true"]') || c.tagName === "TEMPLATE")
-        continue;
-      listEl.removeChild(c);
-    }
-  }
-
-  function showError(msg) {
-    const card = document.createElement("div");
-    card.className = "review-card";
-    card.style.border = "1px solid #f00";
-    card.style.background = "#fff5f5";
-    card.innerHTML = `
-      <div class="review-date">오류</div>
-      <div class="review-text">${msg}</div>
-      <div class="review-items">다시 시도해 주세요.</div>
-    `;
-    listEl.insertBefore(card, sentinel);
-  }
-
-  // ========================
-  // 데이터 로드
-  // ========================
-  async function initialLoad() {
-    wipeStaticCards();
-
-    // 리뷰 요약 먼저 불러오기
-    try {
-      const summary = await fetchReviewSummary(targetId);
-      renderSummary(summary);
     } catch (err) {
-      console.error(err);
-      renderSummary("요약 불러오기 실패");
-    }
-
-    // 리뷰 목록 불러오기
-    try {
-      isLoading = true;
-      const {
-        reviews,
-        hasNext: next,
-        cursor: nextCursor,
-      } = await fetchReviews({
-        targetType,
-        targetId,
-        cursor,
-        offset: pageSize,
-      });
-
-      renderReviews(reviews);
-      cursor =
-        typeof nextCursor === "number" ? nextCursor : lastEpochMsFrom(reviews);
-      hasNext = Boolean(next);
-    } catch (err) {
-      console.error(err);
-      showError(err.message || "리뷰 불러오기 실패");
-      hasNext = false;
+      console.error("리뷰 불러오기 오류", err);
+      alert("서버 오류로 리뷰를 불러올 수 없습니다.");
     } finally {
       isLoading = false;
     }
   }
 
-  async function loadMore() {
+  // ✅ 리뷰 요약 불러오기
+  async function loadReviewSummary() {
     try {
-      isLoading = true;
-      const {
-        reviews,
-        hasNext: next,
-        cursor: nextCursor,
-      } = await fetchReviews({
-        targetType,
-        targetId,
-        cursor,
-        offset: pageSize,
+      const res = await fetch(`${API_BASE}/api/v1/reviews/${storeId}/summary`, {
+        headers: { Authorization: `Bearer ${token}`, Accept: "*/*" },
+        credentials: "include",
       });
 
-      renderReviews(reviews);
-      cursor =
-        typeof nextCursor === "number" ? nextCursor : lastEpochMsFrom(reviews);
-      hasNext = Boolean(next);
-      if (!hasNext) io.unobserve(sentinel);
+      const data = await res.json();
+      if (res.ok && data.isSuccess) {
+        summaryEl.textContent = data.result.summary || "요약이 없습니다.";
+      } else {
+        summaryEl.textContent = "요약을 불러오지 못했습니다.";
+      }
     } catch (err) {
-      console.error(err);
-      showError(err.message || "추가 불러오기 실패");
-      hasNext = false;
-      io.unobserve(sentinel);
-    } finally {
-      isLoading = false;
+      console.error("리뷰 요약 불러오기 오류", err);
+      summaryEl.textContent = "서버 오류로 요약을 불러올 수 없습니다.";
     }
   }
 
-  // 시작
-  initialLoad();
-})();
+  // ✅ 무한 스크롤
+  window.addEventListener("scroll", () => {
+    if (
+      window.innerHeight + window.scrollY >= document.body.offsetHeight - 200 &&
+      !isLoading
+    ) {
+      loadReviews();
+    }
+  });
+
+  // ✅ 초기 실행
+  loadReviewSummary();
+  loadReviews();
+});
