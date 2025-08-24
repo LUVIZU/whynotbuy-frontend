@@ -1,6 +1,6 @@
 body > main {
-  background: #eeeeee;
   position: relative;
+  background: linear-gradient(to bottom, #eeeeee, #ffffff); /* ✅ 그라데이션 */
 }
 .owner-home .owner-actions {
   width: 321px; /* 앱 본문 폭 */

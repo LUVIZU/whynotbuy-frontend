@@ -3,10 +3,23 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>메뉴 추가/수정</title>
+    <title>메뉴 추가</title>
     <link rel="stylesheet" href="../css/style.css" />
     <link rel="stylesheet" href="../css/menu_add.css" />
     <script src="../js/menu_add.js"></script>
+    <script>
+      document.addEventListener("DOMContentLoaded", () => {
+        const params = new URLSearchParams(window.location.search);
+        const storeId = params.get("storeId");
+
+        if (storeId) {
+          const mypageLink = document.querySelector(".top_bar__action");
+          if (mypageLink) {
+            mypageLink.href = `owner_mypage.html?storeId=${storeId}`;
+          }
+        }
+      });
+    </script>
   </head>
   <body>
     <main class="app_frame page" aria-live="polite">
@@ -170,14 +183,14 @@
       <div class="bottom_nav" aria-label="하단 메뉴">
         <a href="#" class="bottom_nav_item is-active">
           <img
-            src="../images/menu_act.png"
+            src="../images/menu_act.svg"
             alt="메뉴관리"
             class="tabbar-icon"
           />
         </a>
         <a href="menu_menage.html" class="bottom_nav_item">
           <img
-            src="../images/order_deact.png"
+            src="../images/order_deact.svg"
             alt="주문관리"
             class="tabbar-icon"
           />
@@ -194,5 +207,6 @@
         <p class="form-error" role="alert" data-text>오류가 발생했습니다.</p>
       </template>
     </main>
+    <script src="../js/bottom_nav.js"></script>
   </body>
 </html>

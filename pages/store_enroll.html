@@ -7,7 +7,7 @@
     <link rel="stylesheet" href="../css/style.css" />
     <link rel="stylesheet" href="../css/store_enroll.css" />
     <script src="../js/config.js"></script>
-    <script src="../js/store_enroll.js"></script>
+    <script src="../js/store_enroll.js" defer></script>
   </head>
   <body>
     <main class="app_frame" aria-live="polite">
@@ -26,13 +26,46 @@
         />
         <!-- 위치 -->
         <label for="store-location">위치</label>
-        <input
-          id="store-location"
-          name="location"
-          type="text"
-          autocomplete="street-address"
-          required
-        />
+        <div class="search_container">
+          <input
+            id="store-location"
+            name="location"
+            type="text"
+            class="input_field"
+            autocomplete="street-address"
+            required
+          />
+          <img
+            src="../images/search.svg"
+            class="search_icon"
+            alt="검색 아이콘"
+          />
+        </div>
+        <!-- 가게 대표 사진 -->
+        <div class="field fiegit reset --soft HEAD~1ld--photo">
+          <label for="photo-input" class="field__label">가게 대표 사진 </label>
+
+          <div class="photo">
+            <button
+              type="button"
+              class="photo__trigger"
+              id="photo-trigger"
+              data-action="photo-trigger"
+              aria-controls="photo-input"
+              aria-label="메뉴 사진 추가"
+            >
+              +
+            </button>
+            <input
+              id="photo-input"
+              name="storeImage"
+              type="file"
+              accept="image/*"
+              hidden
+              data-field="imageFile"
+            />
+          </div>
+        </div>
         <!-- 영업시간 -->
         <p class="time-label">영업시간</p>
         <div class="time-row">

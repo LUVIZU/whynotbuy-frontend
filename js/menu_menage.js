@@ -1,292 +1,303 @@
-// order_manage.js
-(function () {
-  const API_BASE_URL = "http://3.39.89.75:8080/api/v1"; // Swagger 기준
-  const STORAGE_KEY = "accessToken";
+document.addEventListener("DOMContentLoaded", () => {
+  const API_BASE = "https://api-whynotbuy.store";
+  const orderListEl = document.getElementById("order-list");
+  const orderTemplate = document.getElementById("order-card-template");
+  let nextCursor = null;
+  let isLoading = false;
 
-  // 로컬스토리지에서 토큰 가져오기
-  function getToken() {
-    return localStorage.getItem(STORAGE_KEY);
+  // ✅ 쿠키에서 JWT 토큰 가져오기
+  function getCookie(name) {
+    const match = document.cookie.match(
+      new RegExp("(^| )" + name + "=([^;]+)")
+    );
+    return match ? decodeURIComponent(match[2]) : null;
   }
 
-  // 주문 목록 가져오기
-  async function fetchOrders() {
-    const token = getToken();
-    if (!token) {
-      alert("로그인이 필요합니다.");
-      window.location.href = "login.html"; // 로그인 페이지로 이동
-      return [];
+  // ✅ 남은 시간 계산 (visitTime 기준)
+  function calcRemainTime(visitTimeStr) {
+    // visitTimeStr: 서버에서 내려준 예약 시간 (ISO8601, UTC)
+    const pickupTime = new Date(visitTimeStr); // 자동으로 로컬(KST) 변환됨
+    const now = new Date();
+
+    const diffMs = pickupTime.getTime() - now.getTime();
+    const diffMin = Math.floor(diffMs / 1000 / 60);
+
+    if (diffMin <= 0) return "곧 도착";
+    if (diffMin < 60) return `${diffMin}분 후`;
+
+    const hours = Math.floor(diffMin / 60);
+    const mins = diffMin % 60;
+    return mins === 0 ? `${hours}시간 후` : `${hours}시간 ${mins}분 후`;
+  }
+
+  // ✅ 카드 렌더링
+  function renderOrderCard(order) {
+    const clone = orderTemplate.content.cloneNode(true);
+    const card = clone.querySelector(".order-card");
+
+    card.dataset.id = order.orderId;
+    card.querySelector("[data-order-number]").textContent = order.orderNum;
+
+    // 메뉴 목록
+    const itemsUl = card.querySelector("[data-items]");
+    itemsUl.innerHTML = "";
+    if (order.menuSummaries && order.menuSummaries.length) {
+      order.menuSummaries.forEach((menu) => {
+        const li = document.createElement("li");
+        li.className = "order-item";
+        li.innerHTML = `
+          <span class="order-item__name">${menu}</span>
+          <span class="order-item__qty">1개</span>
+        `;
+        itemsUl.appendChild(li);
+      });
     }
 
+    // ✅ 픽업 시간 (visitTime)
+    const pickup = new Date(order.visitTime);
+    card.querySelector("[data-pickup-time]").textContent =
+      pickup.toLocaleTimeString("ko-KR", {
+        hour: "numeric",
+        minute: "2-digit",
+        hour12: true,
+      });
+
+    // 남은 시간
+    card.querySelector("[data-remain-time]").textContent = calcRemainTime(
+      order.visitTime
+    );
+    // ✅ 가격 (원가 / 할인율 / 최종가)
+    const originPrice = order.totalOriginalPrice ?? order.totalPrice;
+    const discountRate = order.averageDiscountPercent
+      ? Math.round(order.averageDiscountPercent)
+      : 0;
+    const finalPrice = order.totalPrice; // API의 totalPrice가 최종가
+
+    card.querySelector(
+      "[data-origin-price]"
+    ).textContent = `${originPrice.toLocaleString()}원`;
+    card.querySelector("[data-discount-rate]").textContent =
+      discountRate > 0 ? `-${discountRate}%` : "0%";
+    card.querySelector(
+      "[data-final-price]"
+    ).textContent = `${finalPrice.toLocaleString()}원`;
+
+    orderListEl.appendChild(clone);
+  }
+
+  // ✅ 주문 불러오기
+  async function loadOrders(cursor = null, size = 10) {
+    if (isLoading) return;
+    isLoading = true;
+
+    const token = getCookie("accessToken");
+
     try {
-      const res = await fetch(`${API_BASE_URL}/orders`, {
-        method: "GET",
+      let url = `${API_BASE}/api/v1/orders?size=${size}`;
+      if (cursor) url += `&cursor=${cursor}`;
+
+      // ❌ storeId는 붙이지 않는다 (서버가 토큰 기반으로 OWNER의 가게를 인식)
+      // if (storeId) url += `&storeId=${storeId}`;
+
+      const res = await fetch(url, {
         headers: {
-          "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
           Accept: "*/*",
         },
+        credentials: "include",
       });
 
       const data = await res.json();
-
       if (res.ok && data.isSuccess) {
-        return data.result; // 서버 응답 형식: { isSuccess, result: [...] }
+        const { orderList, nextCursor: nc } = data.result;
+        orderList.forEach(renderOrderCard);
+        nextCursor = nc;
       } else {
-        console.error("주문 조회 실패:", data.message);
-        alert("주문 조회 실패: " + data.message);
-        return [];
+        console.warn("❌ 주문 조회 실패:", data.message);
       }
     } catch (err) {
-      console.error("API 요청 에러:", err);
-      alert("서버 오류로 주문 조회에 실패했습니다.");
-      return [];
+      console.error("주문 불러오기 오류", err);
+    } finally {
+      isLoading = false;
     }
   }
 
-  // 주문 목록 렌더링
-  function renderOrders(orders) {
-    const orderList = document.getElementById("order-list");
-    const template = document.getElementById("order-card-template");
+  // ✅ 스크롤 페이징
+  window.addEventListener("scroll", () => {
+    if (isLoading || nextCursor === -1) return;
+    if (
+      window.innerHeight + window.scrollY >=
+      document.body.offsetHeight - 200
+    ) {
+      loadOrders(nextCursor);
+    }
+  });
 
-    orderList.innerHTML = ""; // 초기화
-
-    orders.forEach((order) => {
-      const clone = template.content.cloneNode(true);
-      const li = clone.querySelector(".order-card");
-
-      li.dataset.id = order.id;
-      clone.querySelector("[data-order-number]").textContent =
-        order.orderNumber;
-      clone.querySelector("[data-remain-time]").textContent =
-        order.remainTime || "곧 마감";
-
-      // 주문 품목 리스트
-      const itemsUl = clone.querySelector("[data-items]");
-      order.items.forEach((item) => {
-        const liItem = document.createElement("li");
-        liItem.classList.add("order-item");
-        liItem.textContent = `${item.menuName} x ${item.quantity}`;
-        itemsUl.appendChild(liItem);
-      });
-
-      // 픽업 시간
-      clone.querySelector("[data-pickup-time]").textContent = order.pickupTime;
-
-      // 가격
-      clone.querySelec(
-        // menu_manage.js
-        () => {
-          const API_BASE = "https://api-whynotbuy.store";
-          const listEl = document.getElementById("order-list");
-          const tmpl = document.getElementById("order-card-template");
-
-          // 커서 기반 페이지네이션 상태
-          let cursor = null; // 마지막 orderId
-          let hasNext = true;
-          let isLoading = false;
-          const pageSize = 10;
-
-          // sentinel (무한 스크롤 감시용)
-          const sentinel = document.createElement("div");
-          sentinel.setAttribute("data-sentinel", "true");
-          sentinel.style.height = "1px";
-          listEl.appendChild(sentinel);
-
-          // IntersectionObserver: 스크롤 시 다음 데이터 로드
-          const io = new IntersectionObserver(
-            async (entries) => {
-              const entry = entries[0];
-              if (!entry.isIntersecting) return;
-              if (isLoading || !hasNext) return;
-              await loadMore();
-            },
-            { rootMargin: "400px 0px" }
-          );
-          io.observe(sentinel);
-
-          // ========================
-          // API 호출
-          // ========================
-          async function fetchOrders(cursor, size) {
-            const usp = new URLSearchParams({ size: String(size) });
-            if (cursor !== null) usp.set("cursor", String(cursor));
-
-            const url = `${API_BASE}/api/v1/orders?${usp.toString()}`;
-            const res = await fetch(url, { headers: { Accept: "*/*" } });
-
-            if (!res.ok) throw new Error(`주문 불러오기 실패 (${res.status})`);
-            const data = await res.json();
-
-            if (!data?.isSuccess) {
-              throw new Error(data?.message || "주문 불러오기 실패");
-            }
-            return data.result ?? { orderList: [], nextCursor: -1 };
-          }
-
-          // ========================
-          // 렌더링
-          // ========================
-          function renderOrders(orderList) {
-            for (const o of orderList) {
-              const node = tmpl.content.cloneNode(true);
-              const card = node.querySelector(".order-card");
-
-              // data-id
-              card.dataset.id = o.orderId;
-
-              // 주문번호
-              const orderNumEl = card.querySelector("[data-order-number]");
-              orderNumEl.textContent = o.orderNum ?? "-";
-              orderNumEl.href = "#"; // 상세 페이지가 있다면 여기 수정
-
-              // 남은 시간 (여기서는 예시: 주문시간 + 20분 → 남은 분)
-              const remainEl = card.querySelector("[data-remain-time]");
-              remainEl.textContent = calcRemain(o.orderTime);
-
-              // 메뉴 아이템
-              const itemsEl = card.querySelector("[data-items]");
-              itemsEl.innerHTML = "";
-              (o.menuSummaries || []).forEach((m) => {
-                const li = document.createElement("li");
-                li.className = "order-item";
-                li.innerHTML = `
-          <span class="order-item__name">${m}</span>
-          <span class="order-item__qty">1개</span>
-        `;
-                itemsEl.appendChild(li);
-              });
-
-              // 픽업 시간 (orderTime 기준으로 표시)
-              const pickupEl = card.querySelector("[data-pickup-time]");
-              pickupEl.textContent = formatPickup(o.orderTime);
-
-              // 가격 (여기서는 totalPrice만 내려오므로 할인율 계산 불가 → 그냥 totalPrice만 표시)
-              const originEl = card.querySelector("[data-origin-price]");
-              const discountEl = card.querySelector("[data-discount-rate]");
-              const finalEl = card.querySelector("[data-final-price]");
-
-              originEl.textContent = `${numberFormat(o.totalPrice)}원`;
-              discountEl.textContent = "";
-              finalEl.textContent = `${numberFormat(o.totalPrice)}원`;
-
-              listEl.insertBefore(node, sentinel);
-            }
-          }
-
-          // ========================
-          // 유틸
-          // ========================
-          function numberFormat(n) {
-            return new Intl.NumberFormat("ko-KR").format(n ?? 0);
-          }
-
-          function calcRemain(orderTime) {
-            const now = new Date();
-            const orderDate = new Date(orderTime);
-            const diffMs = orderDate.getTime() + 20 * 60000 - now.getTime(); // 20분 후 픽업 가정
-            const diffMin = Math.max(0, Math.floor(diffMs / 60000));
-            return `${diffMin}분 후`;
-          }
-
-          function formatPickup(orderTime) {
-            const d = new Date(orderTime);
-            return d.toLocaleTimeString("ko-KR", {
-              hour: "numeric",
-              minute: "2-digit",
-              hour12: true,
-            });
-          }
-
-          function wipeStaticCards() {
-            const children = Array.from(listEl.children);
-            for (const c of children) {
-              if (
-                c.matches('[data-sentinel="true"]') ||
-                c.tagName === "TEMPLATE"
-              )
-                continue;
-              listEl.removeChild(c);
-            }
-          }
-
-          function showError(msg) {
-            const li = document.createElement("li");
-            li.className = "order-card";
-            li.style.border = "1px solid red";
-            li.innerHTML = `
-      <div class="order-card__head">
-        <div class="order-card__order-info">
-          <span class="order-card__label">에러</span>
-          <span class="order-card__number">${msg}</span>
-        </div>
-      </div>
-    `;
-            listEl.insertBefore(li, sentinel);
-          }
-
-          // ========================
-          // 데이터 로드
-          // ========================
-          async function initialLoad() {
-            wipeStaticCards();
-
-            try {
-              isLoading = true;
-              const { orderList, nextCursor } = await fetchOrders(
-                cursor,
-                pageSize
-              );
-              renderOrders(orderList);
-              cursor = nextCursor >= 0 ? nextCursor : null;
-              hasNext = nextCursor !== -1;
-            } catch (err) {
-              console.error(err);
-              showError(err.message || "주문을 불러오지 못했습니다.");
-              hasNext = false;
-            } finally {
-              isLoading = false;
-            }
-          }
-
-          async function loadMore() {
-            try {
-              isLoading = true;
-              const { orderList, nextCursor } = await fetchOrders(
-                cursor,
-                pageSize
-              );
-              renderOrders(orderList);
-              cursor = nextCursor >= 0 ? nextCursor : null;
-              hasNext = nextCursor !== -1;
-              if (!hasNext) io.unobserve(sentinel);
-            } catch (err) {
-              console.error(err);
-              showError(err.message || "추가 주문 불러오기 실패");
-              hasNext = false;
-              io.unobserve(sentinel);
-            } finally {
-              isLoading = false;
-            }
-          }
-
-          // 시작
-          initialLoad();
-        }
-      )();
-      tor("[data-origin-price]").textContent =
-        order.originPrice.toLocaleString() + "원";
-      clone.querySelector("[data-discount-rate]").textContent =
-        order.discountRate + "%";
-      clone.querySelector("[data-final-price]").textContent =
-        order.finalPrice.toLocaleString() + "원";
-
-      orderList.appendChild(clone);
+  // ✅ 네비게이션에 storeId 붙이기
+  const params = new URLSearchParams(window.location.search);
+  const storeId = params.get("storeId");
+  if (storeId) {
+    document.querySelectorAll(".bottom_nav a").forEach((a) => {
+      let href = a.getAttribute("href");
+      if (href.includes("?")) {
+        href += `&storeId=${storeId}`;
+      } else {
+        href += `?storeId=${storeId}`;
+      }
+      a.setAttribute("href", href);
     });
   }
+  async function openStore() {
+    const token = getCookie("accessToken");
+    try {
+      const res = await fetch(`${API_BASE}/api/v1/store/${storeId}/open`, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${token}` },
+        credentials: "include",
+      });
 
-  // 페이지 로드 시 실행
-  document.addEventListener("DOMContentLoaded", async () => {
-    const orders = await fetchOrders();
-    renderOrders(orders);
-  });
-})();
+      const data = await res.json();
+      if (res.ok && data.isSuccess) {
+        const bottomStatus = document.getElementById("countdown");
+        bottomStatus.textContent = "주문 마감하기"; // 🔥 텍스트 변경
+        bottomStatus.style.background = "#28a745"; // 초록색
+        alert("✅ 가게가 오픈되었습니다!");
+      } else {
+        alert("❌ 오픈 실패: " + (data.message || "알 수 없는 오류"));
+      }
+    } catch (err) {
+      console.error("가게 오픈 오류", err);
+      alert("서버 오류로 오픈하지 못했습니다.");
+    }
+  }
+
+  // ✅ 가게 즉시 마감
+  async function closeStore() {
+    const token = getCookie("accessToken");
+    try {
+      const res = await fetch(`${API_BASE}/api/v1/store/${storeId}/close`, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${token}` },
+        credentials: "include",
+      });
+
+      const data = await res.json();
+      if (res.ok && data.isSuccess) {
+        const bottomStatus = document.getElementById("countdown");
+        bottomStatus.textContent = "주문 받기"; // 🔥 텍스트 변경
+        bottomStatus.style.background = "#a82d2f"; // 빨간색
+        alert("✅ 가게가 마감되었습니다!");
+      } else {
+        alert("❌ 마감 실패: " + (data.message || "알 수 없는 오류"));
+      }
+    } catch (err) {
+      console.error("가게 마감 오류", err);
+      alert("서버 오류로 마감하지 못했습니다.");
+    }
+  }
+
+  // ✅ 하단 상태 배지 클릭 → API 호출 + 토글
+  const bottomStatus = document.getElementById("countdown");
+  if (bottomStatus) {
+    bottomStatus.addEventListener("click", () => {
+      if (bottomStatus.textContent.includes("주문 받기")) {
+        openStore();
+      } else {
+        closeStore();
+      }
+    });
+  }
+  // ✅ 가게 상태 판별 공통 함수
+  function isStoreOpen(store) {
+    if (!store.openingTime || !store.closingTime) return false;
+
+    const now = new Date();
+
+    const open = new Date(now);
+    open.setHours(
+      store.openingTime.hour,
+      store.openingTime.minute,
+      store.openingTime.second,
+      0
+    );
+
+    const close = new Date(now);
+    close.setHours(
+      store.closingTime.hour,
+      store.closingTime.minute,
+      store.closingTime.second,
+      0
+    );
+
+    if (close > open) {
+      // ✅ 일반적인 케이스 (같은 날 오픈~마감)
+      return now >= open && now < close;
+    } else {
+      // ✅ 마감 시간이 오픈보다 빠른 경우 (자정 넘김 케이스)
+      return now >= open || now < close;
+    }
+  }
+
+  // ✅ 상태 적용 (버튼 + 메뉴관리 탭 같이 변경)
+  async function applyStoreStatus() {
+    const token = getCookie("accessToken");
+    try {
+      const res = await fetch(`${API_BASE}/api/v1/store/${storeId}`, {
+        headers: { Authorization: `Bearer ${token}` },
+        credentials: "include",
+      });
+      const data = await res.json();
+
+      if (res.ok && data.isSuccess) {
+        const store = data.result;
+        const bottomStatus = document.getElementById("countdown");
+        const menuTab = document.getElementById("menu-manage-link");
+
+        if (isStoreOpen(store)) {
+          // 영업중
+          bottomStatus.textContent = "주문 마감하기";
+          bottomStatus.style.background = "#a82d2f"; // 빨간색
+          if (menuTab) menuTab.href = `menu_on.html?storeId=${storeId}`;
+        } else {
+          // 마감중
+          bottomStatus.textContent = "주문 받기";
+          bottomStatus.style.background = "#777777";
+          if (menuTab) menuTab.href = `menu_off.html?storeId=${storeId}`;
+        }
+      }
+    } catch (err) {
+      console.error("가게 상태 조회 오류", err);
+    }
+  }
+
+  // ✅ 초기 실행
+  applyStoreStatus();
+
+  // ✅ 초기 로딩 시 상태 반영
+  async function setMenuTabLink() {
+    const token = getCookie("accessToken");
+    try {
+      const res = await fetch(`${API_BASE}/api/v1/store/${storeId}`, {
+        headers: { Authorization: `Bearer ${token}` },
+        credentials: "include",
+      });
+      const data = await res.json();
+      if (res.ok && data.isSuccess) {
+        const store = data.result;
+        const menuTab = document.getElementById("menu-manage-link");
+        if (menuTab) {
+          if (isStoreOpen(store)) {
+            menuTab.setAttribute("href", `menu_on.html?storeId=${storeId}`);
+          } else {
+            menuTab.setAttribute("href", `menu_off.html?storeId=${storeId}`);
+          }
+        }
+      }
+    } catch (err) {
+      console.error("가게 상태 조회 오류", err);
+    }
+  }
+
+  // ✅ 초기 실행
+  setMenuTabLink();
+});

@@ -8,6 +8,45 @@
     <!-- 스타일은 별도 CSS에서 정의하세요 -->
     <link rel="stylesheet" href="../css/style.css" />
     <link rel="stylesheet" href="../css/owner_mypage.css" />
+    <script src="../js/owner_mypage.js"></script>
+    <script>
+      document.addEventListener("DOMContentLoaded", () => {
+        const storeId = new URLSearchParams(window.location.search).get(
+          "storeId"
+        );
+
+        // ✅ 우리 가게 리뷰 링크 storeId 유지
+        if (storeId) {
+          const reviewLink = document.querySelector(
+            "a[href='owner_review.html']"
+          );
+          if (reviewLink) {
+            reviewLink.href = `owner_review.html?storeId=${storeId}`;
+          }
+
+          const editBtn = document.getElementById("edit-store-btn");
+          if (editBtn) {
+            editBtn.addEventListener("click", () => {
+              window.location.href = `store_enroll.html?storeId=${storeId}`;
+            });
+          }
+        }
+
+        // ✅ 로그아웃 처리
+        const logoutBtn = document.getElementById("btn-logout");
+        if (logoutBtn) {
+          logoutBtn.addEventListener("click", () => {
+            // 쿠키/로컬스토리지 토큰 삭제 (둘 중 쓰는 쪽만 남기면 됨)
+            document.cookie =
+              "accessToken=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+            localStorage.removeItem("accessToken");
+
+            // 로그인 화면으로 이동
+            window.location.href = "login.html";
+          });
+        }
+      });
+    </script>
   </head>
   <body>
     <main class="app_frame page owner-home" aria-live="polite">
@@ -19,17 +58,17 @@
       <!-- 본문 -->
       <section class="owner-actions" aria-label="사장님 메뉴">
         <!-- 가게 정보 수정 -->
-        <a
-          href="store_enroll.html"
+        <button
+          type="button"
+          id="edit-store-btn"
           class="card-btn"
           aria-label="가게 정보 수정"
         >
           <span class="card-btn__icon" aria-hidden="true">
-            <!-- 아이콘 이미지가 있다면 경로만 바꿔 사용하세요 -->
             <img src="../images/store.png" alt="" />
           </span>
           <span class="card-btn__text">가게 정보 수정</span>
-        </a>
+        </button>
 
         <!-- 우리 가게 리뷰 -->
         <a
