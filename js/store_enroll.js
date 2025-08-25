@@ -283,6 +283,29 @@ function decodeJwt(token) {
   }
 }
 
+// =====================
+// 📌 내 가게 정보 API 조회 함수
+// =====================
+async function getMyStoreInfo() {
+  const token = getCookie("accessToken");
+  if (!token) return null;
+
+  try {
+    const res = await fetch("https://api-whynotbuy.store/api/v1/store/me", {
+      headers: { Authorization: `Bearer ${token}` },
+      credentials: "include",
+    });
+
+    if (res.ok) {
+      const data = await res.json();
+      return data.isSuccess && data.result ? data.result : null;
+    }
+  } catch (err) {
+    console.error("내 가게 정보 조회 실패:", err);
+  }
+  return null;
+}
+
 /* ===== 가게 등록 폼 처리 ===== */
 
 // =====================
@@ -361,9 +384,8 @@ function initStoreForm() {
     }
   });
 
-  // 📌 폼 제출 이벤트
   // =====================
-  // 📌 폼 제출 이벤트
+  // 📌 폼 제출 이벤트 (로컬스토리지 제거 버전)
   // =====================
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
@@ -373,10 +395,6 @@ function initStoreForm() {
       alert("❌ 인증 토큰이 없습니다. 먼저 접속해주세요.");
       return;
     }
-
-    // JWT 디코드해서 현재 로그인한 계정 확인
-    const user = decodeJwt(token);
-    const currentOwner = user?.sub; // 이메일 (예: test-owner@gmail.com)
 
     const name = nameInput.value.trim();
     let addr = addrInput.value.trim();
@@ -400,21 +418,9 @@ function initStoreForm() {
       }
     }
 
-    // ✅ storeId 확인 로직
+    // ✅ storeId 확인 - URL 파라미터만 사용 (로컬스토리지 사용 안함)
     let params = new URLSearchParams(window.location.search);
     let storeId = params.get("storeId");
-
-    if (!storeId) {
-      const savedId = localStorage.getItem("myStoreId");
-      const savedOwner = localStorage.getItem("myStoreOwner");
-
-      if (savedId && savedOwner === currentOwner) {
-        storeId = savedId;
-      } else {
-        localStorage.removeItem("myStoreId");
-        localStorage.removeItem("myStoreOwner");
-      }
-    }
 
     // ✅ FormData 구성
     const formData = new FormData();
@@ -454,12 +460,6 @@ function initStoreForm() {
       if (res.ok && data.isSuccess) {
         const id = storeId || data.result.storeId;
 
-        // 🚩 등록 성공 시 계정별로 storeId 저장
-        if (!storeId && data.result.storeId) {
-          localStorage.setItem("myStoreId", data.result.storeId);
-          localStorage.setItem("myStoreOwner", currentOwner);
-        }
-
         alert(storeId ? "✅ 가게 정보 수정 성공!" : "✅ 가게 등록 성공!");
 
         // ✅ 영업시간 체크 후 menu_on / menu_off 분기
@@ -481,31 +481,12 @@ function initStoreForm() {
             "이미 가게를 보유하고 있습니다. 가게 관리 화면으로 이동합니다."
           );
 
-          try {
-            const myRes = await fetch(
-              "https://api-whynotbuy.store/api/v1/store/me",
-              {
-                headers: { Authorization: `Bearer ${token}` },
-                credentials: "include",
-              }
-            );
-            const myData = await myRes.json();
-
-            if (myRes.ok && myData.isSuccess && myData.result) {
-              const myId = myData.result.storeId;
-
-              // localStorage에 저장
-              localStorage.setItem("myStoreId", myId);
-              localStorage.setItem("myStoreOwner", currentOwner);
-
-              // 가게 관리 페이지로 이동
-              window.location.href = `menu_off.html?storeId=${myId}`;
-            } else {
-              alert("❌ 등록된 가게 ID를 불러올 수 없습니다.");
-            }
-          } catch (err) {
-            console.error("가게 조회 실패:", err);
-            alert("❌ 내 가게 정보를 불러오는데 실패했습니다.");
+          // ✅ API를 통해 실제 가게 정보 조회
+          const myStore = await getMyStoreInfo();
+          if (myStore && myStore.storeId) {
+            window.location.href = `menu_off.html?storeId=${myStore.storeId}`;
+          } else {
+            alert("❌ 등록된 가게 정보를 불러올 수 없습니다.");
           }
         } else {
           alert("❌ 실패: " + (data.message || "알 수 없는 오류"));
@@ -517,6 +498,7 @@ function initStoreForm() {
     }
   });
 }
+
 function isWithinBusinessHours(current, open, close) {
   const [ch, cm] = current.split(":").map(Number);
   const [oh, om] = open.split(":").map(Number);
@@ -542,9 +524,6 @@ function isWithinBusinessHours(current, open, close) {
 
 // ======================
 // 📌 기존 가게 정보 불러오기
-// ======================
-// ======================
-// 📌 기존 가게 정보 불러오기 (수정된 버전)
 // ======================
 async function loadStoreInfo(storeId) {
   const token = getCookie("accessToken");
@@ -626,15 +605,6 @@ async function loadStoreInfo(storeId) {
     console.error(err);
     alert("가게 정보를 불러오는데 실패했습니다.");
   }
-}
-// ======================
-// 📌 쿠키에서 토큰 가져오기
-// ======================
-function getCookie(name) {
-  const value = `; ${document.cookie}`;
-  const parts = value.split(`; ${name}=`);
-  if (parts.length === 2) return parts.pop().split(";").shift();
-  return null;
 }
 
 /* ===== 주소 선택 패널 ===== */
