@@ -13,16 +13,15 @@ document.addEventListener("DOMContentLoaded", () => {
     return match ? decodeURIComponent(match[2]) : null;
   }
 
-  // ✅ 남은 시간 계산 (visitTime 기준)
+  // ✅ 남은 시간 계산
   function calcRemainTime(visitTimeStr) {
     const pickupTime = new Date(visitTimeStr);
     const now = new Date();
-
     const diffMs = pickupTime.getTime() - now.getTime();
     const diffMin = Math.floor(diffMs / 1000 / 60);
 
-    if (diffMin < 0) return "픽업 완료"; // ✅ 이미 지난 경우
-    if (diffMin === 0) return "곧 도착"; // ✅ 정확히 0분일 때
+    if (diffMin < 0) return "픽업 완료";
+    if (diffMin === 0) return "곧 도착";
     if (diffMin < 60) return `${diffMin}분 후`;
 
     const hours = Math.floor(diffMin / 60);
@@ -62,7 +61,7 @@ document.addEventListener("DOMContentLoaded", () => {
         hour12: true,
       });
 
-    // 남은 시간
+    // ✅ 남은 시간
     card.querySelector("[data-remain-time]").textContent = calcRemainTime(
       order.visitTime
     );
@@ -92,7 +91,6 @@ document.addEventListener("DOMContentLoaded", () => {
     isLoading = true;
 
     const token = getCookie("accessToken");
-
     try {
       let url = `${API_BASE}/api/v1/orders?size=${size}`;
       if (cursor) url += `&cursor=${cursor}`;
@@ -117,49 +115,45 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  // ✅ 스크롤 페이징
-  window.addEventListener("scroll", () => {
-    if (isLoading || nextCursor === -1) return;
-    if (
-      window.innerHeight + window.scrollY >=
-      document.body.offsetHeight - 200
-    ) {
-      loadOrders(nextCursor);
-    }
-  });
-
-  // ✅ 네비게이션에 storeId 붙이기
+  // ✅ storeId 가져오기 & 네비게이션에 붙이기
   const params = new URLSearchParams(window.location.search);
   const storeId = params.get("storeId");
-  if (storeId) {
-    document.querySelectorAll(".bottom_nav a").forEach((a) => {
-      let href = a.getAttribute("href");
-      if (href.includes("?")) {
-        href += `&storeId=${storeId}`;
-      } else {
-        href += `?storeId=${storeId}`;
-      }
-      a.setAttribute("href", href);
-    });
+  if (!storeId) {
+    alert("storeId가 없습니다.");
+    return;
+  }
+  document.querySelectorAll(".bottom_nav a").forEach((a) => {
+    let href = a.getAttribute("href");
+    if (href.includes("?")) {
+      href += `&storeId=${storeId}`;
+    } else {
+      href += `?storeId=${storeId}`;
+    }
+    a.setAttribute("href", href);
+  });
+
+  // ✅ 메뉴관리 링크 세팅
+  function setMenuManageLink(isOpen) {
+    const menuTab = document.getElementById("menu-manage-link");
+    if (menuTab) {
+      menuTab.href = isOpen
+        ? `menu_on.html?storeId=${storeId}`
+        : `menu_off.html?storeId=${storeId}`;
+    }
   }
 
-  // ✅ 가게 오픈
+  // ✅ 즉시 오픈
   async function openStore() {
-    const token = getCookie("accessToken");
     try {
       const res = await fetch(`${API_BASE}/api/v1/store/${storeId}/open`, {
         method: "POST",
-        headers: { Authorization: `Bearer ${token}` },
         credentials: "include",
       });
 
       const data = await res.json();
       if (res.ok && data.isSuccess) {
-        localStorage.setItem("storeOpenState", "OPEN");
-        const bottomStatus = document.getElementById("countdown");
-        bottomStatus.textContent = "주문 마감하기";
-        bottomStatus.style.background = "#a82d2f";
-        alert("✅ 가게가 오픈되었습니다!");
+        alert("✅ 가게가 즉시 오픈되었습니다!");
+        applyStoreStatus();
       } else {
         alert("❌ 오픈 실패: " + (data.message || "알 수 없는 오류"));
       }
@@ -169,29 +163,53 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  // ✅ 가게 마감
+  // ✅ 즉시 마감
   async function closeStore() {
-    const token = getCookie("accessToken");
     try {
       const res = await fetch(`${API_BASE}/api/v1/store/${storeId}/close`, {
         method: "POST",
-        headers: { Authorization: `Bearer ${token}` },
         credentials: "include",
       });
 
       const data = await res.json();
       if (res.ok && data.isSuccess) {
-        localStorage.setItem("storeOpenState", "CLOSE");
-        const bottomStatus = document.getElementById("countdown");
-        bottomStatus.textContent = "주문 받기";
-        bottomStatus.style.background = "#777";
-        alert("✅ 가게가 마감되었습니다!");
+        alert("✅ 가게가 즉시 마감되었습니다!");
+        applyStoreStatus();
       } else {
         alert("❌ 마감 실패: " + (data.message || "알 수 없는 오류"));
       }
     } catch (err) {
       console.error("가게 마감 오류", err);
       alert("서버 오류로 마감하지 못했습니다.");
+    }
+  }
+
+  // ✅ 서버의 openStatus 기준으로 버튼 & 메뉴관리 링크 세팅
+  async function applyStoreStatus() {
+    try {
+      const res = await fetch(`${API_BASE}/api/v1/store/${storeId}`, {
+        method: "GET",
+        credentials: "include",
+      });
+
+      if (!res.ok) throw new Error("가게 상태 조회 실패");
+      const data = await res.json();
+      const bottomStatus = document.getElementById("countdown");
+
+      if (data.isSuccess && data.result) {
+        const openStatus = data.result.openStatus; // true / false
+        if (openStatus) {
+          bottomStatus.textContent = "주문 마감하기";
+          bottomStatus.style.background = "#a82d2f";
+          setMenuManageLink(true);
+        } else {
+          bottomStatus.textContent = "주문 받기";
+          bottomStatus.style.background = "#777";
+          setMenuManageLink(false);
+        }
+      }
+    } catch (err) {
+      console.error("가게 상태 반영 실패:", err);
     }
   }
 
@@ -207,90 +225,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // ✅ 영업시간 기준으로 버튼 상태 자동 반영
-  async function applyBusinessHoursStatus() {
-    try {
-      const token = getCookie("accessToken");
-      const res = await fetch(`${API_BASE}/api/v1/store/${storeId}`, {
-        method: "GET",
-        headers: { Authorization: `Bearer ${token}`, Accept: "*/*" },
-        credentials: "include",
-      });
-
-      if (!res.ok) throw new Error("가게 정보 조회 실패");
-      const data = await res.json();
-      const store = data.result;
-
-      const bottomStatus = document.getElementById("countdown");
-      if (!store?.openingTime || !store?.closingTime) {
-        console.warn("영업시간 정보 없음");
-        return;
-      }
-
-      const now = new Date();
-      const nowMinutes = now.getHours() * 60 + now.getMinutes();
-
-      const [openH, openM] = store.openingTime.split(":").map(Number);
-      const [closeH, closeM] = store.closingTime.split(":").map(Number);
-
-      const openMinutes = openH * 60 + openM;
-      const closeMinutes = closeH * 60 + closeM;
-
-      let isOpen = false;
-
-      if (openMinutes === 0 && closeMinutes === 1439) {
-        // 24시간 영업 (00:00 ~ 23:59)
-        isOpen = true;
-      } else if (openMinutes < closeMinutes) {
-        // 같은 날 영업 (예: 08:00 ~ 19:00)
-        isOpen = nowMinutes >= openMinutes && nowMinutes <= closeMinutes;
-      } else {
-        // 자정을 넘는 영업 (예: 20:00 ~ 02:00)
-        isOpen = nowMinutes >= openMinutes || nowMinutes <= closeMinutes;
-      }
-
-      if (isOpen) {
-        localStorage.setItem("storeOpenState", "OPEN");
-        bottomStatus.textContent = "주문 마감하기";
-        bottomStatus.style.background = "#a82d2f";
-      } else {
-        localStorage.setItem("storeOpenState", "CLOSE");
-        bottomStatus.textContent = "주문 받기";
-        bottomStatus.style.background = "#777";
-      }
-    } catch (err) {
-      console.error("영업시간 상태 반영 실패:", err);
-    }
-  }
-
-  // ✅ localStorage 상태 반영
-  function applyLocalStoreStatus() {
-    const state = localStorage.getItem("storeOpenState");
-    const bottomStatus = document.getElementById("countdown");
-    const menuTab = document.getElementById("menu-manage-link");
-
-    if (state === "OPEN") {
-      bottomStatus.textContent = "주문 마감하기";
-      bottomStatus.style.background = "#a82d2f";
-      if (menuTab) menuTab.href = `menu_on.html?storeId=${storeId}`;
-    } else if (state === "CLOSE") {
-      bottomStatus.textContent = "주문 받기";
-      bottomStatus.style.background = "#777";
-      if (menuTab) menuTab.href = `menu_off.html?storeId=${storeId}`;
-    }
-  }
-
   // ✅ 초기 실행
-  // ✅ 초기 실행
-  applyBusinessHoursStatus().then(() => {
-    applyLocalStoreStatus();
-  });
+  applyStoreStatus(); // 서버 openStatus 기준 버튼 & 메뉴관리 링크 세팅
   loadOrders();
-
-  // ✅ 다른 페이지(localStorage) 상태도 감지
-  window.addEventListener("storage", (event) => {
-    if (event.key === "storeOpenState") {
-      applyLocalStoreStatus();
-    }
-  });
 });
