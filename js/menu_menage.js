@@ -281,8 +281,16 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // ✅ 초기 실행
+  // ✅ 초기 실행
   applyBusinessHoursStatus().then(() => {
     applyLocalStoreStatus();
   });
   loadOrders();
+
+  // ✅ 다른 페이지(localStorage) 상태도 감지
+  window.addEventListener("storage", (event) => {
+    if (event.key === "storeOpenState") {
+      applyLocalStoreStatus();
+    }
+  });
 });
