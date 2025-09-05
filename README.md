@@ -1,4 +1,6 @@
 # LikeLion13-상명대일찐
+##  🎥 시연 영상
+[![시연 영상 보기](https://img.youtube.com/vi/Q0BfSeK3iaI/0.jpg)](https://youtu.be/Q0BfSeK3iaI)
 
 # WhyNotBuy Frontend
 > 중앙 해커톤 2025 제출작 (팀 프로젝트)  
