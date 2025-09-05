@@ -1,5 +1,33 @@
 # LikeLion13-상명대일찐
 
+# WhyNotBuy Frontend
+> 중앙 해커톤 2025 제출작 (팀 프로젝트)  
+> **역할:** Frontend 전담 (Vanilla JS)
+
+## 🚀 프로젝트 소개
+WhyNotBuy는 소상공인 메뉴를 할인/찜/구매할 수 있는 플랫폼입니다.  
+고객은 원하는 메뉴를 찾고 구매하며, 점주는 메뉴를 등록/관리할 수 있습니다.
+
+## 🛠 기술 스택
+- Frontend: HTML, CSS, Vanilla JS
+- Deploy: Vercel
+- API 연동: JWT 쿠키 기반 인증 (Spring Boot Backend)
+
+## ✨ 주요 기능
+- 고객 로그인/회원가입 (JWT 쿠키 기반)
+- 메뉴/가게 목록 조회
+- 메뉴 찜하기 / 구매내역 조회
+- 리뷰 작성 및 조회
+
+## 📂 실행 방법
+```bash
+# 환경변수 설정
+cp .env.example .env
+# .env 파일에 API_BASE, KAKAO_JS_KEY 등 입력
+
+# 정적 파일 실행 (Vercel 또는 live-server 등 사용)
+
+
 ### 1. Commit 메세지 구조
 
 - 기본 적인 커밋 메시지 구조는 제목, 본문, 꼬리말 세가지 파트로 나누고, 각 파트는 빈줄을 두어 구분한다.
